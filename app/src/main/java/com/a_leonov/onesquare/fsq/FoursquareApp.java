@@ -197,7 +197,7 @@ public class FoursquareApp {
         try {
             String v	= timeMilisToString(System.currentTimeMillis());
             String ll 	= String.valueOf(latitude) + "," + String.valueOf(longitude);
-            URL url 	= new URL(API_URL + "/venues/search?ll=" + ll + "&oauth_token=" + mAccessToken + "&v=" + v);
+            URL url 	= new URL(API_URL + "/venues/search?&oauth_token=" + mAccessToken + "&v=" + v + "&ll=" + ll);
 
             Log.d(TAG, "Opening URL " + url.toString());
 
@@ -210,6 +210,8 @@ public class FoursquareApp {
             urlConnection.connect();
 
             String response		= streamToString(urlConnection.getInputStream());
+
+            Log.v(TAG,response);
             JSONObject jsonObj 	= (JSONObject) new JSONTokener(response).nextValue();
 
             JSONArray groups	= (JSONArray) jsonObj.getJSONObject("response").getJSONArray("groups");
