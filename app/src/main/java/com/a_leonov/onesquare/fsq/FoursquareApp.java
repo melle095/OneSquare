@@ -4,6 +4,8 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.location.Location;
 import android.location.LocationManager;
+import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
@@ -32,7 +34,7 @@ public class FoursquareApp {
     private FoursquareDialog mDialog;
     private FsqAuthListener mListener;
     private ProgressDialog mProgress;
-    private String mTokenUrl;
+    private Uri mTokenUrl;
     private String mAccessToken;
 
 
@@ -40,18 +42,30 @@ public class FoursquareApp {
     private static final String AUTH_URL = "https://foursquare.com/oauth2/authenticate?response_type=code";
     private static final String TOKEN_URL = "https://foursquare.com/oauth2/access_token?grant_type=authorization_code";
     private static final String API_URL = "https://api.foursquare.com/v2";
+    private static final String VENUES_URL = "venues";
+    private static final String USERS_URL = "users";
+    private static final String SELF_URL = "self";
+    private static final String CLIENT_ID = "client_id";
+    private static final String CLIENT_SECRET = "client_secret";
+    private static final String REDIRECT_URI = "redirect_uri";
+
 
     private static final String TAG = "FoursquareApi";
 
     public FoursquareApp(Context context, String clientId, String clientSecret) {
-        mSession		= new FoursquareSession(context);
+        mSession = new FoursquareSession(context);
 
-        mAccessToken	= mSession.getAccessToken();
+        mAccessToken = mSession.getAccessToken();
 
-        mTokenUrl		= TOKEN_URL + "&client_id=" + clientId + "&client_secret=" + clientSecret
-                + "&redirect_uri=" + CALLBACK_URL;
+        mTokenUrl = Uri.parse(TOKEN_URL).buildUpon()
+                .appendQueryParameter(CLIENT_ID, clientId)
+                .appendQueryParameter(REDIRECT_URI, CALLBACK_URL)
+                .build();
 
-        String url		= AUTH_URL + "&client_id=" + clientId + "&redirect_uri=" + CALLBACK_URL;
+        String url = Uri.parse(AUTH_URL).buildUpon()
+                .appendQueryParameter(CLIENT_ID, clientId)
+                .appendQueryParameter(REDIRECT_URI, CALLBACK_URL)
+                .build().toString();
 
         FoursquareDialog.FsqDialogListener listener = new FoursquareDialog.FsqDialogListener() {
             @Override
@@ -65,8 +79,8 @@ public class FoursquareApp {
             }
         };
 
-        mDialog			= new FoursquareDialog(context, url, listener);
-        mProgress		= new ProgressDialog(context);
+        mDialog = new FoursquareDialog(context, url, listener);
+        mProgress = new ProgressDialog(context);
 
         mProgress.setCancelable(false);
     }
@@ -74,40 +88,65 @@ public class FoursquareApp {
     private void getAccessToken(final String code) {
         mProgress.setMessage("Getting access token ...");
         mProgress.show();
+        try {
+            URL url = new URL(mTokenUrl + "&code=" + code);
 
-        new Thread() {
-            @Override
-            public void run() {
-                Log.i(TAG, "Getting access token");
 
-                int what = 0;
+            new AsyncTask<URL, Void, String>() {
 
-                try {
-                    URL url = new URL(mTokenUrl + "&code=" + code);
+                @Override
+                protected String doInBackground(URL... url) {
+                    try {
+                        Log.i(TAG, "Opening URL " + url[0].toString());
 
-                    Log.i(TAG, "Opening URL " + url.toString());
+                        HttpURLConnection urlConnection = (HttpURLConnection) url[0].openConnection();
 
-                    HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
+                        urlConnection.setRequestMethod("GET");
+                        urlConnection.setDoInput(true);
+                        //urlConnection.setDoOutput(true);
 
-                    urlConnection.setRequestMethod("GET");
-                    urlConnection.setDoInput(true);
-                    //urlConnection.setDoOutput(true);
+                        urlConnection.connect();
 
-                    urlConnection.connect();
+                        InputStream inputStream = urlConnection.getInputStream();
+                        StringBuffer buffer = new StringBuffer();
+                        if (inputStream == null) {
+                            // Nothing to do.
+                            return null;
+                        }
 
-                    JSONObject jsonObj  = (JSONObject) new JSONTokener(streamToString(urlConnection.getInputStream())).nextValue();
-                    mAccessToken 		= jsonObj.getString("access_token");
+                        BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
 
-                    Log.i(TAG, "Got access token: " + mAccessToken);
-                } catch (Exception ex) {
-                    what = 1;
+                        String line;
+                        while ((line = reader.readLine()) != null) {
+                            // Since it's JSON, adding a newline isn't necessary (it won't affect parsing)
+                            // But it does make debugging a *lot* easier if you print out the completed
+                            // buffer for debugging.
+                            buffer.append(line + "\n");
+                        }
 
-                    ex.printStackTrace();
+                        if (buffer.length() == 0) {
+                            // Stream was empty.  No point in parsing.
+                            return null;
+                        }
+
+                        JSONObject jsonObj = (JSONObject) new JSONTokener(buffer.toString()).nextValue();
+                        mAccessToken = jsonObj.getString("access_token");
+                        Log.i(TAG, "Got access token: " + mAccessToken);
+
+                        return mAccessToken;
+
+                    } catch (Exception ex) {
+                        ex.printStackTrace();
+                    }
+
+                    return null;
+
                 }
+            }.execute(url);
 
-                mHandler.sendMessage(mHandler.obtainMessage(what, 1, 0));
-            }
-        }.start();
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
     }
 
     private void fetchUserName() {
@@ -120,8 +159,8 @@ public class FoursquareApp {
                 int what = 0;
 
                 try {
-                    String v	= timeMilisToString(System.currentTimeMillis());
-                    URL url 	= new URL(API_URL + "/users/self?oauth_token=" + mAccessToken + "&v=" + v);
+                    String v = timeMilisToString(System.currentTimeMillis());
+                    URL url = new URL(API_URL + "/users/self?oauth_token=" + mAccessToken + "&v=" + v);
 
                     Log.d(TAG, "Opening URL " + url.toString());
 
@@ -133,18 +172,18 @@ public class FoursquareApp {
 
                     urlConnection.connect();
 
-                    String response		= streamToString(urlConnection.getInputStream());
-                    JSONObject jsonObj 	= (JSONObject) new JSONTokener(response).nextValue();
+                    String response = streamToString(urlConnection.getInputStream());
+                    JSONObject jsonObj = (JSONObject) new JSONTokener(response).nextValue();
 
-                    JSONObject resp		= (JSONObject) jsonObj.get("response");
-                    JSONObject user		= (JSONObject) resp.get("user");
+                    JSONObject resp = (JSONObject) jsonObj.get("response");
+                    JSONObject user = (JSONObject) resp.get("user");
 
-                    String firstName 	= user.getString("firstName");
-                    String lastName		= user.getString("lastName");
+                    String firstName = user.getString("firstName");
+                    String lastName = user.getString("lastName");
 
                     Log.i(TAG, "Got user name: " + firstName + " " + lastName);
 
-                    mSession.storeAccessToken(mAccessToken, firstName + " " + lastName);
+                    //mSession.storeAccessToken(mAccessToken, firstName + " " + lastName);
                 } catch (Exception ex) {
                     what = 1;
 
@@ -195,9 +234,10 @@ public class FoursquareApp {
         ArrayList<FsqVenue> venueList = new ArrayList<FsqVenue>();
 
         try {
-            String v	= timeMilisToString(System.currentTimeMillis());
-            String ll 	= String.valueOf(latitude) + "," + String.valueOf(longitude);
-            URL url 	= new URL(API_URL + "/venues/search?&oauth_token=" + mAccessToken + "&v=" + v + "&ll=" + ll);
+            String v = timeMilisToString(System.currentTimeMillis());
+            String ll = String.valueOf(latitude) + "," + String.valueOf(longitude);
+
+            URL url = new URL(API_URL + "/venues/search?&oauth_token=" + mAccessToken + "&v=" + v + "&ll=" + ll + "&query=coffee");
 
             Log.d(TAG, "Opening URL " + url.toString());
 
@@ -209,48 +249,76 @@ public class FoursquareApp {
 
             urlConnection.connect();
 
-            String response		= streamToString(urlConnection.getInputStream());
+            String response = streamToString(urlConnection.getInputStream());
 
-            Log.v(TAG,response);
-            JSONObject jsonObj 	= (JSONObject) new JSONTokener(response).nextValue();
+            Log.v(TAG, response);
+            JSONObject jsonObj = (JSONObject) new JSONTokener(response).nextValue();
 
-            JSONArray groups	= (JSONArray) jsonObj.getJSONObject("response").getJSONArray("groups");
+            JSONArray venues = (JSONArray) jsonObj.getJSONObject("response").getJSONArray("venues");
 
-            int length			= groups.length();
+            int length = venues.length();
 
             if (length > 0) {
                 for (int i = 0; i < length; i++) {
-                    JSONObject group 	= (JSONObject) groups.get(i);
-                    JSONArray items 	= (JSONArray) group.getJSONArray("items");
+                    JSONObject item = (JSONObject) venues.get(i);
 
-                    int ilength 		= items.length();
+                    FsqVenue venue = new FsqVenue();
 
-                    for (int j = 0; j < ilength; j++) {
-                        JSONObject item = (JSONObject) items.get(j);
+                    venue.id = item.getString("id");
+                    venue.name = item.getString("name");
 
-                        FsqVenue venue 	= new FsqVenue();
+                    JSONObject location = (JSONObject) item.getJSONObject("location");
 
-                        venue.id 		= item.getString("id");
-                        venue.name		= item.getString("name");
+                    Location loc = new Location(LocationManager.GPS_PROVIDER);
 
-                        JSONObject location = (JSONObject) item.getJSONObject("location");
+                    loc.setLatitude(Double.valueOf(location.getString("lat")));
+                    loc.setLongitude(Double.valueOf(location.getString("lng")));
 
-                        Location loc 	= new Location(LocationManager.GPS_PROVIDER);
+                    venue.location = loc;
 
-                        loc.setLatitude(Double.valueOf(location.getString("lat")));
-                        loc.setLongitude(Double.valueOf(location.getString("lng")));
+                    venue.address = " ";
+                    venue.distance = location.getInt("distance");
+                    venue.herenow = item.getJSONObject("hereNow").getInt("count");
+                    //venue.type = group.getString("type");
 
-                        venue.location	= loc;
-                        venue.address	= location.getString("address");
-                        venue.distance	= location.getInt("distance");
-                        venue.herenow	= item.getJSONObject("hereNow").getInt("count");
-                        venue.type		= group.getString("type");
-
-                        venueList.add(venue);
-                    }
+                    venueList.add(venue);
                 }
             }
+
+//            if (length > 0) {
+//                for (int i = 0; i < length; i++) {
+//                    JSONObject venueItem 	= (JSONObject) venues.get(i);
+//                    JSONArray items 	= (JSONArray) venueItem.getJSONArray("items");
+//
+//                    int ilength 		= items.length();
+//
+//                    for (int j = 0; j < ilength; j++) {
+//                        JSONObject item = (JSONObject) items.get(j);
+//
+//                        FsqVenue venue 	= new FsqVenue();
+//
+//                        venue.id 		= item.getString("id");
+//                        venue.name		= item.getString("name");
+//
+//                        JSONObject location = (JSONObject) item.getJSONObject("location");
+//
+//                        Location loc 	= new Location(LocationManager.GPS_PROVIDER);
+//
+//                        loc.setLatitude(Double.valueOf(location.getString("lat")));
+//                        loc.setLongitude(Double.valueOf(location.getString("lng")));
+//
+//                        venue.location	= loc;
+//                        venue.address	= location.getString("address");
+//                        venue.distance	= location.getInt("distance");
+//                        venue.herenow	= item.getJSONObject("hereNow").getInt("count");
+//                        venue.type		= group.getString("type");
+//
+//                        venueList.add(venue);
+//                    }
+//                }
+//            }
         } catch (Exception ex) {
+            Log.d(TAG, ex.getMessage().toString());
             throw ex;
         }
 
@@ -258,14 +326,14 @@ public class FoursquareApp {
     }
 
     private String streamToString(InputStream is) throws IOException {
-        String str  = "";
+        String str = "";
 
         if (is != null) {
             StringBuilder sb = new StringBuilder();
             String line;
 
             try {
-                BufferedReader reader 	= new BufferedReader(new InputStreamReader(is));
+                BufferedReader reader = new BufferedReader(new InputStreamReader(is));
 
                 while ((line = reader.readLine()) != null) {
                     sb.append(line);
@@ -284,14 +352,17 @@ public class FoursquareApp {
 
     private String timeMilisToString(long milis) {
         SimpleDateFormat sd = new SimpleDateFormat("yyyyMMdd");
-        Calendar calendar   = Calendar.getInstance();
+        Calendar calendar = Calendar.getInstance();
 
         calendar.setTimeInMillis(milis);
 
         return sd.format(calendar.getTime());
     }
+
     public interface FsqAuthListener {
         public abstract void onSuccess();
+
         public abstract void onFail(String error);
     }
+
 }

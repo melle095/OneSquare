@@ -67,7 +67,7 @@ public class NearbyAdapter extends BaseAdapter {
         holder.mHereNowTxt.setText("(" + String.valueOf(venue.herenow) + " people here)");
         holder.mDistanceTxt.setText(formatDistance(venue.direction));
 
-        holder.mRibbonImg.setVisibility((venue.type.equals("trending")) ? View.VISIBLE : View.INVISIBLE);
+//        holder.mRibbonImg.setVisibility((venue.type.equals("trending")) ? View.VISIBLE : View.INVISIBLE);
 
         return convertView;
     }

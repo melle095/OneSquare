@@ -34,7 +34,7 @@ public class FoursquareContract {
         public static final String COLUMN_FACEBOOK = "facebook";
         public static final String COLUMN_FACEBOOKUSER = "facebookUsername";
         public static final String COLUMN_FACEBOOKNAME = "facebookName";
-        public static final String COLUMN_LOCATION = "location";
+        public static final String COLUMN_LOC_KEY = "location_id";
         public static final String COLUMN_VERIFIED = "verified";
         public static final String COLUMN_URL = "url";
         public static final String COLUMN_STATUS = "hours";
@@ -66,7 +66,7 @@ public class FoursquareContract {
         // Table name
         public static final String TABLE_NAME = "location";
 
-        public static final String COLUMN_LOCATION_SETTING = "location_setting";
+        //public static final String COLUMN_LOCATION_SETTING = "location_setting";
 
         public static final String COLUMN_ADDRESS = "address";
         public static final String COLUMN_CROSSSTREET = "crossStreet";
