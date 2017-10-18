@@ -12,6 +12,8 @@ public class FoursquareContract {
 
     public static final String PATH_VENUES = "venues";
     public static final String PATH_LOCATION = "location";
+    public static final String PATH_PHOTO = "photo";
+
 
     public static final class VenuesEntry implements BaseColumns {
 
@@ -43,7 +45,7 @@ public class FoursquareContract {
         public static final String COLUMN_POPULAR = "popular";
         public static final String COLUMN_PRICE = "price";
         public static final String COLUMN_RATING = "rating";
-        public static final String COLUMN_PHOTOS = "photos";
+        public static final String COLUMN_PHOTOS_ID = "photos_id";
         public static final String COLUMN_SHORTURL = "shortUrl";
         public static final String COLUMN_CANONICALURL = "canonicalUrl";
 
@@ -79,6 +81,32 @@ public class FoursquareContract {
         public static final String COLUMN_COUNTRY = "country";
         
         public static Uri buildLocationUri(long id) {
+            return ContentUris.withAppendedId(CONTENT_URI, id);
+        }
+    }
+
+    public static final class PhotoEntry implements BaseColumns {
+
+        public static final Uri CONTENT_URI =
+                BASE_CONTENT_URI.buildUpon().appendPath(PATH_PHOTO).build();
+
+        public static final String CONTENT_TYPE =
+                ContentResolver.CURSOR_DIR_BASE_TYPE + "/" + CONTENT_AUTHORITY + "/" + PATH_PHOTO;
+        public static final String CONTENT_ITEM_TYPE =
+                ContentResolver.CURSOR_ITEM_BASE_TYPE + "/" + CONTENT_AUTHORITY + "/" + PATH_PHOTO;
+
+        // Table name
+        public static final String TABLE_NAME = "photo";
+
+        public static final String COLUMN_VENUE_ID = "venue_id";
+        public static final String COLUMN_PREFIX = "prefix";
+        public static final String COLUMN_HEIGHT = "height";
+        public static final String COLUMN_WIDTH = "width";
+        public static final String COLUMN_SUFFIX = "suffix";
+        public static final String COLUMN_VISIBILITY = "visibility";
+        public static final String COLUMN_SOURCE = "source";
+
+        public static Uri buildPhotoUri(long id) {
             return ContentUris.withAppendedId(CONTENT_URI, id);
         }
     }
