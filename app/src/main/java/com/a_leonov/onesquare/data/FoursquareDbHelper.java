@@ -17,6 +17,18 @@ public class FoursquareDbHelper extends SQLiteOpenHelper {
     @Override
     public void onCreate(SQLiteDatabase sqLiteDatabase) {
 
+        final String SQL_CREATE_PHOTO_TABLE = "CREATE TABLE " + FoursquareContract.PhotoEntry.TABLE_NAME + " (" +
+                FoursquareContract.PhotoEntry._ID + " INTEGER PRIMARY KEY," +
+                FoursquareContract.PhotoEntry.COLUMN_HEIGHT + " TEXT , " +
+                FoursquareContract.PhotoEntry.COLUMN_PREFIX + " TEXT , " +
+                FoursquareContract.PhotoEntry.COLUMN_SOURCE + " TEXT , " +
+                FoursquareContract.PhotoEntry.COLUMN_SUFFIX + " TEXT , " +
+                FoursquareContract.PhotoEntry.COLUMN_VENUE_ID + " INTEGER NOT NULL , " +
+                FoursquareContract.PhotoEntry.COLUMN_VISIBILITY
+                FoursquareContract.LocationEntry.COLUMN_CROSSSTREET + " TEXT , " +
+
+                " );";
+
         final String SQL_CREATE_LOCATION_TABLE = "CREATE TABLE " + FoursquareContract.LocationEntry.TABLE_NAME + " (" +
                 FoursquareContract.LocationEntry._ID + " INTEGER PRIMARY KEY," +
                 //LocationEntry.COLUMN_LOCATION_SETTING + " TEXT UNIQUE NOT NULL, " +
@@ -54,7 +66,7 @@ public class FoursquareDbHelper extends SQLiteOpenHelper {
                 FoursquareContract.VenuesEntry.COLUMN_POPULAR + " TEXT , " +
                 FoursquareContract.VenuesEntry.COLUMN_PRICE + " TEXT , " +
                 FoursquareContract.VenuesEntry.COLUMN_RATING + " TEXT , " +
-                //FoursquareContract.VenuesEntry.COLUMN_PHOTOS + " TEXT , " +
+                FoursquareContract.VenuesEntry.COLUMN_PHOTOS_ID + " INTEGER NOT NULL , " +
                 FoursquareContract.VenuesEntry.COLUMN_SHORTURL + " TEXT , " +
                 FoursquareContract.VenuesEntry.COLUMN_CANONICALURL + " TEXT ," +
 

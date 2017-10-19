@@ -74,8 +74,8 @@ public class TestUtilities extends AndroidTestCase {
         locationValues.put(FoursquareContract.LocationEntry.COLUMN_POSTALCODE, "127006");
         locationValues.put(FoursquareContract.LocationEntry.COLUMN_CC, "RU");
         locationValues.put(FoursquareContract.LocationEntry.COLUMN_COUNTRY, "RUSSIA");
-        locationValues.put(FoursquareContract.LocationEntry.COLUMN_COORD_LAT, 55.773410);
-        locationValues.put(FoursquareContract.LocationEntry.COLUMN_COORD_LONG, 37.602855);
+        locationValues.put(FoursquareContract.LocationEntry.COLUMN_COORD_LAT, 55.7734);
+        locationValues.put(FoursquareContract.LocationEntry.COLUMN_COORD_LONG, 37.6028);
 
         return locationValues;
     }
