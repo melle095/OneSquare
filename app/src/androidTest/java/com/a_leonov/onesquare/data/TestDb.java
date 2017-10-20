@@ -110,7 +110,7 @@ public class TestDb extends AndroidTestCase {
         SQLiteDatabase db = dbHelper.getWritableDatabase();
 
         // Second Step (Weather): Create weather values
-        ContentValues weatherValues = TestUtilities.createWeatherValues(locationRowId);
+        ContentValues weatherValues = TestUtilities.createVenuesValues(locationRowId);
 
         // Third Step (Weather): Insert ContentValues into database and get a row ID back
         long weatherRowId = db.insert(FoursquareContract.VenuesEntry.TABLE_NAME, null, weatherValues);

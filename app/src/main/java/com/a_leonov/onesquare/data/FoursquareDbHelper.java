@@ -18,37 +18,23 @@ public class FoursquareDbHelper extends SQLiteOpenHelper {
     public void onCreate(SQLiteDatabase sqLiteDatabase) {
 
         final String SQL_CREATE_PHOTO_TABLE = "CREATE TABLE " + FoursquareContract.PhotoEntry.TABLE_NAME + " (" +
-                FoursquareContract.PhotoEntry._ID + " INTEGER PRIMARY KEY," +
-                FoursquareContract.PhotoEntry.COLUMN_HEIGHT + " TEXT , " +
+                FoursquareContract.PhotoEntry._ID + " CHAR PRIMARY KEY," +
+                FoursquareContract.PhotoEntry.COLUMN_HEIGHT + " INTEGER , " +
+                FoursquareContract.PhotoEntry.COLUMN_WIDTH + " INTEGER , " +
                 FoursquareContract.PhotoEntry.COLUMN_PREFIX + " TEXT , " +
                 FoursquareContract.PhotoEntry.COLUMN_SOURCE + " TEXT , " +
                 FoursquareContract.PhotoEntry.COLUMN_SUFFIX + " TEXT , " +
-                FoursquareContract.PhotoEntry.COLUMN_VENUE_ID + " INTEGER NOT NULL , " +
-                FoursquareContract.PhotoEntry.COLUMN_VISIBILITY
-                FoursquareContract.LocationEntry.COLUMN_CROSSSTREET + " TEXT , " +
+                FoursquareContract.PhotoEntry.COLUMN_VENUE_ID + " CHAR NOT NULL , " +
+                FoursquareContract.PhotoEntry.COLUMN_VISIBILITY + " CHAR NOT NULL " +
 
-                " );";
-
-        final String SQL_CREATE_LOCATION_TABLE = "CREATE TABLE " + FoursquareContract.LocationEntry.TABLE_NAME + " (" +
-                FoursquareContract.LocationEntry._ID + " INTEGER PRIMARY KEY," +
-                //LocationEntry.COLUMN_LOCATION_SETTING + " TEXT UNIQUE NOT NULL, " +
-                FoursquareContract.LocationEntry.COLUMN_ADDRESS + " TEXT , " +
-                FoursquareContract.LocationEntry.COLUMN_CROSSSTREET + " TEXT , " +
-                FoursquareContract.LocationEntry.COLUMN_COORD_LAT + " REAL NOT NULL, " +
-                FoursquareContract.LocationEntry.COLUMN_COORD_LONG + " REAL NOT NULL, " +
-                FoursquareContract.LocationEntry.COLUMN_POSTALCODE + " INTEGER NOT NULL, " +
-                FoursquareContract.LocationEntry.COLUMN_CC + " TEXT NOT NULL, " +
-                FoursquareContract.LocationEntry.COLUMN_CITY + " TEXT NOT NULL, " +
-                FoursquareContract.LocationEntry.COLUMN_STATE + " TEXT , " +
-                FoursquareContract.LocationEntry.COLUMN_COUNTRY + " TEXT NOT NULL " +
-                " );";
+                " FOREIGN KEY (" + FoursquareContract.PhotoEntry.COLUMN_VENUE_ID + ") REFERENCES " +
+                FoursquareContract.VenuesEntry.TABLE_NAME + " (" + FoursquareContract.VenuesEntry._ID + "));";
 
         final String SQL_CREATE_VENUES_TABLE = "CREATE TABLE " + FoursquareContract.VenuesEntry.TABLE_NAME + " (" +
 
-                FoursquareContract.VenuesEntry._ID + " INTEGER PRIMARY KEY AUTOINCREMENT," +
+                FoursquareContract.VenuesEntry._ID + " CHAR PRIMARY KEY ," +
 
                 // the ID of the location entry associated with this weather data
-                FoursquareContract.VenuesEntry.COLUMN_VEN_KEY + " INTEGER NOT NULL, " +
                 FoursquareContract.VenuesEntry.COLUMN_NAME + " TEXT NOT NULL, " +
                 FoursquareContract.VenuesEntry.COLUMN_PHONE + " TEXT, " +
                 FoursquareContract.VenuesEntry.COLUMN_FORMATTEDPHONE + " TEXT , " +
@@ -58,24 +44,28 @@ public class FoursquareDbHelper extends SQLiteOpenHelper {
                 FoursquareContract.VenuesEntry.COLUMN_FACEBOOKUSER + " TEXT , " +
                 FoursquareContract.VenuesEntry.COLUMN_FACEBOOKNAME + " TEXT , " +
                 FoursquareContract.VenuesEntry.COLUMN_LOC_KEY + " INTEGER NOT NULL, " +
-                FoursquareContract.VenuesEntry.COLUMN_VERIFIED + " BOOLEAN , " +
+                FoursquareContract.VenuesEntry.COLUMN_VERIFIED + " CHAR , " +
                 FoursquareContract.VenuesEntry.COLUMN_URL + " TEXT , " +
                 FoursquareContract.VenuesEntry.COLUMN_STATUS + " TEXT , " +
-                FoursquareContract.VenuesEntry.COLUMN_ISOPEN + " BOOLEAN , " +
-                FoursquareContract.VenuesEntry.COLUMN_ISLOCALHOLIDAY + " BOOLEAN , " +
+                FoursquareContract.VenuesEntry.COLUMN_ISOPEN + " STRING , " +
+                FoursquareContract.VenuesEntry.COLUMN_ISLOCALHOLIDAY + " CHAR , " +
                 FoursquareContract.VenuesEntry.COLUMN_POPULAR + " TEXT , " +
                 FoursquareContract.VenuesEntry.COLUMN_PRICE + " TEXT , " +
                 FoursquareContract.VenuesEntry.COLUMN_RATING + " TEXT , " +
-                FoursquareContract.VenuesEntry.COLUMN_PHOTOS_ID + " INTEGER NOT NULL , " +
                 FoursquareContract.VenuesEntry.COLUMN_SHORTURL + " TEXT , " +
                 FoursquareContract.VenuesEntry.COLUMN_CANONICALURL + " TEXT ," +
+                FoursquareContract.VenuesEntry.COLUMN_ADDRESS + " TEXT , " +
+                FoursquareContract.VenuesEntry.COLUMN_CROSSSTREET + " TEXT , " +
+                FoursquareContract.VenuesEntry.COLUMN_COORD_LAT + " REAL NOT NULL, " +
+                FoursquareContract.VenuesEntry.COLUMN_COORD_LONG + " REAL NOT NULL, " +
+                FoursquareContract.VenuesEntry.COLUMN_POSTALCODE + " INTEGER NOT NULL, " +
+                FoursquareContract.VenuesEntry.COLUMN_CC + " TEXT NOT NULL, " +
+                FoursquareContract.VenuesEntry.COLUMN_CITY + " TEXT NOT NULL, " +
+                FoursquareContract.VenuesEntry.COLUMN_STATE + " TEXT , " +
+                FoursquareContract.VenuesEntry.COLUMN_COUNTRY + " TEXT NOT NULL );";
 
-                // Set up the location column as a foreign key to location table.
-                " FOREIGN KEY (" + FoursquareContract.VenuesEntry.COLUMN_LOC_KEY + ") REFERENCES " +
-                FoursquareContract.LocationEntry.TABLE_NAME + " (" + FoursquareContract.LocationEntry._ID + "));";
-
-        sqLiteDatabase.execSQL(SQL_CREATE_LOCATION_TABLE);
         sqLiteDatabase.execSQL(SQL_CREATE_VENUES_TABLE);
+        sqLiteDatabase.execSQL(SQL_CREATE_PHOTO_TABLE);
     }
 
     @Override
