@@ -14,8 +14,6 @@ import android.test.AndroidTestCase;
 import java.util.Map;
 import java.util.Set;
 
-import static java.lang.Boolean.TRUE;
-
 
 public class TestUtilities extends AndroidTestCase {
     static final String TEST_VENUE_ID = "412d2800f964a520df0c1fe3";
@@ -42,21 +40,21 @@ public class TestUtilities extends AndroidTestCase {
 
     static ContentValues createVenuesValues(String venueRowId) {
         ContentValues venuesValues = new ContentValues();
-        venuesValues.put(FoursquareContract.VenuesEntry._ID, venueRowId);
-        venuesValues.put(FoursquareContract.VenuesEntry.COLUMN_FACEBOOK, "37965424481");
-        venuesValues.put(FoursquareContract.VenuesEntry.COLUMN_FACEBOOKNAME, "Central Park");
-        venuesValues.put(FoursquareContract.VenuesEntry.COLUMN_FACEBOOKUSER, "centralparknyc");
+        venuesValues.put(FoursquareContract.VenuesEntry.COLUMN_VEN_KEY, venueRowId);
+        venuesValues.put(FoursquareContract.VenuesEntry.COLUMN_NAME,"Central Park" );
+        venuesValues.put(FoursquareContract.VenuesEntry.COLUMN_PHONE, "2123106600");
         venuesValues.put(FoursquareContract.VenuesEntry.COLUMN_FORMATTEDPHONE,"(212) 310-6600" );
         venuesValues.put(FoursquareContract.VenuesEntry.COLUMN_INSTAGRAMM, "centralparknyc" );
         venuesValues.put(FoursquareContract.VenuesEntry.COLUMN_TWITTER, "centralparknyc");
+        venuesValues.put(FoursquareContract.VenuesEntry.COLUMN_FACEBOOK, "37965424481");
+        venuesValues.put(FoursquareContract.VenuesEntry.COLUMN_FACEBOOKNAME, "Central Park");
+        venuesValues.put(FoursquareContract.VenuesEntry.COLUMN_FACEBOOKUSER, "centralparknyc");
         venuesValues.put(FoursquareContract.VenuesEntry.COLUMN_VERIFIED, "true");
-        venuesValues.put(FoursquareContract.VenuesEntry.COLUMN_ISLOCALHOLIDAY,"true" );
         venuesValues.put(FoursquareContract.VenuesEntry.COLUMN_ISOPEN,"false" );
-        venuesValues.put(FoursquareContract.VenuesEntry.COLUMN_STATUS, "Open until 1:00 AM");
-        venuesValues.put(FoursquareContract.VenuesEntry.COLUMN_NAME,"Central Park" );
-        venuesValues.put(FoursquareContract.VenuesEntry.COLUMN_PHONE, "2123106600");
+        venuesValues.put(FoursquareContract.VenuesEntry.COLUMN_ISLOCALHOLIDAY,"true" );
         venuesValues.put(FoursquareContract.VenuesEntry.COLUMN_POPULAR, "");
         venuesValues.put(FoursquareContract.VenuesEntry.COLUMN_RATING,9.8 );
+        venuesValues.put(FoursquareContract.VenuesEntry.COLUMN_STATUS, "Open until 1:00 AM");
         venuesValues.put(FoursquareContract.VenuesEntry.COLUMN_CITY, "Moscow");
         venuesValues.put(FoursquareContract.VenuesEntry.COLUMN_POSTALCODE, "127006");
         venuesValues.put(FoursquareContract.VenuesEntry.COLUMN_CC, "RU");
@@ -67,16 +65,11 @@ public class TestUtilities extends AndroidTestCase {
         return venuesValues;
     }
 
-    /*
-        Students: You can uncomment this helper function once you have finished creating the
-        LocationEntry part of the WeatherContract.
-     */
-    static ContentValues createPhotoValues(String venueRowId) {
+    static ContentValues createPhotoValues(long venue_Id) {
         // Create a new map of values, where column names are the keys
         ContentValues photoValues = new ContentValues();
-
-        photoValues.put(FoursquareContract.PhotoEntry.COLUMN_VENUE_ID, venueRowId);
-        photoValues.put(FoursquareContract.PhotoEntry._ID, "5150464f52625adbe29d04c2");
+        photoValues.put(FoursquareContract.PhotoEntry.COLUMN_VENUE_ID, venue_Id);
+        photoValues.put(FoursquareContract.PhotoEntry.COLUMN_PHOTO_ID, "5150464f52625adbe29d04c2");
         photoValues.put(FoursquareContract.PhotoEntry.COLUMN_HEIGHT, 400);
         photoValues.put(FoursquareContract.PhotoEntry.COLUMN_WIDTH, 600);
         photoValues.put(FoursquareContract.PhotoEntry.COLUMN_VISIBILITY, "TRUE");
@@ -84,25 +77,37 @@ public class TestUtilities extends AndroidTestCase {
         return photoValues;
     }
 
-    /*
-        Students: You can uncomment this function once you have finished creating the
-        LocationEntry part of the WeatherContract as well as the WeatherDbHelper.
-     */
     static long insertMoscowLocationValues(Context context) {
         // insert our test records into the database
         FoursquareDbHelper dbHelper = new FoursquareDbHelper(context);
         SQLiteDatabase db = dbHelper.getWritableDatabase();
-        ContentValues testValues = TestUtilities.createVenuesValues(TEST_VENUE_ID);
+        ContentValues venueValues = TestUtilities.createVenuesValues(TEST_VENUE_ID);
 
-        long locationRowId;
-        locationRowId = db.insert(FoursquareContract.LocationEntry.TABLE_NAME, null, testValues);
+
+        long venueRowId;
+        venueRowId = db.insert(FoursquareContract.VenuesEntry.TABLE_NAME, null, venueValues);
 
         // Verify we got a row back.
-        assertTrue("Error: Failure to insert North Pole Location Values", locationRowId != -1);
+        assertTrue("Error: Failure to insert North Pole Location Values", venueRowId != -1);
 
-        return locationRowId;
+        return venueRowId;
     }
-    
+
+    static long insertPhotoVenueValues(Context context) {
+        // insert our test records into the database
+        FoursquareDbHelper dbHelper = new FoursquareDbHelper(context);
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
+        ContentValues photoValues = TestUtilities.createPhotoValues(12);
+
+        long photoRowId;
+        photoRowId = db.insert(FoursquareContract.PhotoEntry.TABLE_NAME, null, photoValues);
+
+        // Verify we got a row back.
+        assertTrue("Error: Failure to insert photo Values", photoRowId != -1);
+
+        return photoRowId;
+    }
+
     static class TestContentObserver extends ContentObserver {
         final HandlerThread mHT;
         boolean mContentChanged;

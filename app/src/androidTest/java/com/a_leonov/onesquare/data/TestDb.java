@@ -103,7 +103,7 @@ public class TestDb extends AndroidTestCase {
         SQLiteDatabase db = dbHelper.getWritableDatabase();
 
         // Second Step (Weather): Create weather values
-        ContentValues photoValues = TestUtilities.createPhotoValues(TEST_VENUE_ID);
+        ContentValues photoValues = TestUtilities.createPhotoValues(venueRowId);
 
         // Third Step (Weather): Insert ContentValues into database and get a row ID back
         long photoRowId = db.insert(FoursquareContract.PhotoEntry.TABLE_NAME, null, photoValues);

@@ -10,6 +10,7 @@ public class FoursquareContract {
     public static final String CONTENT_AUTHORITY = "com.a_leonov.onesquare.app";
     public static final Uri BASE_CONTENT_URI = Uri.parse("content://" + CONTENT_AUTHORITY);
 
+    public static final String PATH_VENUE = "venue";
     public static final String PATH_VENUES = "venues";
     public static final String PATH_PHOTO = "photo";
 
@@ -35,14 +36,12 @@ public class FoursquareContract {
         public static final String COLUMN_FACEBOOK = "facebook";
         public static final String COLUMN_FACEBOOKUSER = "facebookUsername";
         public static final String COLUMN_FACEBOOKNAME = "facebookName";
-        public static final String COLUMN_LOC_KEY = "location_id";
         public static final String COLUMN_VERIFIED = "verified";
         public static final String COLUMN_URL = "url";
         public static final String COLUMN_STATUS = "hours";
         public static final String COLUMN_ISOPEN = "isOpen";
         public static final String COLUMN_ISLOCALHOLIDAY = "isLocalHoliday";
         public static final String COLUMN_POPULAR = "popular";
-        public static final String COLUMN_PRICE = "price";
         public static final String COLUMN_RATING = "rating";
         public static final String COLUMN_SHORTURL = "shortUrl";
         public static final String COLUMN_CANONICALURL = "canonicalUrl";
@@ -61,7 +60,6 @@ public class FoursquareContract {
         }
     }
 
-
     public static final class PhotoEntry implements BaseColumns {
 
         public static final Uri CONTENT_URI =
@@ -74,8 +72,8 @@ public class FoursquareContract {
 
         // Table name
         public static final String TABLE_NAME = "photo";
-
         public static final String COLUMN_VENUE_ID = "venue_id";
+        public static final String COLUMN_PHOTO_ID = "photo_id";
         public static final String COLUMN_PREFIX = "prefix";
         public static final String COLUMN_HEIGHT = "height";
         public static final String COLUMN_WIDTH = "width";
