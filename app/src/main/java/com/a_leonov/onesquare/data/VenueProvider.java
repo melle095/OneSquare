@@ -4,6 +4,7 @@ import android.content.ContentProvider;
 import android.content.ContentValues;
 import android.content.UriMatcher;
 import android.database.Cursor;
+import android.database.sqlite.SQLiteQueryBuilder;
 import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -19,6 +20,25 @@ public class VenueProvider extends ContentProvider {
     static final int VENUES_BY_CITY = 101;
     static final int PHOTO          = 102;
     static final int PHOTOS_BY_VENUE = 103;
+
+    private static final SQLiteQueryBuilder sVenuesByGPSQueryBuilder;
+
+    static{
+        sVenuesByGPSQueryBuilder = new SQLiteQueryBuilder();
+
+        sVenuesByGPSQueryBuilder.setTables(
+                FoursquareContract.VenuesEntry.TABLE_NAME + " LEFT JOIN " +
+                        FoursquareContract.VenuesEntry.TABLE_NAME +
+                        " ON " + FoursquareContract.VenuesEntry.TABLE_NAME +
+                        "." + FoursquareContract.VenuesEntry._ID +
+                        " = " + FoursquareContract.PhotoEntry.TABLE_NAME +
+                        "." + FoursquareContract.PhotoEntry.COLUMN_VENUE_ID);
+    }
+
+    //select * WHERE latitude BETWEEN (@lan - 100 * 0.1988) AND (@lan + @r * 0.1988 / 2) AND longitude BETWEEN (@lng - 100 * 0.1988) AND (@lng + @r * 0.1988 / 2)
+    private static final String sLocationSettingSelection =
+            WeatherContract.LocationEntry.TABLE_NAME+
+                    "." + WeatherContract.LocationEntry.COLUMN_LOCATION_SETTING + " = ? ";
 
     @Override
     public boolean onCreate() {
@@ -77,7 +97,7 @@ public class VenueProvider extends ContentProvider {
 
         matcher.addURI(authority, FoursquareContract.PATH_VENUES + "/#", VENUE);
         matcher.addURI(authority, FoursquareContract.PATH_VENUES + "/*", VENUES_BY_CITY);
-        matcher.addURI(authority, FoursquareContract.PATH_VENUES, VENUES_BY_GPS);
+        matcher.addURI(authority, FoursquareContract.PATH_VENUES + "/geo/#/#", VENUES_BY_GPS);
         matcher.addURI(authority, FoursquareContract.PATH_PHOTO + "/#/#", PHOTO);
         matcher.addURI(authority, FoursquareContract.PATH_PHOTO + "/#", PHOTOS_BY_VENUE);
 
