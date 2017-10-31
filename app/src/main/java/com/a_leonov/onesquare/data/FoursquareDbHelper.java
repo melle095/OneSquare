@@ -38,7 +38,7 @@ public class FoursquareDbHelper extends SQLiteOpenHelper {
         final String SQL_CREATE_VENUES_TABLE = "CREATE TABLE " + FoursquareContract.VenuesEntry.TABLE_NAME + " (" +
 
                 FoursquareContract.VenuesEntry._ID + " INTEGER PRIMARY KEY ," +
-                COLUMN_VEN_KEY + " CHAR NOT NULL ," +
+                FoursquareContract.VenuesEntry.COLUMN_VEN_KEY + " CHAR NOT NULL ," +
                 FoursquareContract.VenuesEntry.COLUMN_NAME + " TEXT NOT NULL, " +
                 FoursquareContract.VenuesEntry.COLUMN_PHONE + " TEXT, " +
                 FoursquareContract.VenuesEntry.COLUMN_FORMATTEDPHONE + " TEXT , " +

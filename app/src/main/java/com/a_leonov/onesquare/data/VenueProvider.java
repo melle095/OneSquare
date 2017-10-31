@@ -35,10 +35,15 @@ public class VenueProvider extends ContentProvider {
                         "." + FoursquareContract.PhotoEntry.COLUMN_VENUE_ID);
     }
 
-    //select * WHERE latitude BETWEEN (@lan - 100 * 0.1988) AND (@lan + @r * 0.1988 / 2) AND longitude BETWEEN (@lng - 100 * 0.1988) AND (@lng + @r * 0.1988 / 2)
-    private static final String sLocationSettingSelection =
-            WeatherContract.LocationEntry.TABLE_NAME+
-                    "." + WeatherContract.LocationEntry.COLUMN_LOCATION_SETTING + " = ? ";
+    //select * WHERE latitude BETWEEN (@lan - 100 * 0.1988) AND (@lan + @r * 0.1988 / 2) AND
+    //               longitude BETWEEN (@lng - 100 * 0.1988) AND (@lng + @r * 0.1988 / 2)
+    private static final String sVenueNearSelection =
+            "(" + FoursquareContract.VenuesEntry.TABLE_NAME + "." + FoursquareContract.VenuesEntry.COLUMN_COORD_LAT  + " - ? ) * " +
+            "(" + FoursquareContract.VenuesEntry.TABLE_NAME + "." + FoursquareContract.VenuesEntry.COLUMN_COORD_LAT  + " - ? ) + " +
+            "(" + FoursquareContract.VenuesEntry.TABLE_NAME + "." + FoursquareContract.VenuesEntry.COLUMN_COORD_LONG + " - ? ) * " +
+            "(" + FoursquareContract.VenuesEntry.TABLE_NAME + "." + FoursquareContract.VenuesEntry.COLUMN_COORD_LONG + " - ? ) <= 100*0.1988"
+
+            ;
 
     @Override
     public boolean onCreate() {
