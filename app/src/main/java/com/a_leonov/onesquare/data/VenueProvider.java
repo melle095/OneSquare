@@ -37,6 +37,9 @@ public class VenueProvider extends ContentProvider {
 
     //select * WHERE latitude BETWEEN (@lan - 100 * 0.1988) AND (@lan + @r * 0.1988 / 2) AND
     //               longitude BETWEEN (@lng - 100 * 0.1988) AND (@lng + @r * 0.1988 / 2)
+    //
+    //select * WHERE lat_dest BETWEEN (lan_cur - 50*0.0055) AND (@lan_cur + 50*0.0055) AND
+    //               lng_dest BETWEEN (lng_cur - 50*0.0055) AND (@lng_cur + 50*0.0055)
     private static final String sVenueNearSelection =
             "(" + FoursquareContract.VenuesEntry.TABLE_NAME + "." + FoursquareContract.VenuesEntry.COLUMN_COORD_LAT  + " - ? ) * " +
             "(" + FoursquareContract.VenuesEntry.TABLE_NAME + "." + FoursquareContract.VenuesEntry.COLUMN_COORD_LAT  + " - ? ) + " +
