@@ -2,6 +2,7 @@ package com.a_leonov.onesquare.data;
 
 import android.content.ContentResolver;
 import android.content.ContentUris;
+import android.graphics.PointF;
 import android.net.Uri;
 import android.provider.BaseColumns;
 
@@ -84,6 +85,12 @@ public class FoursquareContract {
         public static Uri buildPhotoUri(long id) {
             return ContentUris.withAppendedId(CONTENT_URI, id);
         }
+    }
+
+    public static PointF getPointFromUri(Uri uri) {
+        long x = Long.parseLong(uri.getPathSegments().get(2));
+        long y = Long.parseLong(uri.getPathSegments().get(1));
+        return new PointF(x,y);
     }
 
 }

@@ -22,12 +22,12 @@ public class VenueProvider extends ContentProvider {
     static final int PHOTO          = 102;
     static final int PHOTOS_BY_VENUE = 103;
 
-    private static final SQLiteQueryBuilder sVenuesByGPSQueryBuilder;
+    private static final SQLiteQueryBuilder sVenuesQueryBuilder;
 
     static{
-        sVenuesByGPSQueryBuilder = new SQLiteQueryBuilder();
+        sVenuesQueryBuilder = new SQLiteQueryBuilder();
 
-        sVenuesByGPSQueryBuilder.setTables(
+        sVenuesQueryBuilder.setTables(
                 FoursquareContract.VenuesEntry.TABLE_NAME + " LEFT JOIN " +
                         FoursquareContract.VenuesEntry.TABLE_NAME +
                         " ON " + FoursquareContract.VenuesEntry.TABLE_NAME +
@@ -36,15 +36,87 @@ public class VenueProvider extends ContentProvider {
                         "." + FoursquareContract.PhotoEntry.COLUMN_VENUE_ID);
     }
 
-    //select * WHERE latitude BETWEEN (@lan - 100 * 0.1988) AND (@lan + @r * 0.1988 / 2) AND
-    //               longitude BETWEEN (@lng - 100 * 0.1988) AND (@lng + @r * 0.1988 / 2)
-    private static final String sVenueNearSelection =
-            "(" + FoursquareContract.VenuesEntry.TABLE_NAME + "." + FoursquareContract.VenuesEntry.COLUMN_COORD_LAT  + " - ? ) * " +
-            "(" + FoursquareContract.VenuesEntry.TABLE_NAME + "." + FoursquareContract.VenuesEntry.COLUMN_COORD_LAT  + " - ? ) + " +
-            "(" + FoursquareContract.VenuesEntry.TABLE_NAME + "." + FoursquareContract.VenuesEntry.COLUMN_COORD_LONG + " - ? ) * " +
-            "(" + FoursquareContract.VenuesEntry.TABLE_NAME + "." + FoursquareContract.VenuesEntry.COLUMN_COORD_LONG + " - ? ) <= 100*0.1988"
 
-            ;
+    private static final String sVenueIDSelection =
+            FoursquareContract.VenuesEntry.TABLE_NAME+
+                    "." + FoursquareContract.VenuesEntry._ID + " = ? ";
+
+    private static final String sVenueByCitySelection =
+            FoursquareContract.VenuesEntry.TABLE_NAME+
+                    "." + FoursquareContract.VenuesEntry.COLUMN_CITY + " = ? ";
+
+    private static final String sVenueNearSelection =
+            " ( " + FoursquareContract.VenuesEntry.TABLE_NAME + "." + FoursquareContract.VenuesEntry.COLUMN_COORD_LAT  + " BETWEEN ? AND ? ) AND (" +
+            FoursquareContract.VenuesEntry.TABLE_NAME + "." + FoursquareContract.VenuesEntry.COLUMN_COORD_LONG + " BETWEEN ? AND ? )";
+
+    private static final String sPhotosSelection =
+            FoursquareContract.PhotoEntry.TABLE_NAME+
+                    "." + FoursquareContract.PhotoEntry.COLUMN_VENUE_ID + " = ? ";
+
+    private Cursor getVenueById(Uri uri, String[] projection, String sortOrder) {
+        String venueId = uri.getPathSegments().get(1);
+
+        String[] selectionArgs;
+        String selection;
+
+        selectionArgs = new String[]{venueId};
+        selection = sVenueIDSelection;
+
+        return sVenuesQueryBuilder.query(mOpenHelper.getReadableDatabase(),
+                projection,
+                selection,
+                selectionArgs,
+                null,
+                null,
+                sortOrder
+        );
+    }
+
+    private Cursor getVenueByCity(Uri uri, String[] projection, String sortOrder) {
+        String venue_city = uri.getPathSegments().get(1);
+
+        String[] selectionArgs;
+        String selection;
+
+        selectionArgs = new String[]{venue_city};
+        selection = sVenueByCitySelection;
+
+        return sVenuesQueryBuilder.query(mOpenHelper.getReadableDatabase(),
+                projection,
+                selection,
+                selectionArgs,
+                null,
+                null,
+                sortOrder
+        );
+    }
+
+    private Cursor getVenueNear(Uri uri, String[] projection, String sortOrder) {
+        float current_lon = Long.parseLong(uri.getPathSegments().get(1));
+        float current_lat = Long.parseLong(uri.getPathSegments().get(2));
+
+        PointF current_point = new PointF(current_lon,current_lat);
+        //TODO: Остановился на этом месте. Составить правильно выборку из квадрата в 4 точки
+        PointF left_bound = calculateDerivedPosition(current_point,500,180);
+        PointF right_bound = calculateDerivedPosition(current_point,500,0);
+        PointF up_bound = calculateDerivedPosition(current_point,500,90);
+        PointF down_bound = calculateDerivedPosition(current_point,500,360);
+
+        String[] selectionArgs;
+        String selection;
+
+        selectionArgs = new String[]{venue_city};
+        selection = sVenueByCitySelection;
+
+        return sVenuesQueryBuilder.query(mOpenHelper.getReadableDatabase(),
+                projection,
+                selection,
+                selectionArgs,
+                null,
+                null,
+                sortOrder
+        );
+    }
 
     @Override
     public boolean onCreate() {
@@ -104,15 +176,14 @@ public class VenueProvider extends ContentProvider {
         matcher.addURI(authority, FoursquareContract.PATH_VENUES + "/#", VENUE);
         matcher.addURI(authority, FoursquareContract.PATH_VENUES + "/*", VENUES_BY_CITY);
         matcher.addURI(authority, FoursquareContract.PATH_VENUES + "/geo/#/#", VENUES_BY_GPS);
-        matcher.addURI(authority, FoursquareContract.PATH_PHOTO + "/#/#", PHOTO);
+        //matcher.addURI(authority, FoursquareContract.PATH_PHOTO + "/#/#", PHOTO);
         matcher.addURI(authority, FoursquareContract.PATH_PHOTO + "/#", PHOTOS_BY_VENUE);
 
         return matcher;
     }
 
 
-    public static PointF calculateDerivedPosition(PointF point,
-                                                  double range, double bearing)
+    public static PointF calculateDerivedPosition(PointF point, double range, double bearing)
     {
         double EarthRadius = 6371000; // m
 
