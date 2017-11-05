@@ -86,11 +86,4 @@ public class FoursquareContract {
             return ContentUris.withAppendedId(CONTENT_URI, id);
         }
     }
-
-    public static PointF getPointFromUri(Uri uri) {
-        long x = Long.parseLong(uri.getPathSegments().get(2));
-        long y = Long.parseLong(uri.getPathSegments().get(1));
-        return new PointF(x,y);
-    }
-
 }

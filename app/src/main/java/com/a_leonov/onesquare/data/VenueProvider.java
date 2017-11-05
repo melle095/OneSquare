@@ -22,6 +22,8 @@ public class VenueProvider extends ContentProvider {
     static final int PHOTO          = 102;
     static final int PHOTOS_BY_VENUE = 103;
 
+    static final double radius = 500;
+
     private static final SQLiteQueryBuilder sVenuesQueryBuilder;
 
     static{
@@ -95,17 +97,16 @@ public class VenueProvider extends ContentProvider {
         float current_lon = Long.parseLong(uri.getPathSegments().get(1));
         float current_lat = Long.parseLong(uri.getPathSegments().get(2));
 
-        PointF current_point = new PointF(current_lon,current_lat);
-        //TODO: Остановился на этом месте. Составить правильно выборку из квадрата в 4 точки
-        PointF left_bound = calculateDerivedPosition(current_point,500,180);
-        PointF right_bound = calculateDerivedPosition(current_point,500,0);
-        PointF up_bound = calculateDerivedPosition(current_point,500,90);
-        PointF down_bound = calculateDerivedPosition(current_point,500,360);
+        PointF center = new PointF(current_lat, current_lon);
+        final double mult = 1; // mult = 1.1; is more reliable
+        PointF p1 = calculateDerivedPosition(center, mult * radius, 0);
+        PointF p2 = calculateDerivedPosition(center, mult * radius, 90);
+        PointF p3 = calculateDerivedPosition(center, mult * radius, 180);
+        PointF p4 = calculateDerivedPosition(center, mult * radius, 270);
 
         String[] selectionArgs;
         String selection;
-
-        selectionArgs = new String[]{venue_city};
+        selectionArgs = new String[]{String.valueOf(p1.y), String.valueOf(p3.y),String.valueOf(p4.x),String.valueOf(p2.x)};
         selection = sVenueByCitySelection;
 
         return sVenuesQueryBuilder.query(mOpenHelper.getReadableDatabase(),
@@ -124,13 +125,42 @@ public class VenueProvider extends ContentProvider {
         return true;
     }
 
-    @Nullable
     @Override
-    public Cursor query(@NonNull Uri uri, @Nullable String[] strings, @Nullable String s, @Nullable String[] strings1, @Nullable String s1) {
-        return null;
+    public Cursor query(@NonNull Uri uri, String[] projection, String selection, String[] selectionArgs,
+                        String sortOrder) {
+        Cursor retCursor;
+        switch (sUriMatcher.match(uri)) {
+            case VENUE:{
+                retCursor = getVenueById(uri, projection,sortOrder);
+                break;
+            }
+            case VENUES_BY_GPS: {
+                retCursor = getVenueNear(uri, projection, sortOrder);
+                break;
+            }
+            case VENUES_BY_CITY: {
+                retCursor = getVenueByCity(uri, projection, sortOrder);
+                break;
+            }
+            case PHOTOS_BY_VENUE: {
+                retCursor = mOpenHelper.getReadableDatabase().query(
+                        FoursquareContract.PhotoEntry.TABLE_NAME,
+                        projection,
+                        selection,
+                        selectionArgs,
+                        null,
+                        null,
+                        sortOrder
+                );
+                break;
+            }
+            default:
+                throw new UnsupportedOperationException("Unknown uri: " + uri);
+        }
+        retCursor.setNotificationUri(getContext().getContentResolver(), uri);
+        return retCursor;
     }
 
-    @Nullable
     @Override
     public String getType(@NonNull Uri uri) {
         final int match = sUriMatcher.match(uri);
@@ -143,16 +173,13 @@ public class VenueProvider extends ContentProvider {
                 return FoursquareContract.VenuesEntry.CONTENT_TYPE;
             case VENUES_BY_CITY:
                 return FoursquareContract.VenuesEntry.CONTENT_TYPE;
-            case PHOTO:
-                return FoursquareContract.PhotoEntry.CONTENT_ITEM_TYPE;
-            case PHOTOS_BY_VENUE:
+             case PHOTOS_BY_VENUE:
                 return FoursquareContract.PhotoEntry.CONTENT_TYPE;
             default:
                 throw new UnsupportedOperationException("Unknown uri: " + uri);
         }
     }
 
-    @Nullable
     @Override
     public Uri insert(@NonNull Uri uri, @Nullable ContentValues contentValues) {
         return null;

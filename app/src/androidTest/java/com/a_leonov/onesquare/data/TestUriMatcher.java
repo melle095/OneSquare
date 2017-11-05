@@ -1,4 +1,4 @@
-//
+//package
 //package com.a_leonov.onesquare.data;
 //
 //
