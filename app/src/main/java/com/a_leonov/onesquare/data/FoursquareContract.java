@@ -59,6 +59,19 @@ public class FoursquareContract {
         public static Uri buildVenuesUri(long id) {
             return ContentUris.withAppendedId(CONTENT_URI, id);
         }
+
+        public static Uri buildVenuesNearUri(float lat, float lon) {
+            return CONTENT_URI.buildUpon().appendPath("/geo/")
+                    .appendQueryParameter("lat", String.valueOf(lat))
+                    .appendQueryParameter("lon", String.valueOf(lon))
+                    .build();
+        }
+
+        public static Uri buildVenueCityUri(String city) {
+            return CONTENT_URI.buildUpon().appendQueryParameter("city", city)
+                    .build();
+        }
+
     }
 
     public static final class PhotoEntry implements BaseColumns {
@@ -84,6 +97,11 @@ public class FoursquareContract {
 
         public static Uri buildPhotoUri(long id) {
             return ContentUris.withAppendedId(CONTENT_URI, id);
+        }
+
+        public static Uri buildPhotoByVenueUri(String venue_id) {
+            return CONTENT_URI.buildUpon().appendQueryParameter("venue_id", venue_id)
+                    .build();
         }
     }
 }

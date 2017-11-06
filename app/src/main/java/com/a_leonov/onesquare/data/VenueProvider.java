@@ -1,9 +1,11 @@
 package com.a_leonov.onesquare.data;
 
+import android.annotation.TargetApi;
 import android.content.ContentProvider;
 import android.content.ContentValues;
 import android.content.UriMatcher;
 import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteQueryBuilder;
 import android.graphics.PointF;
 import android.net.Uri;
@@ -154,6 +156,18 @@ public class VenueProvider extends ContentProvider {
                 );
                 break;
             }
+            case PHOTO: {
+                retCursor = mOpenHelper.getReadableDatabase().query(
+                        FoursquareContract.PhotoEntry.TABLE_NAME,
+                        projection,
+                        selection,
+                        selectionArgs,
+                        null,
+                        null,
+                        sortOrder
+                );
+                break;
+            }
             default:
                 throw new UnsupportedOperationException("Unknown uri: " + uri);
         }
@@ -182,17 +196,109 @@ public class VenueProvider extends ContentProvider {
 
     @Override
     public Uri insert(@NonNull Uri uri, @Nullable ContentValues contentValues) {
-        return null;
+        final SQLiteDatabase db = mOpenHelper.getWritableDatabase();
+        final int match = sUriMatcher.match(uri);
+        Uri returnUri;
+
+        switch (match) {
+            case VENUE: {
+                long _id = db.insert(FoursquareContract.VenuesEntry.TABLE_NAME, null, contentValues);
+                if ( _id > 0 )
+                    returnUri = FoursquareContract.VenuesEntry.buildVenuesUri(_id);
+                else
+                    throw new android.database.SQLException("Failed to insert row into " + uri);
+                break;
+            }
+            case PHOTO: {
+                long _id = db.insert(FoursquareContract.PhotoEntry.TABLE_NAME, null, contentValues);
+                if ( _id > 0 )
+                    returnUri = FoursquareContract.PhotoEntry.buildPhotoUri(_id);
+                else
+                    throw new android.database.SQLException("Failed to insert row into " + uri);
+                break;
+            }
+            default:
+                throw new UnsupportedOperationException("Unknown uri: " + uri);
+        }
+        getContext().getContentResolver().notifyChange(uri, null);
+        return returnUri;
+
     }
 
     @Override
-    public int delete(@NonNull Uri uri, @Nullable String s, @Nullable String[] strings) {
-        return 0;
+    public int delete(@NonNull Uri uri, String selection, String[] selectionArgs) {
+        final SQLiteDatabase db = mOpenHelper.getWritableDatabase();
+        final int match = sUriMatcher.match(uri);
+        int rowsDeleted;
+        // this makes delete all rows return the number of rows deleted
+        if ( null == selection ) selection = "1";
+        switch (match) {
+            case VENUE:
+                rowsDeleted = db.delete(
+                        FoursquareContract.VenuesEntry.TABLE_NAME, selection, selectionArgs);
+                break;
+            case PHOTO:
+                rowsDeleted = db.delete(
+                        FoursquareContract.PhotoEntry.TABLE_NAME, selection, selectionArgs);
+                break;
+            default:
+                throw new UnsupportedOperationException("Unknown uri: " + uri);
+        }
+        // Because a null deletes all rows
+        if (rowsDeleted != 0) {
+            getContext().getContentResolver().notifyChange(uri, null);
+        }
+        return rowsDeleted;
     }
 
     @Override
-    public int update(@NonNull Uri uri, @Nullable ContentValues contentValues, @Nullable String s, @Nullable String[] strings) {
-        return 0;
+    public int update(Uri uri, ContentValues values, String selection, String[] selectionArgs) {
+        final SQLiteDatabase db = mOpenHelper.getWritableDatabase();
+        final int match = sUriMatcher.match(uri);
+        int rowsUpdated;
+
+        switch (match) {
+            case VENUE:
+                rowsUpdated = db.update(FoursquareContract.VenuesEntry.TABLE_NAME, values, selection,
+                        selectionArgs);
+                break;
+            case PHOTO:
+                rowsUpdated = db.update(FoursquareContract.PhotoEntry.TABLE_NAME, values, selection,
+                        selectionArgs);
+                break;
+            default:
+                throw new UnsupportedOperationException("Unknown uri: " + uri);
+        }
+        if (rowsUpdated != 0) {
+            getContext().getContentResolver().notifyChange(uri, null);
+        }
+        return rowsUpdated;
+    }
+
+    @Override
+    public int bulkInsert(Uri uri, ContentValues[] values) {
+        final SQLiteDatabase db = mOpenHelper.getWritableDatabase();
+        final int match = sUriMatcher.match(uri);
+        switch (match) {
+            case VENUE:
+                db.beginTransaction();
+                int returnCount = 0;
+                try {
+                    for (ContentValues value : values) {
+                        long _id = db.insert(FoursquareContract.VenuesEntry.TABLE_NAME, null, value);
+                        if (_id != -1) {
+                            returnCount++;
+                        }
+                    }
+                    db.setTransactionSuccessful();
+                } finally {
+                    db.endTransaction();
+                }
+                getContext().getContentResolver().notifyChange(uri, null);
+                return returnCount;
+            default:
+                return super.bulkInsert(uri, values);
+        }
     }
 
     static UriMatcher buildUriMatcher() {
@@ -203,12 +309,17 @@ public class VenueProvider extends ContentProvider {
         matcher.addURI(authority, FoursquareContract.PATH_VENUES + "/#", VENUE);
         matcher.addURI(authority, FoursquareContract.PATH_VENUES + "/*", VENUES_BY_CITY);
         matcher.addURI(authority, FoursquareContract.PATH_VENUES + "/geo/#/#", VENUES_BY_GPS);
-        //matcher.addURI(authority, FoursquareContract.PATH_PHOTO + "/#/#", PHOTO);
-        matcher.addURI(authority, FoursquareContract.PATH_PHOTO + "/#", PHOTOS_BY_VENUE);
+        matcher.addURI(authority, FoursquareContract.PATH_PHOTO + "/#", PHOTO);
+        matcher.addURI(authority, FoursquareContract.PATH_PHOTO + "/*", PHOTOS_BY_VENUE);
 
         return matcher;
     }
-
+    @Override
+    @TargetApi(11)
+    public void shutdown() {
+        mOpenHelper.close();
+        super.shutdown();
+    }
 
     public static PointF calculateDerivedPosition(PointF point, double range, double bearing)
     {
