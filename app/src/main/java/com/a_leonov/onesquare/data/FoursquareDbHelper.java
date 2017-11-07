@@ -40,6 +40,7 @@ public class FoursquareDbHelper extends SQLiteOpenHelper {
                 FoursquareContract.VenuesEntry._ID + " INTEGER PRIMARY KEY ," +
                 FoursquareContract.VenuesEntry.COLUMN_VEN_KEY + " CHAR NOT NULL ," +
                 FoursquareContract.VenuesEntry.COLUMN_NAME + " TEXT NOT NULL, " +
+                FoursquareContract.VenuesEntry.COLUMN_CATERGORY + "TEXT ," +
                 FoursquareContract.VenuesEntry.COLUMN_PHONE + " TEXT, " +
                 FoursquareContract.VenuesEntry.COLUMN_FORMATTEDPHONE + " TEXT , " +
                 FoursquareContract.VenuesEntry.COLUMN_TWITTER + " TEXT , " +

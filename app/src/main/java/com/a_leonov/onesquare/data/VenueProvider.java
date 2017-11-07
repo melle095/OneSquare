@@ -18,11 +18,13 @@ public class VenueProvider extends ContentProvider {
     private static final UriMatcher sUriMatcher = buildUriMatcher();
     private FoursquareDbHelper mOpenHelper;
 
-    static final int VENUE          = 99;
-    static final int VENUES_BY_GPS  = 100;
-    static final int VENUES_BY_CITY = 101;
-    static final int PHOTO          = 102;
-    static final int PHOTOS_BY_VENUE = 103;
+    static final int VENUE          = 100;
+    static final int VENUES         = 105;
+    static final int VENUES_BY_GPS  = 110;
+    static final int VENUES_BY_CITY = 115;
+    static final int PHOTO          = 120;
+    static final int PHOTOS         = 121;
+    static final int PHOTOS_BY_VENUE = 125;
 
     static final double radius = 500;
 
@@ -49,13 +51,13 @@ public class VenueProvider extends ContentProvider {
             FoursquareContract.VenuesEntry.TABLE_NAME+
                     "." + FoursquareContract.VenuesEntry.COLUMN_CITY + " = ? ";
 
+    private static final String sPhotoByVenueIDSelection =
+            FoursquareContract.PhotoEntry.TABLE_NAME +
+                    "." + FoursquareContract.PhotoEntry.COLUMN_VENUE_ID + " = ? ";
+
     private static final String sVenueNearSelection =
             " ( " + FoursquareContract.VenuesEntry.TABLE_NAME + "." + FoursquareContract.VenuesEntry.COLUMN_COORD_LAT  + " BETWEEN ? AND ? ) AND (" +
             FoursquareContract.VenuesEntry.TABLE_NAME + "." + FoursquareContract.VenuesEntry.COLUMN_COORD_LONG + " BETWEEN ? AND ? )";
-
-    private static final String sPhotosSelection =
-            FoursquareContract.PhotoEntry.TABLE_NAME+
-                    "." + FoursquareContract.PhotoEntry.COLUMN_VENUE_ID + " = ? ";
 
     private Cursor getVenueById(Uri uri, String[] projection, String sortOrder) {
         String venueId = uri.getPathSegments().get(1);
@@ -95,6 +97,25 @@ public class VenueProvider extends ContentProvider {
         );
     }
 
+    private Cursor getPhotoByVenue(Uri uri, String[] projection, String sortOrder) {
+        String venue_id = uri.getPathSegments().get(1);
+
+        String[] selectionArgs;
+        String selection;
+
+        selectionArgs = new String[]{venue_id};
+        selection = sPhotoByVenueIDSelection;
+
+        return sVenuesQueryBuilder.query(mOpenHelper.getReadableDatabase(),
+                projection,
+                selection,
+                selectionArgs,
+                null,
+                null,
+                sortOrder
+        );
+    }
+
     private Cursor getVenueNear(Uri uri, String[] projection, String sortOrder) {
         float current_lon = Long.parseLong(uri.getPathSegments().get(1));
         float current_lat = Long.parseLong(uri.getPathSegments().get(2));
@@ -109,7 +130,7 @@ public class VenueProvider extends ContentProvider {
         String[] selectionArgs;
         String selection;
         selectionArgs = new String[]{String.valueOf(p1.y), String.valueOf(p3.y),String.valueOf(p4.x),String.valueOf(p2.x)};
-        selection = sVenueByCitySelection;
+        selection = sVenueNearSelection;
 
         return sVenuesQueryBuilder.query(mOpenHelper.getReadableDatabase(),
                 projection,
@@ -132,6 +153,18 @@ public class VenueProvider extends ContentProvider {
                         String sortOrder) {
         Cursor retCursor;
         switch (sUriMatcher.match(uri)) {
+            case VENUES: {
+                retCursor = mOpenHelper.getReadableDatabase().query(
+                        FoursquareContract.VenuesEntry.TABLE_NAME,
+                        projection,
+                        selection,
+                        selectionArgs,
+                        null,
+                        null,
+                        sortOrder
+                );
+                break;
+            }
             case VENUE:{
                 retCursor = getVenueById(uri, projection,sortOrder);
                 break;
@@ -145,18 +178,10 @@ public class VenueProvider extends ContentProvider {
                 break;
             }
             case PHOTOS_BY_VENUE: {
-                retCursor = mOpenHelper.getReadableDatabase().query(
-                        FoursquareContract.PhotoEntry.TABLE_NAME,
-                        projection,
-                        selection,
-                        selectionArgs,
-                        null,
-                        null,
-                        sortOrder
-                );
+                retCursor = getPhotoByVenue(uri, projection, sortOrder);
                 break;
             }
-            case PHOTO: {
+            case PHOTOS: {
                 retCursor = mOpenHelper.getReadableDatabase().query(
                         FoursquareContract.PhotoEntry.TABLE_NAME,
                         projection,
@@ -187,7 +212,9 @@ public class VenueProvider extends ContentProvider {
                 return FoursquareContract.VenuesEntry.CONTENT_TYPE;
             case VENUES_BY_CITY:
                 return FoursquareContract.VenuesEntry.CONTENT_TYPE;
-             case PHOTOS_BY_VENUE:
+            case PHOTO:
+                return FoursquareContract.PhotoEntry.CONTENT_TYPE;
+            case PHOTOS_BY_VENUE:
                 return FoursquareContract.PhotoEntry.CONTENT_TYPE;
             default:
                 throw new UnsupportedOperationException("Unknown uri: " + uri);
@@ -307,9 +334,11 @@ public class VenueProvider extends ContentProvider {
         final String authority = FoursquareContract.CONTENT_AUTHORITY;
 
         matcher.addURI(authority, FoursquareContract.PATH_VENUES + "/#", VENUE);
+        matcher.addURI(authority, FoursquareContract.PATH_VENUES, VENUES);
         matcher.addURI(authority, FoursquareContract.PATH_VENUES + "/*", VENUES_BY_CITY);
         matcher.addURI(authority, FoursquareContract.PATH_VENUES + "/geo/#/#", VENUES_BY_GPS);
         matcher.addURI(authority, FoursquareContract.PATH_PHOTO + "/#", PHOTO);
+        matcher.addURI(authority, FoursquareContract.PATH_PHOTO, PHOTOS);
         matcher.addURI(authority, FoursquareContract.PATH_PHOTO + "/*", PHOTOS_BY_VENUE);
 
         return matcher;

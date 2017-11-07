@@ -2,7 +2,6 @@ package com.a_leonov.onesquare.data;
 
 import android.content.ContentResolver;
 import android.content.ContentUris;
-import android.graphics.PointF;
 import android.net.Uri;
 import android.provider.BaseColumns;
 
@@ -15,6 +14,10 @@ public class FoursquareContract {
     public static final String PATH_VENUES = "venues";
     public static final String PATH_PHOTO = "photo";
 
+    public static final String CATEGORY_COFFEE = "4bf58dd8d48988d1e0931735";
+    public static final String CATEGORY_FASTFOOD	= "4bf58dd8d48988d16e941735";
+    public static final String CATEGORY_Nightlife =	"4d4b7105d754a06376d81259";
+    public static final String CATEGORY_FOOD = "t4d4b7105d754a06374d81259";
 
     public static final class VenuesEntry implements BaseColumns {
 
@@ -30,6 +33,7 @@ public class FoursquareContract {
 
         public static final String COLUMN_VEN_KEY = "venue_id";
         public static final String COLUMN_NAME = "name";
+        public static final String COLUMN_CATERGORY = "category";
         public static final String COLUMN_PHONE = "phone";
         public static final String COLUMN_FORMATTEDPHONE = "formattedPhone";
         public static final String COLUMN_TWITTER = "twitter";
@@ -60,7 +64,7 @@ public class FoursquareContract {
             return ContentUris.withAppendedId(CONTENT_URI, id);
         }
 
-        public static Uri buildVenuesNearUri(float lat, float lon) {
+        public static Uri buildVenuesNearUri(double lat, double lon) {
             return CONTENT_URI.buildUpon().appendPath("/geo/")
                     .appendQueryParameter("lat", String.valueOf(lat))
                     .appendQueryParameter("lon", String.valueOf(lon))
