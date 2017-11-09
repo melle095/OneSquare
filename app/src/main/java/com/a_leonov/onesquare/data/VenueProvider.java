@@ -333,13 +333,13 @@ public class VenueProvider extends ContentProvider {
         final UriMatcher matcher = new UriMatcher(UriMatcher.NO_MATCH);
         final String authority = FoursquareContract.CONTENT_AUTHORITY;
 
-        matcher.addURI(authority, FoursquareContract.PATH_VENUES + "/#", VENUE);
         matcher.addURI(authority, FoursquareContract.PATH_VENUES, VENUES);
-        matcher.addURI(authority, FoursquareContract.PATH_VENUES + "/*", VENUES_BY_CITY);
-        matcher.addURI(authority, FoursquareContract.PATH_VENUES + "/geo/#/#", VENUES_BY_GPS);
-        matcher.addURI(authority, FoursquareContract.PATH_PHOTO + "/#", PHOTO);
+        matcher.addURI(authority, FoursquareContract.PATH_VENUES + "/#", VENUE);
+        matcher.addURI(authority, FoursquareContract.PATH_VENUES + "/city/*", VENUES_BY_CITY);
+        matcher.addURI(authority, FoursquareContract.PATH_VENUES + "/geo/*/*", VENUES_BY_GPS);
         matcher.addURI(authority, FoursquareContract.PATH_PHOTO, PHOTOS);
-        matcher.addURI(authority, FoursquareContract.PATH_PHOTO + "/*", PHOTOS_BY_VENUE);
+        matcher.addURI(authority, FoursquareContract.PATH_PHOTO + "/#", PHOTO);
+        matcher.addURI(authority, FoursquareContract.PATH_PHOTO + "/venue_id/*", PHOTOS_BY_VENUE);
 
         return matcher;
     }

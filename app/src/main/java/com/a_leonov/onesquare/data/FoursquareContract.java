@@ -10,7 +10,6 @@ public class FoursquareContract {
     public static final String CONTENT_AUTHORITY = "com.a_leonov.onesquare.app";
     public static final Uri BASE_CONTENT_URI = Uri.parse("content://" + CONTENT_AUTHORITY);
 
-    public static final String PATH_VENUE = "venue";
     public static final String PATH_VENUES = "venues";
     public static final String PATH_PHOTO = "photo";
 
@@ -64,15 +63,18 @@ public class FoursquareContract {
             return ContentUris.withAppendedId(CONTENT_URI, id);
         }
 
-        public static Uri buildVenuesNearUri(double lat, double lon) {
-            return CONTENT_URI.buildUpon().appendPath("/geo/")
-                    .appendQueryParameter("lat", String.valueOf(lat))
-                    .appendQueryParameter("lon", String.valueOf(lon))
+        public static Uri buildVenuesGPSUri(double lat, double lon) {
+            return CONTENT_URI.buildUpon()
+                    .appendPath("geo")
+                    .appendPath(String.valueOf(lat))
+                    .appendPath(String.valueOf(lon))
                     .build();
         }
 
         public static Uri buildVenueCityUri(String city) {
-            return CONTENT_URI.buildUpon().appendQueryParameter("city", city)
+            return CONTENT_URI.buildUpon()
+                    .appendPath("city")
+                    .appendPath(city)
                     .build();
         }
 
@@ -104,7 +106,9 @@ public class FoursquareContract {
         }
 
         public static Uri buildPhotoByVenueUri(String venue_id) {
-            return CONTENT_URI.buildUpon().appendQueryParameter("venue_id", venue_id)
+            return CONTENT_URI.buildUpon()
+                    .appendPath("venue_id")
+                    .appendPath(venue_id)
                     .build();
         }
     }

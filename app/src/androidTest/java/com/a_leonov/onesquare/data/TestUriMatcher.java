@@ -11,10 +11,12 @@ public class TestUriMatcher extends AndroidTestCase {
     private static final String VENUE_ID = "412d2800f964a520df0c1fe3";
 
     // content://com.example.android.sunshine.app/weather"
+    private static final Uri TEST_VENUE = FoursquareContract.VenuesEntry.buildVenuesUri(12);
     private static final Uri TEST_VENUE_DIR = FoursquareContract.VenuesEntry.CONTENT_URI;
-    private static final Uri TEST_VENUE_NEAR = FoursquareContract.VenuesEntry.buildVenuesNearUri(lat, lon);
+    private static final Uri TEST_VENUE_GPS = FoursquareContract.VenuesEntry.buildVenuesGPSUri(lat, lon);
     private static final Uri TEST_VENUE_BY_CITY = FoursquareContract.VenuesEntry.buildVenueCityUri(CITY_QUERY);
     // content://com.example.android.sunshine.app/location"
+    private static final Uri TEST_PHOTO = FoursquareContract.PhotoEntry.buildPhotoUri(20);
     private static final Uri TEST_PHOTO_DIR = FoursquareContract.PhotoEntry.CONTENT_URI;
     private static final Uri TEST_PHOTO_BY_VENUE = FoursquareContract.PhotoEntry.buildPhotoByVenueUri(VENUE_ID);
 
@@ -28,11 +30,17 @@ public class TestUriMatcher extends AndroidTestCase {
         UriMatcher testMatcher = VenueProvider.buildUriMatcher();
 
         assertEquals("Error: The VENUE URI was matched incorrectly.",
-                testMatcher.match(TEST_VENUE_DIR), VenueProvider.VENUE);
-        assertEquals("Error: The VENUE NEAR CURRENT LOCATION was matched incorrectly.",
-                testMatcher.match(TEST_VENUE_NEAR), VenueProvider.VENUES_BY_GPS);
+                testMatcher.match(TEST_VENUE), VenueProvider.VENUE);
+        assertEquals("Error: The VENUE DIR URI was matched incorrectly.",
+                testMatcher.match(TEST_VENUE_DIR), VenueProvider.VENUES);
+        assertEquals("Error: The VENUE DIR URI was matched incorrectly.",
+                testMatcher.match(TEST_VENUE_DIR), VenueProvider.VENUES);
+        assertEquals("Error: The VENUE GPS LOCATION was matched incorrectly.",
+                testMatcher.match(TEST_VENUE_GPS), VenueProvider.VENUES_BY_GPS);
         assertEquals("Error: The VENUE BY CITY was matched incorrectly.",
                 testMatcher.match(TEST_VENUE_BY_CITY), VenueProvider.VENUES_BY_CITY);
+        assertEquals("Error: The PHOTO was matched incorrectly.",
+                testMatcher.match(TEST_PHOTO), VenueProvider.PHOTO);
         assertEquals("Error: The PHOTO was matched incorrectly.",
                 testMatcher.match(TEST_PHOTO_BY_VENUE), VenueProvider.PHOTOS_BY_VENUE);
         assertEquals("Error: The PHOTO DIR was matched incorrectly.",
