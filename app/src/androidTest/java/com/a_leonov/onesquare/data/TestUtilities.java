@@ -77,7 +77,7 @@ public class TestUtilities extends AndroidTestCase {
         return photoValues;
     }
 
-    static long insertMoscowLocationValues(Context context) {
+    static long insertVenueValues(Context context) {
         // insert our test records into the database
         FoursquareDbHelper dbHelper = new FoursquareDbHelper(context);
         SQLiteDatabase db = dbHelper.getWritableDatabase();
@@ -88,7 +88,7 @@ public class TestUtilities extends AndroidTestCase {
         venueRowId = db.insert(FoursquareContract.VenuesEntry.TABLE_NAME, null, venueValues);
 
         // Verify we got a row back.
-        assertTrue("Error: Failure to insert North Pole Location Values", venueRowId != -1);
+        assertTrue("Error: Failure to insert Venue Values", venueRowId != -1);
 
         return venueRowId;
     }
