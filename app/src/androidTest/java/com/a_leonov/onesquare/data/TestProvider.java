@@ -2,7 +2,6 @@
 package com.a_leonov.onesquare.data;
 
 
-import android.app.Application;
 import android.content.ComponentName;
 import android.content.ContentUris;
 import android.content.ContentValues;
@@ -122,7 +121,7 @@ public class TestProvider extends AndroidTestCase {
                 FoursquareContract.VenuesEntry.CONTENT_ITEM_TYPE, type);
 
         // content://com.example.android.sunshine.app/weather/
-        String type = mContext.getContentResolver().getType(FoursquareContract.VenuesEntry.CONTENT_URI);
+        type = mContext.getContentResolver().getType(FoursquareContract.VenuesEntry.CONTENT_URI);
         // vnd.android.cursor.dir/com.example.android.sunshine.app/weather
         assertEquals("Error: the VenuesEntry.CONTENT_URI should return CONTENT_TYPE",
                 FoursquareContract.VenuesEntry.CONTENT_TYPE, type);
@@ -164,7 +163,7 @@ public class TestProvider extends AndroidTestCase {
         read out the data.  Uncomment this test to see if the basic weather query functionality
         given in the ContentProvider is working correctly.
      */
-    public void testBasicWeatherQuery() {
+    public void testBasicVenueQuery() {
         // insert our test records into the database
         FoursquareDbHelper dbHelper = new FoursquareDbHelper(mContext);
         SQLiteDatabase db = dbHelper.getWritableDatabase();
@@ -182,7 +181,7 @@ public class TestProvider extends AndroidTestCase {
 
         // Test the basic content provider query
         Cursor venueCursor = mContext.getContentResolver().query(
-                FoursquareContract.VenuesEntry.CONTENT_URI,
+                FoursquareContract.PhotoEntry.CONTENT_URI,
                 null,
                 null,
                 null,
@@ -190,7 +189,7 @@ public class TestProvider extends AndroidTestCase {
         );
 
         // Make sure we get the correct cursor out of the database
-        TestUtilities.validateCursor("testBasicWeatherQuery", venueCursor, venuesValues);
+        TestUtilities.validateCursor("testBasicVenueQuery", venueCursor, venuesValues);
     }
 
     /*
@@ -230,32 +229,31 @@ public class TestProvider extends AndroidTestCase {
         This test uses the provider to insert and then update the data. Uncomment this test to
         see if your update location is functioning correctly.
      */
-    public void testUpdateLocation() {
+    public void testUpdateVenue() {
         // Create a new map of values, where column names are the keys
-        ContentValues values = TestUtilities.;
+        ContentValues values = TestUtilities.createVenuesValues(VENUE_ID);
 
-        Uri locationUri = mContext.getContentResolver().
-                insert(LocationEntry.CONTENT_URI, values);
-        long locationRowId = ContentUris.parseId(locationUri);
-
+        Uri venueUri = mContext.getContentResolver().
+                insert(FoursquareContract.VenuesEntry.CONTENT_URI, values);
+        long venueRowId = ContentUris.parseId(venueUri);
         // Verify we got a row back.
-        assertTrue(locationRowId != -1);
-        Log.d(LOG_TAG, "New row id: " + locationRowId);
+        assertTrue(venueRowId != -1);
+        Log.d(LOG_TAG, "New row id: " + venueRowId);
 
         ContentValues updatedValues = new ContentValues(values);
-        updatedValues.put(LocationEntry._ID, locationRowId);
-        updatedValues.put(LocationEntry.COLUMN_CITY_NAME, "Santa's Village");
+        updatedValues.put(FoursquareContract.VenuesEntry._ID, venueRowId);
+        updatedValues.put(FoursquareContract.VenuesEntry.COLUMN_NAME, "Starbucs coffee");
 
         // Create a cursor with observer to make sure that the content provider is notifying
         // the observers as expected
-        Cursor locationCursor = mContext.getContentResolver().query(LocationEntry.CONTENT_URI, null, null, null, null);
+        Cursor venueCursor = mContext.getContentResolver().query(FoursquareContract.VenuesEntry.CONTENT_URI, null, null, null, null);
 
-        com.example.android.sunshine.app.data.TestUtilities.TestContentObserver tco = com.example.android.sunshine.app.data.TestUtilities.getTestContentObserver();
-        locationCursor.registerContentObserver(tco);
+        TestUtilities.TestContentObserver tco = TestUtilities.getTestContentObserver();
+        venueCursor.registerContentObserver(tco);
 
         int count = mContext.getContentResolver().update(
-                LocationEntry.CONTENT_URI, updatedValues, LocationEntry._ID + "= ?",
-                new String[] { Long.toString(locationRowId)});
+                FoursquareContract.VenuesEntry.CONTENT_URI, updatedValues, FoursquareContract.VenuesEntry._ID + "= ?",
+                new String[] { Long.toString(venueRowId)});
         assertEquals(count, 1);
 
         // Test to make sure our observer is called.  If not, we throw an assertion.
@@ -264,19 +262,19 @@ public class TestProvider extends AndroidTestCase {
         // isn't calling getContext().getContentResolver().notifyChange(uri, null);
         tco.waitForNotificationOrFail();
 
-        locationCursor.unregisterContentObserver(tco);
-        locationCursor.close();
+        venueCursor.unregisterContentObserver(tco);
+        venueCursor.close();
 
         // A cursor is your primary interface to the query results.
         Cursor cursor = mContext.getContentResolver().query(
-                LocationEntry.CONTENT_URI,
+                FoursquareContract.VenuesEntry.CONTENT_URI,
                 null,   // projection
-                LocationEntry._ID + " = " + locationRowId,
+                FoursquareContract.VenuesEntry._ID + " = " + venueRowId,
                 null,   // Values for the "where" clause
                 null    // sort order
         );
 
-        com.example.android.sunshine.app.data.TestUtilities.validateCursor("testUpdateLocation.  Error validating location entry update.",
+        TestUtilities.validateCursor("testUpdateVenue.  Error validating venue entry update.",
                 cursor, updatedValues);
 
         cursor.close();
@@ -289,47 +287,47 @@ public class TestProvider extends AndroidTestCase {
     // in your provider.  It relies on insertions with testInsertReadProvider, so insert and
     // query functionality must also be complete before this test can be used.
     public void testInsertReadProvider() {
-        ContentValues testValues = com.example.android.sunshine.app.data.TestUtilities.createNorthPoleLocationValues();
+        ContentValues testValues = TestUtilities.createVenuesValues(VENUE_ID);
 
         // Register a content observer for our insert.  This time, directly with the content resolver
-        com.example.android.sunshine.app.data.TestUtilities.TestContentObserver tco = com.example.android.sunshine.app.data.TestUtilities.getTestContentObserver();
-        mContext.getContentResolver().registerContentObserver(LocationEntry.CONTENT_URI, true, tco);
-        Uri locationUri = mContext.getContentResolver().insert(LocationEntry.CONTENT_URI, testValues);
+        TestUtilities.TestContentObserver tco = TestUtilities.getTestContentObserver();
+        mContext.getContentResolver().registerContentObserver(FoursquareContract.VenuesEntry.CONTENT_URI, true, tco);
+        Uri venue_Id = mContext.getContentResolver().insert(FoursquareContract.VenuesEntry.CONTENT_URI, testValues);
 
         // Did our content observer get called?  Students:  If this fails, your insert location
         // isn't calling getContext().getContentResolver().notifyChange(uri, null);
         tco.waitForNotificationOrFail();
         mContext.getContentResolver().unregisterContentObserver(tco);
 
-        long locationRowId = ContentUris.parseId(locationUri);
+        long venueRowId = ContentUris.parseId(venue_Id);
 
         // Verify we got a row back.
-        assertTrue(locationRowId != -1);
+        assertTrue(venueRowId != -1);
 
         // Data's inserted.  IN THEORY.  Now pull some out to stare at it and verify it made
         // the round trip.
 
         // A cursor is your primary interface to the query results.
         Cursor cursor = mContext.getContentResolver().query(
-                LocationEntry.CONTENT_URI,
+                FoursquareContract.VenuesEntry.CONTENT_URI,
                 null, // leaving "columns" null just returns all the columns.
                 null, // cols for "where" clause
                 null, // values for "where" clause
                 null  // sort order
         );
 
-        com.example.android.sunshine.app.data.TestUtilities.validateCursor("testInsertReadProvider. Error validating LocationEntry.",
+        TestUtilities.validateCursor("testInsertReadProvider. Error validating VenuesEntry.",
                 cursor, testValues);
 
         // Fantastic.  Now that we have a location, add some weather!
-        ContentValues weatherValues = com.example.android.sunshine.app.data.TestUtilities.createWeatherValues(locationRowId);
+        ContentValues photoValues = TestUtilities.createPhotoValues(venueRowId);
         // The TestContentObserver is a one-shot class
-        tco = com.example.android.sunshine.app.data.TestUtilities.getTestContentObserver();
+        tco = TestUtilities.getTestContentObserver();
 
-        mContext.getContentResolver().registerContentObserver(WeatherEntry.CONTENT_URI, true, tco);
+        mContext.getContentResolver().registerContentObserver(FoursquareContract.PhotoEntry.CONTENT_URI, true, tco);
 
         Uri weatherInsertUri = mContext.getContentResolver()
-                .insert(WeatherEntry.CONTENT_URI, weatherValues);
+                .insert(FoursquareContract.PhotoEntry.CONTENT_URI, photoValues);
         assertTrue(weatherInsertUri != null);
 
         // Did our content observer get called?  Students:  If this fails, your insert weather
@@ -339,54 +337,54 @@ public class TestProvider extends AndroidTestCase {
         mContext.getContentResolver().unregisterContentObserver(tco);
 
         // A cursor is your primary interface to the query results.
-        Cursor weatherCursor = mContext.getContentResolver().query(
-                WeatherEntry.CONTENT_URI,  // Table to Query
+        Cursor photoCursor = mContext.getContentResolver().query(
+                FoursquareContract.PhotoEntry.CONTENT_URI,  // Table to Query
                 null, // leaving "columns" null just returns all the columns.
                 null, // cols for "where" clause
                 null, // values for "where" clause
                 null // columns to group by
         );
 
-        com.example.android.sunshine.app.data.TestUtilities.validateCursor("testInsertReadProvider. Error validating WeatherEntry insert.",
-                weatherCursor, weatherValues);
+        TestUtilities.validateCursor("testInsertReadProvider. Error validating PhotoEntry insert.",
+                photoCursor, photoValues);
 
         // Add the location values in with the weather data so that we can make
         // sure that the join worked and we actually get all the values back
-        weatherValues.putAll(testValues);
+        photoValues.putAll(testValues);
 
         // Get the joined Weather and Location data
-        weatherCursor = mContext.getContentResolver().query(
-                WeatherEntry.buildWeatherLocation(com.example.android.sunshine.app.data.TestUtilities.TEST_LOCATION),
+        photoCursor = mContext.getContentResolver().query(
+                FoursquareContract.PhotoEntry.buildPhotoByVenueUri(VENUE_ID),
                 null, // leaving "columns" null just returns all the columns.
                 null, // cols for "where" clause
                 null, // values for "where" clause
                 null  // sort order
         );
-        com.example.android.sunshine.app.data.TestUtilities.validateCursor("testInsertReadProvider.  Error validating joined Weather and Location Data.",
-                weatherCursor, weatherValues);
+        TestUtilities.validateCursor("testInsertReadProvider.  Error validating joined photo Data.",
+                photoCursor, photoValues);
 
-        // Get the joined Weather and Location data with a start date
-        weatherCursor = mContext.getContentResolver().query(
-                WeatherEntry.buildWeatherLocationWithStartDate(
-                        com.example.android.sunshine.app.data.TestUtilities.TEST_LOCATION, com.example.android.sunshine.app.data.TestUtilities.TEST_DATE),
-                null, // leaving "columns" null just returns all the columns.
-                null, // cols for "where" clause
-                null, // values for "where" clause
-                null  // sort order
-        );
-        com.example.android.sunshine.app.data.TestUtilities.validateCursor("testInsertReadProvider.  Error validating joined Weather and Location Data with start date.",
-                weatherCursor, weatherValues);
-
-        // Get the joined Weather data for a specific date
-        weatherCursor = mContext.getContentResolver().query(
-                WeatherEntry.buildWeatherLocationWithDate(com.example.android.sunshine.app.data.TestUtilities.TEST_LOCATION, com.example.android.sunshine.app.data.TestUtilities.TEST_DATE),
-                null,
-                null,
-                null,
-                null
-        );
-        com.example.android.sunshine.app.data.TestUtilities.validateCursor("testInsertReadProvider.  Error validating joined Weather and Location data for a specific date.",
-                weatherCursor, weatherValues);
+//        // Get the joined Weather and Location data with a start date
+//        photoCursor = mContext.getContentResolver().query(
+//                FoursquareContract.PhotoEntry.buildWeatherLocationWithStartDate(
+//                        com.example.android.sunshine.app.data.TestUtilities.TEST_LOCATION, com.example.android.sunshine.app.data.TestUtilities.TEST_DATE),
+//                null, // leaving "columns" null just returns all the columns.
+//                null, // cols for "where" clause
+//                null, // values for "where" clause
+//                null  // sort order
+//        );
+//       TestUtilities.validateCursor("testInsertReadProvider.  Error validating joined Weather and Location Data with start date.",
+//                photoCursor, photoValues);
+//
+//        // Get the joined Weather data for a specific date
+//        photoCursor = mContext.getContentResolver().query(
+//                FoursquareContract.PhotoEntry.buildWeatherLocationWithDate(com.example.android.sunshine.app.data.TestUtilities.TEST_LOCATION, com.example.android.sunshine.app.data.TestUtilities.TEST_DATE),
+//                null,
+//                null,
+//                null,
+//                null
+//        );
+//        TestUtilities.validateCursor("testInsertReadProvider.  Error validating joined Weather and Location data for a specific date.",
+//                photoCursor, photoValues);
     }
 
     // Make sure we can still delete after adding/updating stuff
