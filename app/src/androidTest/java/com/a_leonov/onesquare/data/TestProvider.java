@@ -22,6 +22,7 @@ public class TestProvider extends AndroidTestCase {
     private static final double lat = 55.760437;
     private static final double lon = 37.577946;
     private static final String VENUE_ID = "412d2800f964a520df0c1fe3";
+    private static final long venue_row_id = 12;
     /*
        This helper function deletes all records from both database tables using the ContentProvider.
        It also queries the ContentProvider to make sure that the database has been successfully
@@ -146,7 +147,7 @@ public class TestProvider extends AndroidTestCase {
         assertEquals("Error: the PhotoEntry.CONTENT_URI should return CONTENT_TYPE",
                 FoursquareContract.PhotoEntry.CONTENT_TYPE, type);
 
-        type = mContext.getContentResolver().getType(FoursquareContract.PhotoEntry.buildPhotoUri(12));
+        type = mContext.getContentResolver().getType(FoursquareContract.PhotoEntry.buildPhotoUri(venue_row_id));
         // vnd.android.cursor.dir/com.example.android.sunshine.app/location
         assertEquals("Error: the PhotoEntry.buildPhotoUri(12) should return CONTENT_ITEM_TYPE",
                 FoursquareContract.PhotoEntry.CONTENT_ITEM_TYPE, type);
@@ -181,7 +182,7 @@ public class TestProvider extends AndroidTestCase {
 
         // Test the basic content provider query
         Cursor venueCursor = mContext.getContentResolver().query(
-                FoursquareContract.PhotoEntry.CONTENT_URI,
+                FoursquareContract.VenuesEntry.CONTENT_URI,
                 null,
                 null,
                 null,
@@ -202,7 +203,7 @@ public class TestProvider extends AndroidTestCase {
         FoursquareDbHelper dbHelper = new FoursquareDbHelper(mContext);
         SQLiteDatabase db = dbHelper.getWritableDatabase();
 
-        ContentValues photoValues = TestUtilities.createPhotoValues(33);
+        ContentValues photoValues = TestUtilities.createPhotoValues(venue_row_id);
         long photoRowId = TestUtilities.insertPhotoVenueValues(mContext);
 
         // Test the basic content provider query
@@ -363,78 +364,48 @@ public class TestProvider extends AndroidTestCase {
         TestUtilities.validateCursor("testInsertReadProvider.  Error validating joined photo Data.",
                 photoCursor, photoValues);
 
-//        // Get the joined Weather and Location data with a start date
-//        photoCursor = mContext.getContentResolver().query(
-//                FoursquareContract.PhotoEntry.buildWeatherLocationWithStartDate(
-//                        com.example.android.sunshine.app.data.TestUtilities.TEST_LOCATION, com.example.android.sunshine.app.data.TestUtilities.TEST_DATE),
-//                null, // leaving "columns" null just returns all the columns.
-//                null, // cols for "where" clause
-//                null, // values for "where" clause
-//                null  // sort order
-//        );
-//       TestUtilities.validateCursor("testInsertReadProvider.  Error validating joined Weather and Location Data with start date.",
-//                photoCursor, photoValues);
-//
-//        // Get the joined Weather data for a specific date
-//        photoCursor = mContext.getContentResolver().query(
-//                FoursquareContract.PhotoEntry.buildWeatherLocationWithDate(com.example.android.sunshine.app.data.TestUtilities.TEST_LOCATION, com.example.android.sunshine.app.data.TestUtilities.TEST_DATE),
-//                null,
-//                null,
-//                null,
-//                null
-//        );
-//        TestUtilities.validateCursor("testInsertReadProvider.  Error validating joined Weather and Location data for a specific date.",
-//                photoCursor, photoValues);
     }
 
-    // Make sure we can still delete after adding/updating stuff
-    //
-    // Student: Uncomment this test after you have completed writing the delete functionality
-    // in your provider.  It relies on insertions with testInsertReadProvider, so insert and
-    // query functionality must also be complete before this test can be used.
+
     public void testDeleteRecords() {
         testInsertReadProvider();
 
         // Register a content observer for our location delete.
-        com.example.android.sunshine.app.data.TestUtilities.TestContentObserver locationObserver = com.example.android.sunshine.app.data.TestUtilities.getTestContentObserver();
-        mContext.getContentResolver().registerContentObserver(LocationEntry.CONTENT_URI, true, locationObserver);
+       TestUtilities.TestContentObserver venueObserver = TestUtilities.getTestContentObserver();
+        mContext.getContentResolver().registerContentObserver(FoursquareContract.VenuesEntry.CONTENT_URI, true, venueObserver);
 
         // Register a content observer for our weather delete.
-        com.example.android.sunshine.app.data.TestUtilities.TestContentObserver weatherObserver = com.example.android.sunshine.app.data.TestUtilities.getTestContentObserver();
-        mContext.getContentResolver().registerContentObserver(WeatherEntry.CONTENT_URI, true, weatherObserver);
+        TestUtilities.TestContentObserver photoObserver = TestUtilities.getTestContentObserver();
+        mContext.getContentResolver().registerContentObserver(FoursquareContract.PhotoEntry.CONTENT_URI, true, photoObserver);
 
         deleteAllRecordsFromProvider();
 
         // Students: If either of these fail, you most-likely are not calling the
         // getContext().getContentResolver().notifyChange(uri, null); in the ContentProvider
         // delete.  (only if the insertReadProvider is succeeding)
-        locationObserver.waitForNotificationOrFail();
-        weatherObserver.waitForNotificationOrFail();
+        venueObserver.waitForNotificationOrFail();
+        photoObserver.waitForNotificationOrFail();
 
-        mContext.getContentResolver().unregisterContentObserver(locationObserver);
-        mContext.getContentResolver().unregisterContentObserver(weatherObserver);
+        mContext.getContentResolver().unregisterContentObserver(venueObserver);
+        mContext.getContentResolver().unregisterContentObserver(photoObserver);
     }
 
 
     static private final int BULK_INSERT_RECORDS_TO_INSERT = 10;
-    static ContentValues[] createBulkInsertWeatherValues(long locationRowId) {
-        long currentTestDate = com.example.android.sunshine.app.data.TestUtilities.TEST_DATE;
-        long millisecondsInADay = 1000*60*60*24;
+    static ContentValues[] createBulkInsertVenueValues(String Venue_Id) {
         ContentValues[] returnContentValues = new ContentValues[BULK_INSERT_RECORDS_TO_INSERT];
 
-        for ( int i = 0; i < BULK_INSERT_RECORDS_TO_INSERT; i++, currentTestDate+= millisecondsInADay ) {
-            ContentValues weatherValues = new ContentValues();
-            weatherValues.put(WeatherContract.WeatherEntry.COLUMN_LOC_KEY, locationRowId);
-            weatherValues.put(WeatherContract.WeatherEntry.COLUMN_DATE, currentTestDate);
-            weatherValues.put(WeatherContract.WeatherEntry.COLUMN_DEGREES, 1.1);
-            weatherValues.put(WeatherContract.WeatherEntry.COLUMN_HUMIDITY, 1.2 + 0.01 * (float) i);
-            weatherValues.put(WeatherContract.WeatherEntry.COLUMN_PRESSURE, 1.3 - 0.01 * (float) i);
-            weatherValues.put(WeatherContract.WeatherEntry.COLUMN_MAX_TEMP, 75 + i);
-            weatherValues.put(WeatherContract.WeatherEntry.COLUMN_MIN_TEMP, 65 - i);
-            weatherValues.put(WeatherContract.WeatherEntry.COLUMN_SHORT_DESC, "Asteroids");
-            weatherValues.put(WeatherContract.WeatherEntry.COLUMN_WIND_SPEED, 5.5 + 0.2 * (float) i);
-            weatherValues.put(WeatherContract.WeatherEntry.COLUMN_WEATHER_ID, 321);
-            returnContentValues[i] = weatherValues;
+        for ( int i = 0; i < BULK_INSERT_RECORDS_TO_INSERT; i++) {
+            ContentValues venueValues = new ContentValues();
+            venueValues.put(FoursquareContract.VenuesEntry.COLUMN_VEN_KEY, Venue_Id);
+            venueValues.put(FoursquareContract.VenuesEntry.COLUMN_NAME, "Starbuks #" + String.valueOf(i));
+            venueValues.put(FoursquareContract.VenuesEntry.COLUMN_CITY, "Moscow");
+            venueValues.put(FoursquareContract.VenuesEntry.COLUMN_POSTALCODE, "123103");
+            venueValues.put(FoursquareContract.VenuesEntry.COLUMN_CC, "RU");
+            venueValues.put(FoursquareContract.VenuesEntry.COLUMN_COUNTRY, "Russia");
+            venueValues.put(FoursquareContract.VenuesEntry.COLUMN_COORD_LAT, String.valueOf(55.343 + (1/(i+0.1))));
+            venueValues.put(FoursquareContract.VenuesEntry.COLUMN_COORD_LONG, String.valueOf(37.433 + (1/(i+0.1))));
+            returnContentValues[i] = venueValues;
         }
         return returnContentValues;
     }
@@ -444,55 +415,27 @@ public class TestProvider extends AndroidTestCase {
     // implementation, which just inserts records one-at-a-time, so really do implement the
     // BulkInsert ContentProvider function.
     public void testBulkInsert() {
-        // first, let's create a location value
-        ContentValues testValues = com.example.android.sunshine.app.data.TestUtilities.createNorthPoleLocationValues();
-        Uri locationUri = mContext.getContentResolver().insert(LocationEntry.CONTENT_URI, testValues);
-        long locationRowId = ContentUris.parseId(locationUri);
 
-        // Verify we got a row back.
-        assertTrue(locationRowId != -1);
-
-        // Data's inserted.  IN THEORY.  Now pull some out to stare at it and verify it made
-        // the round trip.
-
-        // A cursor is your primary interface to the query results.
-        Cursor cursor = mContext.getContentResolver().query(
-                LocationEntry.CONTENT_URI,
-                null, // leaving "columns" null just returns all the columns.
-                null, // cols for "where" clause
-                null, // values for "where" clause
-                null  // sort order
-        );
-
-        com.example.android.sunshine.app.data.TestUtilities.validateCursor("testBulkInsert. Error validating LocationEntry.",
-                cursor, testValues);
-
-        // Now we can bulkInsert some weather.  In fact, we only implement BulkInsert for weather
-        // entries.  With ContentProviders, you really only have to implement the features you
-        // use, after all.
-        ContentValues[] bulkInsertContentValues = createBulkInsertWeatherValues(locationRowId);
+        ContentValues[] bulkInsertContentValues = createBulkInsertVenueValues(VENUE_ID);
 
         // Register a content observer for our bulk insert.
-        com.example.android.sunshine.app.data.TestUtilities.TestContentObserver weatherObserver = com.example.android.sunshine.app.data.TestUtilities.getTestContentObserver();
-        mContext.getContentResolver().registerContentObserver(WeatherEntry.CONTENT_URI, true, weatherObserver);
+        TestUtilities.TestContentObserver venueObserver = TestUtilities.getTestContentObserver();
+        mContext.getContentResolver().registerContentObserver(FoursquareContract.VenuesEntry.CONTENT_URI, true, venueObserver);
 
-        int insertCount = mContext.getContentResolver().bulkInsert(WeatherEntry.CONTENT_URI, bulkInsertContentValues);
+        int insertCount = mContext.getContentResolver().bulkInsert(FoursquareContract.VenuesEntry.CONTENT_URI, bulkInsertContentValues);
 
-        // Students:  If this fails, it means that you most-likely are not calling the
-        // getContext().getContentResolver().notifyChange(uri, null); in your BulkInsert
-        // ContentProvider method.
-        weatherObserver.waitForNotificationOrFail();
-        mContext.getContentResolver().unregisterContentObserver(weatherObserver);
+        venueObserver.waitForNotificationOrFail();
+        mContext.getContentResolver().unregisterContentObserver(venueObserver);
 
         assertEquals(insertCount, BULK_INSERT_RECORDS_TO_INSERT);
 
         // A cursor is your primary interface to the query results.
-        cursor = mContext.getContentResolver().query(
-                WeatherEntry.CONTENT_URI,
+        Cursor cursor = mContext.getContentResolver().query(
+                FoursquareContract.VenuesEntry.CONTENT_URI,
                 null, // leaving "columns" null just returns all the columns.
                 null, // cols for "where" clause
                 null, // values for "where" clause
-                WeatherEntry.COLUMN_DATE + " ASC"  // sort order == by DATE ASCENDING
+                null  // sort order == by DATE ASCENDING
         );
 
         // we should have as many records in the database as we've inserted
@@ -501,7 +444,7 @@ public class TestProvider extends AndroidTestCase {
         // and let's make sure they match the ones we created
         cursor.moveToFirst();
         for ( int i = 0; i < BULK_INSERT_RECORDS_TO_INSERT; i++, cursor.moveToNext() ) {
-            com.example.android.sunshine.app.data.TestUtilities.validateCurrentRecord("testBulkInsert.  Error validating WeatherEntry " + i,
+            TestUtilities.validateCurrentRecord("testBulkInsert.  Error validating VenuesEntry " + i,
                     cursor, bulkInsertContentValues[i]);
         }
         cursor.close();

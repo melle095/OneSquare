@@ -17,6 +17,7 @@ import java.util.Set;
 
 public class TestUtilities extends AndroidTestCase {
     static final String TEST_VENUE_ID = "412d2800f964a520df0c1fe3";
+    private static final long venue_row_id = 12;
     //static final String TEST_QUERY = "coffee";
 
     static void validateCursor(String error, Cursor valueCursor, ContentValues expectedValues) {
@@ -97,7 +98,7 @@ public class TestUtilities extends AndroidTestCase {
         // insert our test records into the database
         FoursquareDbHelper dbHelper = new FoursquareDbHelper(context);
         SQLiteDatabase db = dbHelper.getWritableDatabase();
-        ContentValues photoValues = TestUtilities.createPhotoValues(12);
+        ContentValues photoValues = TestUtilities.createPhotoValues(venue_row_id);
 
         long photoRowId;
         photoRowId = db.insert(FoursquareContract.PhotoEntry.TABLE_NAME, null, photoValues);

@@ -228,7 +228,7 @@ public class VenueProvider extends ContentProvider {
         Uri returnUri;
 
         switch (match) {
-            case VENUE: {
+            case VENUES: {
                 long _id = db.insert(FoursquareContract.VenuesEntry.TABLE_NAME, null, contentValues);
                 if ( _id > 0 )
                     returnUri = FoursquareContract.VenuesEntry.buildVenuesUri(_id);
@@ -236,7 +236,7 @@ public class VenueProvider extends ContentProvider {
                     throw new android.database.SQLException("Failed to insert row into " + uri);
                 break;
             }
-            case PHOTO: {
+            case PHOTOS: {
                 long _id = db.insert(FoursquareContract.PhotoEntry.TABLE_NAME, null, contentValues);
                 if ( _id > 0 )
                     returnUri = FoursquareContract.PhotoEntry.buildPhotoUri(_id);
@@ -260,11 +260,11 @@ public class VenueProvider extends ContentProvider {
         // this makes delete all rows return the number of rows deleted
         if ( null == selection ) selection = "1";
         switch (match) {
-            case VENUE:
+            case VENUES:
                 rowsDeleted = db.delete(
                         FoursquareContract.VenuesEntry.TABLE_NAME, selection, selectionArgs);
                 break;
-            case PHOTO:
+            case PHOTOS:
                 rowsDeleted = db.delete(
                         FoursquareContract.PhotoEntry.TABLE_NAME, selection, selectionArgs);
                 break;
@@ -285,11 +285,11 @@ public class VenueProvider extends ContentProvider {
         int rowsUpdated;
 
         switch (match) {
-            case VENUE:
+            case VENUES:
                 rowsUpdated = db.update(FoursquareContract.VenuesEntry.TABLE_NAME, values, selection,
                         selectionArgs);
                 break;
-            case PHOTO:
+            case PHOTOS:
                 rowsUpdated = db.update(FoursquareContract.PhotoEntry.TABLE_NAME, values, selection,
                         selectionArgs);
                 break;
