@@ -4,11 +4,9 @@ import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
-import static com.a_leonov.onesquare.data.FoursquareContract.VenuesEntry.COLUMN_VEN_KEY;
-
 public class FoursquareDbHelper extends SQLiteOpenHelper {
 
-    private static final int DATABASE_VERSION = 2;
+    private static final int DATABASE_VERSION = 6;
 
     static final String DATABASE_NAME = "venues.db";
 
@@ -20,9 +18,9 @@ public class FoursquareDbHelper extends SQLiteOpenHelper {
     public void onCreate(SQLiteDatabase sqLiteDatabase) {
 
         final String SQL_CREATE_PHOTO_TABLE = "CREATE TABLE " + FoursquareContract.PhotoEntry.TABLE_NAME + " (" +
-                FoursquareContract.PhotoEntry._ID + " INTEGER PRIMARY KEY," +
+                FoursquareContract.PhotoEntry._ID + " INTEGER PRIMARY KEY AUTOINCREMENT," +
                 FoursquareContract.PhotoEntry.COLUMN_HEIGHT + " INTEGER , " +
-                FoursquareContract.PhotoEntry.COLUMN_WIDTH + " INTEGER , " +
+                FoursquareContract.PhotoEntry.COLUMN_WIDTH  + " INTEGER , " +
                 FoursquareContract.PhotoEntry.COLUMN_PREFIX + " TEXT , " +
                 FoursquareContract.PhotoEntry.COLUMN_SOURCE + " TEXT , " +
                 FoursquareContract.PhotoEntry.COLUMN_SUFFIX + " TEXT , " +
@@ -37,7 +35,7 @@ public class FoursquareDbHelper extends SQLiteOpenHelper {
 
         final String SQL_CREATE_VENUES_TABLE = "CREATE TABLE " + FoursquareContract.VenuesEntry.TABLE_NAME + " (" +
 
-                FoursquareContract.VenuesEntry._ID + " INTEGER PRIMARY KEY ," +
+                FoursquareContract.VenuesEntry._ID + " INTEGER PRIMARY KEY AUTOINCREMENT," +
                 FoursquareContract.VenuesEntry.COLUMN_VEN_KEY + " CHAR NOT NULL ," +
                 FoursquareContract.VenuesEntry.COLUMN_NAME + " TEXT NOT NULL, " +
                 FoursquareContract.VenuesEntry.COLUMN_CATERGORY + "TEXT ," +
@@ -62,9 +60,9 @@ public class FoursquareDbHelper extends SQLiteOpenHelper {
                 FoursquareContract.VenuesEntry.COLUMN_COORD_LAT + " REAL NOT NULL, " +
                 FoursquareContract.VenuesEntry.COLUMN_COORD_LONG + " REAL NOT NULL, " +
                 FoursquareContract.VenuesEntry.COLUMN_STATE + " TEXT , " +
-                FoursquareContract.VenuesEntry.COLUMN_COUNTRY + " TEXT NOT NULL ," +
+                FoursquareContract.VenuesEntry.COLUMN_COUNTRY + " TEXT NOT NULL, " +
 
-                " UNIQUE (" + COLUMN_VEN_KEY + ") ON CONFLICT REPLACE);";
+                " UNIQUE (" + FoursquareContract.VenuesEntry.COLUMN_VEN_KEY + ") ON CONFLICT REPLACE);";
 
         sqLiteDatabase.execSQL(SQL_CREATE_VENUES_TABLE);
         sqLiteDatabase.execSQL(SQL_CREATE_PHOTO_TABLE);

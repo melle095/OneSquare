@@ -5,12 +5,14 @@ import android.content.ContentProvider;
 import android.content.ContentValues;
 import android.content.UriMatcher;
 import android.database.Cursor;
+import android.database.DatabaseUtils;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteQueryBuilder;
 import android.graphics.PointF;
 import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.util.Log;
 
 
 public class VenueProvider extends ContentProvider {
@@ -35,7 +37,7 @@ public class VenueProvider extends ContentProvider {
 
         sVenuesQueryBuilder.setTables(
                 FoursquareContract.VenuesEntry.TABLE_NAME + " LEFT JOIN " +
-                        FoursquareContract.VenuesEntry.TABLE_NAME +
+                        FoursquareContract.PhotoEntry.TABLE_NAME +
                         " ON " + FoursquareContract.VenuesEntry.TABLE_NAME +
                         "." + FoursquareContract.VenuesEntry._ID +
                         " = " + FoursquareContract.PhotoEntry.TABLE_NAME +
@@ -98,7 +100,7 @@ public class VenueProvider extends ContentProvider {
     }
 
     private Cursor getPhotoByVenue(Uri uri, String[] projection, String sortOrder) {
-        String venue_id = uri.getPathSegments().get(1);
+        String venue_id = uri.getPathSegments().get(2);
 
         String[] selectionArgs;
         String selection;
@@ -106,7 +108,8 @@ public class VenueProvider extends ContentProvider {
         selectionArgs = new String[]{venue_id};
         selection = sPhotoByVenueIDSelection;
 
-        return sVenuesQueryBuilder.query(mOpenHelper.getReadableDatabase(),
+        return mOpenHelper.getReadableDatabase().query(
+                FoursquareContract.PhotoEntry.TABLE_NAME,
                 projection,
                 selection,
                 selectionArgs,
@@ -154,6 +157,9 @@ public class VenueProvider extends ContentProvider {
         Cursor retCursor;
         switch (sUriMatcher.match(uri)) {
             case VENUES: {
+//                Log.d(getClass().getSimpleName()," Query matches VENUES");
+//                Log.d(getClass().getSimpleName()," Query param: uri-"+uri.toString() + "; projection: "+ projection.toString() + "; selection:" + selection + "; selArgs:" + selectionArgs.toString());
+
                 retCursor = mOpenHelper.getReadableDatabase().query(
                         FoursquareContract.VenuesEntry.TABLE_NAME,
                         projection,
@@ -166,6 +172,7 @@ public class VenueProvider extends ContentProvider {
                 break;
             }
             case VENUE:{
+//                Log.d(getClass().getSimpleName()," Query matches VENUE");
                 retCursor = getVenueById(uri, projection,sortOrder);
                 break;
             }
@@ -179,6 +186,7 @@ public class VenueProvider extends ContentProvider {
             }
             case PHOTOS_BY_VENUE: {
                 retCursor = getPhotoByVenue(uri, projection, sortOrder);
+                Log.d(getClass().getSimpleName(), "VenueProvider: " + DatabaseUtils.dumpCursorToString(retCursor));
                 break;
             }
             case PHOTOS: {
@@ -235,6 +243,7 @@ public class VenueProvider extends ContentProvider {
                 else
                     throw new android.database.SQLException("Failed to insert row into " + uri);
                 break;
+
             }
             case PHOTOS: {
                 long _id = db.insert(FoursquareContract.PhotoEntry.TABLE_NAME, null, contentValues);
@@ -306,8 +315,10 @@ public class VenueProvider extends ContentProvider {
     public int bulkInsert(Uri uri, ContentValues[] values) {
         final SQLiteDatabase db = mOpenHelper.getWritableDatabase();
         final int match = sUriMatcher.match(uri);
+        Log.d(getClass().getSimpleName()," bunkinsert begin!");
         switch (match) {
-            case VENUE:
+            case VENUES:
+                Log.d(getClass().getSimpleName()," bunkinsert match VENUES!");
                 db.beginTransaction();
                 int returnCount = 0;
                 try {
@@ -315,6 +326,7 @@ public class VenueProvider extends ContentProvider {
                         long _id = db.insert(FoursquareContract.VenuesEntry.TABLE_NAME, null, value);
                         if (_id != -1) {
                             returnCount++;
+                            Log.d(getClass().getSimpleName()," bunkinsert#"+String.valueOf(returnCount)+" added _id:"+String.valueOf(_id));
                         }
                     }
                     db.setTransactionSuccessful();
@@ -322,7 +334,11 @@ public class VenueProvider extends ContentProvider {
                     db.endTransaction();
                 }
                 getContext().getContentResolver().notifyChange(uri, null);
+
+                Cursor testcursor = db.query(FoursquareContract.VenuesEntry.TABLE_NAME,null,null,null,null,null,null);
+                Log.d(getClass().getSimpleName(),"Dump cursor: " + DatabaseUtils.dumpCursorToString(testcursor));
                 return returnCount;
+            case PHOTOS: {}
             default:
                 return super.bulkInsert(uri, values);
         }

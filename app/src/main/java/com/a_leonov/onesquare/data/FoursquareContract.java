@@ -30,7 +30,7 @@ public class FoursquareContract {
 
         public static final String TABLE_NAME = "venues";
 
-        public static final String COLUMN_VEN_KEY = "venue_id";
+        public static final String COLUMN_VEN_KEY = "venue_key_id";
         public static final String COLUMN_NAME = "name";
         public static final String COLUMN_CATERGORY = "category";
         public static final String COLUMN_PHONE = "phone";

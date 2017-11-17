@@ -8,6 +8,7 @@ import android.content.ContentValues;
 import android.content.pm.PackageManager;
 import android.content.pm.ProviderInfo;
 import android.database.Cursor;
+import android.database.DatabaseUtils;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.os.Build;
@@ -327,9 +328,8 @@ public class TestProvider extends AndroidTestCase {
 
         mContext.getContentResolver().registerContentObserver(FoursquareContract.PhotoEntry.CONTENT_URI, true, tco);
 
-        Uri weatherInsertUri = mContext.getContentResolver()
-                .insert(FoursquareContract.PhotoEntry.CONTENT_URI, photoValues);
-        assertTrue(weatherInsertUri != null);
+        Uri photoInsertUri = mContext.getContentResolver().insert(FoursquareContract.PhotoEntry.CONTENT_URI, photoValues);
+        assertTrue(photoInsertUri != null);
 
         // Did our content observer get called?  Students:  If this fails, your insert weather
         // in your ContentProvider isn't calling
@@ -355,12 +355,16 @@ public class TestProvider extends AndroidTestCase {
 
         // Get the joined Weather and Location data
         photoCursor = mContext.getContentResolver().query(
-                FoursquareContract.PhotoEntry.buildPhotoByVenueUri(VENUE_ID),
+                FoursquareContract.VenuesEntry.buildVenuesUri(venueRowId),
                 null, // leaving "columns" null just returns all the columns.
                 null, // cols for "where" clause
                 null, // values for "where" clause
                 null  // sort order
         );
+
+        Log.d(getClass().getSimpleName(), "TestProvider: " + DatabaseUtils.dumpCursorToString(photoCursor));
+        Log.d(getClass().getSimpleName(), "TestValue: " + photoValues.toString());
+
         TestUtilities.validateCursor("testInsertReadProvider.  Error validating joined photo Data.",
                 photoCursor, photoValues);
 
@@ -397,14 +401,14 @@ public class TestProvider extends AndroidTestCase {
 
         for ( int i = 0; i < BULK_INSERT_RECORDS_TO_INSERT; i++) {
             ContentValues venueValues = new ContentValues();
-            venueValues.put(FoursquareContract.VenuesEntry.COLUMN_VEN_KEY, Venue_Id);
+            venueValues.put(FoursquareContract.VenuesEntry.COLUMN_VEN_KEY, Venue_Id + String.valueOf(i));
             venueValues.put(FoursquareContract.VenuesEntry.COLUMN_NAME, "Starbuks #" + String.valueOf(i));
             venueValues.put(FoursquareContract.VenuesEntry.COLUMN_CITY, "Moscow");
             venueValues.put(FoursquareContract.VenuesEntry.COLUMN_POSTALCODE, "123103");
             venueValues.put(FoursquareContract.VenuesEntry.COLUMN_CC, "RU");
             venueValues.put(FoursquareContract.VenuesEntry.COLUMN_COUNTRY, "Russia");
-            venueValues.put(FoursquareContract.VenuesEntry.COLUMN_COORD_LAT, String.valueOf(55.343 + (1/(i+0.1))));
-            venueValues.put(FoursquareContract.VenuesEntry.COLUMN_COORD_LONG, String.valueOf(37.433 + (1/(i+0.1))));
+            venueValues.put(FoursquareContract.VenuesEntry.COLUMN_COORD_LAT, String.valueOf(55.34));
+            venueValues.put(FoursquareContract.VenuesEntry.COLUMN_COORD_LONG, String.valueOf(37.43));
             returnContentValues[i] = venueValues;
         }
         return returnContentValues;
@@ -437,6 +441,8 @@ public class TestProvider extends AndroidTestCase {
                 null, // values for "where" clause
                 null  // sort order == by DATE ASCENDING
         );
+
+//        Log.d(getClass().getSimpleName(),"Dump cursor: " + DatabaseUtils.dumpCursorToString(cursor));
 
         // we should have as many records in the database as we've inserted
         assertEquals(cursor.getCount(), BULK_INSERT_RECORDS_TO_INSERT);
