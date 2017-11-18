@@ -6,7 +6,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 
 public class FoursquareDbHelper extends SQLiteOpenHelper {
 
-    private static final int DATABASE_VERSION = 6;
+    private static final int DATABASE_VERSION = 10;
 
     static final String DATABASE_NAME = "venues.db";
 
@@ -38,7 +38,6 @@ public class FoursquareDbHelper extends SQLiteOpenHelper {
                 FoursquareContract.VenuesEntry._ID + " INTEGER PRIMARY KEY AUTOINCREMENT," +
                 FoursquareContract.VenuesEntry.COLUMN_VEN_KEY + " CHAR NOT NULL ," +
                 FoursquareContract.VenuesEntry.COLUMN_NAME + " TEXT NOT NULL, " +
-                FoursquareContract.VenuesEntry.COLUMN_CATERGORY + "TEXT ," +
                 FoursquareContract.VenuesEntry.COLUMN_PHONE + " TEXT, " +
                 FoursquareContract.VenuesEntry.COLUMN_FORMATTEDPHONE + " TEXT , " +
                 FoursquareContract.VenuesEntry.COLUMN_TWITTER + " TEXT , " +
@@ -61,6 +60,7 @@ public class FoursquareDbHelper extends SQLiteOpenHelper {
                 FoursquareContract.VenuesEntry.COLUMN_COORD_LONG + " REAL NOT NULL, " +
                 FoursquareContract.VenuesEntry.COLUMN_STATE + " TEXT , " +
                 FoursquareContract.VenuesEntry.COLUMN_COUNTRY + " TEXT NOT NULL, " +
+                FoursquareContract.VenuesEntry.COLUMN_CATERGORY + " CHAR ," +
 
                 " UNIQUE (" + FoursquareContract.VenuesEntry.COLUMN_VEN_KEY + ") ON CONFLICT REPLACE);";
 

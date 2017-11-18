@@ -50,16 +50,17 @@ public class VenueProvider extends ContentProvider {
                     "." + FoursquareContract.VenuesEntry._ID + " = ? ";
 
     private static final String sVenueByCitySelection =
-            FoursquareContract.VenuesEntry.TABLE_NAME+
-                    "." + FoursquareContract.VenuesEntry.COLUMN_CITY + " = ? ";
+            FoursquareContract.VenuesEntry.TABLE_NAME + "." + FoursquareContract.VenuesEntry.COLUMN_CATERGORY + " = ? AND " +
+            FoursquareContract.VenuesEntry.COLUMN_CITY + " = ?";
 
     private static final String sPhotoByVenueIDSelection =
             FoursquareContract.PhotoEntry.TABLE_NAME +
                     "." + FoursquareContract.PhotoEntry.COLUMN_VENUE_ID + " = ? ";
 
     private static final String sVenueNearSelection =
+            " ( " + FoursquareContract.VenuesEntry.TABLE_NAME + "." + FoursquareContract.VenuesEntry.COLUMN_CATERGORY + " = ? ) AND " +
             " ( " + FoursquareContract.VenuesEntry.TABLE_NAME + "." + FoursquareContract.VenuesEntry.COLUMN_COORD_LAT  + " BETWEEN ? AND ? ) AND (" +
-            FoursquareContract.VenuesEntry.TABLE_NAME + "." + FoursquareContract.VenuesEntry.COLUMN_COORD_LONG + " BETWEEN ? AND ? )";
+            FoursquareContract.VenuesEntry.TABLE_NAME + "." + FoursquareContract.VenuesEntry.COLUMN_COORD_LONG + " BETWEEN ? AND ?";
 
     private Cursor getVenueById(Uri uri, String[] projection, String sortOrder) {
         String venueId = uri.getPathSegments().get(1);
@@ -81,12 +82,13 @@ public class VenueProvider extends ContentProvider {
     }
 
     private Cursor getVenueByCity(Uri uri, String[] projection, String sortOrder) {
-        String venue_city = uri.getPathSegments().get(1);
+        String category = uri.getPathSegments().get(1);
+        String venue_city = uri.getPathSegments().get(3);
 
         String[] selectionArgs;
         String selection;
 
-        selectionArgs = new String[]{venue_city};
+        selectionArgs = new String[]{category, venue_city};
         selection = sVenueByCitySelection;
 
         return sVenuesQueryBuilder.query(mOpenHelper.getReadableDatabase(),
@@ -115,13 +117,13 @@ public class VenueProvider extends ContentProvider {
                 selectionArgs,
                 null,
                 null,
-                sortOrder
-        );
+                sortOrder);
     }
 
     private Cursor getVenueNear(Uri uri, String[] projection, String sortOrder) {
-        float current_lon = Long.parseLong(uri.getPathSegments().get(1));
-        float current_lat = Long.parseLong(uri.getPathSegments().get(2));
+        String category = uri.getPathSegments().get(1);
+        float current_lon = Long.parseLong(uri.getPathSegments().get(3));
+        float current_lat = Long.parseLong(uri.getPathSegments().get(4));
 
         PointF center = new PointF(current_lat, current_lon);
         final double mult = 1; // mult = 1.1; is more reliable
@@ -132,7 +134,7 @@ public class VenueProvider extends ContentProvider {
 
         String[] selectionArgs;
         String selection;
-        selectionArgs = new String[]{String.valueOf(p1.y), String.valueOf(p3.y),String.valueOf(p4.x),String.valueOf(p2.x)};
+        selectionArgs = new String[]{category, String.valueOf(p1.y), String.valueOf(p3.y),String.valueOf(p4.x),String.valueOf(p2.x)};
         selection = sVenueNearSelection;
 
         return sVenuesQueryBuilder.query(mOpenHelper.getReadableDatabase(),
@@ -216,11 +218,15 @@ public class VenueProvider extends ContentProvider {
             // Student: Uncomment and fill out these two cases
             case VENUE:
                 return FoursquareContract.VenuesEntry.CONTENT_ITEM_TYPE;
+            case VENUES:
+                return FoursquareContract.VenuesEntry.CONTENT_TYPE;
             case VENUES_BY_GPS:
                 return FoursquareContract.VenuesEntry.CONTENT_TYPE;
             case VENUES_BY_CITY:
                 return FoursquareContract.VenuesEntry.CONTENT_TYPE;
             case PHOTO:
+                return FoursquareContract.PhotoEntry.CONTENT_ITEM_TYPE;
+            case PHOTOS:
                 return FoursquareContract.PhotoEntry.CONTENT_TYPE;
             case PHOTOS_BY_VENUE:
                 return FoursquareContract.PhotoEntry.CONTENT_TYPE;
@@ -351,8 +357,8 @@ public class VenueProvider extends ContentProvider {
 
         matcher.addURI(authority, FoursquareContract.PATH_VENUES, VENUES);
         matcher.addURI(authority, FoursquareContract.PATH_VENUES + "/#", VENUE);
-        matcher.addURI(authority, FoursquareContract.PATH_VENUES + "/city/*", VENUES_BY_CITY);
-        matcher.addURI(authority, FoursquareContract.PATH_VENUES + "/geo/*/*", VENUES_BY_GPS);
+        matcher.addURI(authority, FoursquareContract.PATH_VENUES + "/*/city/*", VENUES_BY_CITY);
+        matcher.addURI(authority, FoursquareContract.PATH_VENUES + "/*/geo/*/*", VENUES_BY_GPS);
         matcher.addURI(authority, FoursquareContract.PATH_PHOTO, PHOTOS);
         matcher.addURI(authority, FoursquareContract.PATH_PHOTO + "/#", PHOTO);
         matcher.addURI(authority, FoursquareContract.PATH_PHOTO + "/venue_id/*", PHOTOS_BY_VENUE);

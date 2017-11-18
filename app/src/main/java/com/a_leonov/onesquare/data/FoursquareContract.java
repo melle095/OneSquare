@@ -32,7 +32,7 @@ public class FoursquareContract {
 
         public static final String COLUMN_VEN_KEY = "venue_key_id";
         public static final String COLUMN_NAME = "name";
-        public static final String COLUMN_CATERGORY = "category";
+        public static final String COLUMN_CATERGORY = "venue_category";
         public static final String COLUMN_PHONE = "phone";
         public static final String COLUMN_FORMATTEDPHONE = "formattedPhone";
         public static final String COLUMN_TWITTER = "twitter";
@@ -63,16 +63,18 @@ public class FoursquareContract {
             return ContentUris.withAppendedId(CONTENT_URI, id);
         }
 
-        public static Uri buildVenuesGPSUri(double lat, double lon) {
+        public static Uri buildVenuesGPSUri(String cat, double lat, double lon) {
             return CONTENT_URI.buildUpon()
+                    .appendPath(cat)
                     .appendPath("geo")
                     .appendPath(String.valueOf(lat))
                     .appendPath(String.valueOf(lon))
                     .build();
         }
 
-        public static Uri buildVenueCityUri(String city) {
+        public static Uri buildVenueCityUri(String cat, String city) {
             return CONTENT_URI.buildUpon()
+                    .appendPath(cat)
                     .appendPath("city")
                     .appendPath(city)
                     .build();

@@ -13,8 +13,8 @@ public class TestUriMatcher extends AndroidTestCase {
     // content://com.example.android.sunshine.app/weather"
     private static final Uri TEST_VENUE = FoursquareContract.VenuesEntry.buildVenuesUri(12);
     private static final Uri TEST_VENUE_DIR = FoursquareContract.VenuesEntry.CONTENT_URI;
-    private static final Uri TEST_VENUE_GPS = FoursquareContract.VenuesEntry.buildVenuesGPSUri(lat, lon);
-    private static final Uri TEST_VENUE_BY_CITY = FoursquareContract.VenuesEntry.buildVenueCityUri(CITY_QUERY);
+    private static final Uri TEST_VENUE_GPS = FoursquareContract.VenuesEntry.buildVenuesGPSUri(FoursquareContract.CATEGORY_COFFEE, lat, lon);
+    private static final Uri TEST_VENUE_BY_CITY = FoursquareContract.VenuesEntry.buildVenueCityUri(FoursquareContract.CATEGORY_COFFEE, CITY_QUERY);
     // content://com.example.android.sunshine.app/location"
     private static final Uri TEST_PHOTO = FoursquareContract.PhotoEntry.buildPhotoUri(20);
     private static final Uri TEST_PHOTO_DIR = FoursquareContract.PhotoEntry.CONTENT_URI;
