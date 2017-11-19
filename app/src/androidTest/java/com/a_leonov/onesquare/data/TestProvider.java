@@ -20,8 +20,8 @@ public class TestProvider extends AndroidTestCase {
 
     public static final String LOG_TAG = TestProvider.class.getSimpleName();
     private static final String CITY_QUERY = "Moscow";
-    private static final double lat = 55.760437;
-    private static final double lon = 37.577946;
+    private static final double lat = 55.7604;
+    private static final double lon = 37.5779;
     private static final String VENUE_ID = "412d2800f964a520df0c1fe3";
     private static final long venue_row_id = 12;
     /*
@@ -221,6 +221,35 @@ public class TestProvider extends AndroidTestCase {
 
         // Make sure we get the correct cursor out of the database
         TestUtilities.validateCursor("testCityVenueQuery", venueCursor, venuesValues);
+    }
+
+    public void testNearVenueQuery() {
+        // insert our test records into the database
+        FoursquareDbHelper dbHelper = new FoursquareDbHelper(mContext);
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
+
+        ContentValues venuesValues = TestUtilities.createVenuesValues(VENUE_ID);
+        long venueRowId = TestUtilities.insertVenueValues(mContext);
+
+        // Fantastic.  Now that we have a location, add some weather!
+        ContentValues photoValues = TestUtilities.createPhotoValues(venueRowId);
+
+        long photoRowId = db.insert(FoursquareContract.PhotoEntry.TABLE_NAME, null, photoValues);
+        assertTrue("Unable to Insert photoEntry into the Database", photoRowId != -1);
+
+        db.close();
+
+        // Test the basic content provider query
+        Cursor venueCursor = mContext.getContentResolver().query(
+                FoursquareContract.VenuesEntry.buildVenuesGPSUri(FoursquareContract.CATEGORY_COFFEE, lat, lon),
+                null,
+                null,
+                null,
+                null
+        );
+
+        // Make sure we get the correct cursor out of the database
+        TestUtilities.validateCursor("testNearVenueQuery", venueCursor, venuesValues);
     }
 
 

@@ -20,19 +20,19 @@ public class VenueProvider extends ContentProvider {
     private static final UriMatcher sUriMatcher = buildUriMatcher();
     private FoursquareDbHelper mOpenHelper;
 
-    static final int VENUE          = 100;
-    static final int VENUES         = 105;
-    static final int VENUES_BY_GPS  = 110;
+    static final int VENUE = 100;
+    static final int VENUES = 105;
+    static final int VENUES_BY_GPS = 110;
     static final int VENUES_BY_CITY = 115;
-    static final int PHOTO          = 120;
-    static final int PHOTOS         = 121;
+    static final int PHOTO = 120;
+    static final int PHOTOS = 121;
     static final int PHOTOS_BY_VENUE = 125;
 
     static final double radius = 500;
 
     private static final SQLiteQueryBuilder sVenuesQueryBuilder;
 
-    static{
+    static {
         sVenuesQueryBuilder = new SQLiteQueryBuilder();
 
         sVenuesQueryBuilder.setTables(
@@ -46,21 +46,24 @@ public class VenueProvider extends ContentProvider {
 
 
     private static final String sVenueIDSelection =
-            FoursquareContract.VenuesEntry.TABLE_NAME+
+            FoursquareContract.VenuesEntry.TABLE_NAME +
                     "." + FoursquareContract.VenuesEntry._ID + " = ? ";
 
     private static final String sVenueByCitySelection =
             FoursquareContract.VenuesEntry.TABLE_NAME + "." + FoursquareContract.VenuesEntry.COLUMN_CATERGORY + " = ? AND " +
-            FoursquareContract.VenuesEntry.COLUMN_CITY + " = ?";
+                    FoursquareContract.VenuesEntry.COLUMN_CITY + " = ?";
 
     private static final String sPhotoByVenueIDSelection =
             FoursquareContract.PhotoEntry.TABLE_NAME +
                     "." + FoursquareContract.PhotoEntry.COLUMN_VENUE_ID + " = ? ";
 
     private static final String sVenueNearSelection =
-            " ( " + FoursquareContract.VenuesEntry.TABLE_NAME + "." + FoursquareContract.VenuesEntry.COLUMN_CATERGORY + " = ? ) AND " +
-            " ( " + FoursquareContract.VenuesEntry.TABLE_NAME + "." + FoursquareContract.VenuesEntry.COLUMN_COORD_LAT  + " BETWEEN ? AND ? ) AND (" +
-            FoursquareContract.VenuesEntry.TABLE_NAME + "." + FoursquareContract.VenuesEntry.COLUMN_COORD_LONG + " BETWEEN ? AND ?";
+            FoursquareContract.VenuesEntry.TABLE_NAME + "." +
+                    FoursquareContract.VenuesEntry.COLUMN_CATERGORY + " = ? AND " +
+                    FoursquareContract.VenuesEntry.COLUMN_COORD_LAT + " > ? AND " +
+                    FoursquareContract.VenuesEntry.COLUMN_COORD_LAT + " < ? AND " +
+                    FoursquareContract.VenuesEntry.COLUMN_COORD_LONG + " > ? AND " +
+                    FoursquareContract.VenuesEntry.COLUMN_COORD_LONG + " < ? ";
 
     private Cursor getVenueById(Uri uri, String[] projection, String sortOrder) {
         String venueId = uri.getPathSegments().get(1);
@@ -122,10 +125,10 @@ public class VenueProvider extends ContentProvider {
 
     private Cursor getVenueNear(Uri uri, String[] projection, String sortOrder) {
         String category = uri.getPathSegments().get(1);
-        float current_lon = Long.parseLong(uri.getPathSegments().get(3));
-        float current_lat = Long.parseLong(uri.getPathSegments().get(4));
+        double current_lat = Double.parseDouble(uri.getPathSegments().get(3));
+        double current_lon = Double.parseDouble(uri.getPathSegments().get(4));
 
-        PointF center = new PointF(current_lat, current_lon);
+        PointF center = new PointF((float) current_lat, (float) current_lon);
         final double mult = 1; // mult = 1.1; is more reliable
         PointF p1 = calculateDerivedPosition(center, mult * radius, 0);
         PointF p2 = calculateDerivedPosition(center, mult * radius, 90);
@@ -134,7 +137,8 @@ public class VenueProvider extends ContentProvider {
 
         String[] selectionArgs;
         String selection;
-        selectionArgs = new String[]{category, String.valueOf(p1.y), String.valueOf(p3.y),String.valueOf(p4.x),String.valueOf(p2.x)};
+        selectionArgs = new String[]{category, String.valueOf(p3.x), String.valueOf(p1.x), String.valueOf(p4.y), String.valueOf(p2.y)};
+
         selection = sVenueNearSelection;
 
         return sVenuesQueryBuilder.query(mOpenHelper.getReadableDatabase(),
@@ -154,8 +158,7 @@ public class VenueProvider extends ContentProvider {
     }
 
     @Override
-    public Cursor query(@NonNull Uri uri, String[] projection, String selection, String[] selectionArgs,
-                        String sortOrder) {
+    public Cursor query(@NonNull Uri uri, String[] projection, String selection, String[] selectionArgs, String sortOrder) {
         Cursor retCursor;
         switch (sUriMatcher.match(uri)) {
             case VENUES: {
@@ -173,9 +176,9 @@ public class VenueProvider extends ContentProvider {
                 );
                 break;
             }
-            case VENUE:{
+            case VENUE: {
 //                Log.d(getClass().getSimpleName()," Query matches VENUE");
-                retCursor = getVenueById(uri, projection,sortOrder);
+                retCursor = getVenueById(uri, projection, sortOrder);
                 break;
             }
             case VENUES_BY_GPS: {
@@ -244,7 +247,7 @@ public class VenueProvider extends ContentProvider {
         switch (match) {
             case VENUES: {
                 long _id = db.insert(FoursquareContract.VenuesEntry.TABLE_NAME, null, contentValues);
-                if ( _id > 0 )
+                if (_id > 0)
                     returnUri = FoursquareContract.VenuesEntry.buildVenuesUri(_id);
                 else
                     throw new android.database.SQLException("Failed to insert row into " + uri);
@@ -253,7 +256,7 @@ public class VenueProvider extends ContentProvider {
             }
             case PHOTOS: {
                 long _id = db.insert(FoursquareContract.PhotoEntry.TABLE_NAME, null, contentValues);
-                if ( _id > 0 )
+                if (_id > 0)
                     returnUri = FoursquareContract.PhotoEntry.buildPhotoUri(_id);
                 else
                     throw new android.database.SQLException("Failed to insert row into " + uri);
@@ -273,7 +276,7 @@ public class VenueProvider extends ContentProvider {
         final int match = sUriMatcher.match(uri);
         int rowsDeleted;
         // this makes delete all rows return the number of rows deleted
-        if ( null == selection ) selection = "1";
+        if (null == selection) selection = "1";
         switch (match) {
             case VENUES:
                 rowsDeleted = db.delete(
@@ -321,10 +324,8 @@ public class VenueProvider extends ContentProvider {
     public int bulkInsert(Uri uri, ContentValues[] values) {
         final SQLiteDatabase db = mOpenHelper.getWritableDatabase();
         final int match = sUriMatcher.match(uri);
-        Log.d(getClass().getSimpleName()," bunkinsert begin!");
         switch (match) {
             case VENUES:
-                Log.d(getClass().getSimpleName()," bunkinsert match VENUES!");
                 db.beginTransaction();
                 int returnCount = 0;
                 try {
@@ -332,7 +333,23 @@ public class VenueProvider extends ContentProvider {
                         long _id = db.insert(FoursquareContract.VenuesEntry.TABLE_NAME, null, value);
                         if (_id != -1) {
                             returnCount++;
-                            Log.d(getClass().getSimpleName()," bunkinsert#"+String.valueOf(returnCount)+" added _id:"+String.valueOf(_id));
+                       }
+                    }
+                    db.setTransactionSuccessful();
+                } finally {
+                    db.endTransaction();
+                }
+                getContext().getContentResolver().notifyChange(uri, null);
+
+                return returnCount;
+            case PHOTOS: {
+                db.beginTransaction();
+                int returnPhotoCount = 0;
+                try {
+                    for (ContentValues value : values) {
+                        long _id = db.insert(FoursquareContract.PhotoEntry.TABLE_NAME, null, value);
+                        if (_id != -1) {
+                            returnPhotoCount++;
                         }
                     }
                     db.setTransactionSuccessful();
@@ -341,10 +358,9 @@ public class VenueProvider extends ContentProvider {
                 }
                 getContext().getContentResolver().notifyChange(uri, null);
 
-                Cursor testcursor = db.query(FoursquareContract.VenuesEntry.TABLE_NAME,null,null,null,null,null,null);
-                Log.d(getClass().getSimpleName(),"Dump cursor: " + DatabaseUtils.dumpCursorToString(testcursor));
-                return returnCount;
-            case PHOTOS: {}
+                return returnPhotoCount;
+
+            }
             default:
                 return super.bulkInsert(uri, values);
         }
@@ -365,6 +381,7 @@ public class VenueProvider extends ContentProvider {
 
         return matcher;
     }
+
     @Override
     @TargetApi(11)
     public void shutdown() {
@@ -372,8 +389,7 @@ public class VenueProvider extends ContentProvider {
         super.shutdown();
     }
 
-    public static PointF calculateDerivedPosition(PointF point, double range, double bearing)
-    {
+    public static PointF calculateDerivedPosition(PointF point, double range, double bearing) {
         double EarthRadius = 6371000; // m
 
         double latA = Math.toRadians(point.x);
