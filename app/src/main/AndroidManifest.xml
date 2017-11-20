@@ -21,6 +21,8 @@
             android:name=".data.VenueProvider"
             android:exported="false"
             android:syncable="true" />
+
+        <service android:name="com.a_leonov.onesquare.service.OneService" />
     </application>
     <uses-permission android:name="android.permission.INTERNET"></uses-permission>
 

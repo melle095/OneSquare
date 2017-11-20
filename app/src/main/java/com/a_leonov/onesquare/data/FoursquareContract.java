@@ -7,6 +7,9 @@ import android.provider.BaseColumns;
 
 
 public class FoursquareContract {
+    public static final String client_id = "GPBYVKP11KMUZFNLPUHZFN5SKFZYGL1EAUTTPARVVKEAGWWQ";
+    public static final String client_secret = "RVTYEPM5K5XHKWQ4TUAUXQKOG0TFOD3TIUQPDVG23VPPLNIG";
+
     public static final String CONTENT_AUTHORITY = "com.a_leonov.onesquare.app";
     public static final Uri BASE_CONTENT_URI = Uri.parse("content://" + CONTENT_AUTHORITY);
 
@@ -14,8 +17,8 @@ public class FoursquareContract {
     public static final String PATH_PHOTO = "photo";
 
     public static final String CATEGORY_COFFEE = "4bf58dd8d48988d1e0931735";
-    public static final String CATEGORY_FASTFOOD	= "4bf58dd8d48988d16e941735";
-    public static final String CATEGORY_Nightlife =	"4d4b7105d754a06376d81259";
+    public static final String CATEGORY_FASTFOOD = "4bf58dd8d48988d16e941735";
+    public static final String CATEGORY_Nightlife = "4d4b7105d754a06376d81259";
     public static final String CATEGORY_FOOD = "t4d4b7105d754a06374d81259";
 
     public static final class VenuesEntry implements BaseColumns {
