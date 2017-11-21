@@ -1,13 +1,22 @@
 package com.a_leonov.onesquare.service;
 
 import android.app.IntentService;
+import android.content.ContentValues;
 import android.content.Intent;
+import android.location.Location;
+import android.location.LocationManager;
 import android.net.Uri;
 import android.nfc.Tag;
 import android.support.annotation.Nullable;
 import android.util.Log;
 
 import com.a_leonov.onesquare.data.FoursquareContract;
+import com.a_leonov.onesquare.fsq.FsqVenue;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+import org.json.JSONTokener;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -17,6 +26,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Vector;
 
 /**
  * Created by Пользователь on 20.11.2017.
@@ -27,6 +37,35 @@ public class OneService extends IntentService {
     private final String LOG_TAG = getClass().getSimpleName();
 
     public static final String CITY_EXTRA = "gce";
+
+    private final String VENUE_ID = "id";
+    private final String NAME = "name";
+//    private final String CATERGORY = "venue_category";
+    private final String PHONE = "phone";
+    private final String FORMATTEDPHONE = "formattedPhone";
+    private final String TWITTER = "twitter";
+    private final String INSTAGRAMM = "instagram";
+    private final String FACEBOOK = "facebook";
+    private final String FACEBOOKUSER = "facebookUsername";
+    private final String FACEBOOKNAME = "facebookName";
+    private final String VERIFIED = "verified";
+    private final String URL = "url";
+    private final String STATUS = "hours";
+    private final String ISOPEN = "isOpen";
+    private final String ISLOCALHOLIDAY = "isLocalHoliday";
+    private final String POPULAR = "popular";
+    private final String RATING = "rating";
+    private final String SHORTURL = "shortUrl";
+    private final String CANONICALURL = "canonicalUrl";
+    private final String ADDRESS = "address";
+    private final String CROSSSTREET = "crossStreet";
+    private final String COORD_LAT = "lat";
+    private final String COORD_LONG = "lng";
+    private final String POSTALCODE = "postalCode";
+    private final String CC = "cc";
+    private final String CITY = "city";
+    private final String STATE = "state";
+    private final String COUNTRY = "country";
 
     public OneService() {
         super("onesquare");
@@ -97,6 +136,12 @@ public class OneService extends IntentService {
 
 
             Log.d(LOG_TAG, oneSquareJsonStr );
+
+            try {
+                getVenueDataFromJson(oneSquareJsonStr);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
 //            getWeatherDataFromJson(forecastJsonStr, locationQuery);
         } catch (IOException e) {
             Log.e(LOG_TAG, "Error ", e);
@@ -111,5 +156,36 @@ public class OneService extends IntentService {
         calendar.setTimeInMillis(milis);
 
         return sd.format(calendar.getTime());
+    }
+
+    private void getVenueDataFromJson(String venueJsonStr) throws JSONException {
+//        Log.v(TAG, response);
+
+        JSONObject jsonObj = (JSONObject) new JSONTokener(venueJsonStr).nextValue();
+
+        JSONArray venues = (JSONArray) jsonObj.getJSONObject("response").getJSONArray("venues");
+
+        int length = venues.length();
+
+        Vector<ContentValues> cVVector = new Vector<ContentValues>(length);
+
+        if (length > 0) {
+            for (int i = 0; i < length; i++) {
+                JSONObject item = (JSONObject) venues.get(i);
+
+//                FsqVenue venue = new FsqVenue();
+                ContentValues venueValues = new ContentValues();
+
+                venueValues.put(FoursquareContract.VenuesEntry.COLUMN_VEN_KEY, item.getString(VENUE_ID));
+                venueValues.put(FoursquareContract.VenuesEntry.COLUMN_NAME, item.getString(NAME));
+
+                JSONObject location = (JSONObject) item.getJSONObject("location");
+
+                venueValues.put(FoursquareContract.VenuesEntry.COLUMN_COORD_LAT, location.getString("lat"));
+                venueValues.put(FoursquareContract.VenuesEntry.COLUMN_COORD_LONG, location.getString("lng"));
+
+                cVVector.add(venueValues);
+            }
+        }
     }
 }
