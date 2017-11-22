@@ -3,15 +3,11 @@ package com.a_leonov.onesquare.service;
 import android.app.IntentService;
 import android.content.ContentValues;
 import android.content.Intent;
-import android.location.Location;
-import android.location.LocationManager;
 import android.net.Uri;
-import android.nfc.Tag;
 import android.support.annotation.Nullable;
 import android.util.Log;
 
 import com.a_leonov.onesquare.data.FoursquareContract;
-import com.a_leonov.onesquare.fsq.FsqVenue;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -143,6 +139,7 @@ public class OneService extends IntentService {
                 e.printStackTrace();
             }
 //            getWeatherDataFromJson(forecastJsonStr, locationQuery);
+
         } catch (IOException e) {
             Log.e(LOG_TAG, "Error ", e);
         }
@@ -178,11 +175,25 @@ public class OneService extends IntentService {
 
                 venueValues.put(FoursquareContract.VenuesEntry.COLUMN_VEN_KEY, item.getString(VENUE_ID));
                 venueValues.put(FoursquareContract.VenuesEntry.COLUMN_NAME, item.getString(NAME));
+                venueValues.put(FoursquareContract.VenuesEntry.COLUMN_VERIFIED, item.getString(VERIFIED));
+                venueValues.put(FoursquareContract.VenuesEntry.COLUMN_URL, item.getString(URL));
+//                venueValues.put(FoursquareContract.VenuesEntry.COLUMN_STATUS, item.getString(STATUS));
+//                venueValues.put(FoursquareContract.VenuesEntry.COLUMN_ISOPEN, item.getString(ISOPEN));
+//                venueValues.put(FoursquareContract.VenuesEntry.COLUMN_ISLOCALHOLIDAY, item.getString(ISLOCALHOLIDAY));
+//                venueValues.put(FoursquareContract.VenuesEntry.COLUMN_POPULAR, item.getString(POPULAR));
+//                venueValues.put(FoursquareContract.VenuesEntry.COLUMN_RATING, item.getString(RATING));
+//                venueValues.put(FoursquareContract.VenuesEntry.COLUMN_SHORTURL, item.getString(SHORTURL));
+//                venueValues.put(FoursquareContract.VenuesEntry.COLUMN_CANONICALURL, item.getString(CANONICALURL));
 
                 JSONObject location = (JSONObject) item.getJSONObject("location");
-
-                venueValues.put(FoursquareContract.VenuesEntry.COLUMN_COORD_LAT, location.getString("lat"));
-                venueValues.put(FoursquareContract.VenuesEntry.COLUMN_COORD_LONG, location.getString("lng"));
+                venueValues.put(FoursquareContract.VenuesEntry.COLUMN_ADDRESS, location.getString(ADDRESS));
+                venueValues.put(FoursquareContract.VenuesEntry.COLUMN_CROSSSTREET, location.getString(CROSSSTREET));
+                venueValues.put(FoursquareContract.VenuesEntry.COLUMN_CITY, location.getString(CITY));
+                venueValues.put(FoursquareContract.VenuesEntry.COLUMN_CC, location.getString(CC));
+                venueValues.put(FoursquareContract.VenuesEntry.COLUMN_POSTALCODE, location.getInt(POSTALCODE));
+                venueValues.put(FoursquareContract.VenuesEntry.COLUMN_COUNTRY, location.getString(COUNTRY));
+                venueValues.put(FoursquareContract.VenuesEntry.COLUMN_COORD_LAT, location.getDouble("lat"));
+                venueValues.put(FoursquareContract.VenuesEntry.COLUMN_COORD_LONG, location.getDouble("lng"));
 
                 cVVector.add(venueValues);
             }
