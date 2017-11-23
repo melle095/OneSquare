@@ -31,11 +31,12 @@ public class MainFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
 
+        View rootView =  inflater.inflate(R.layout.fragment_main, container, false);
 
-        Button btn_coffee   = container.findViewById(R.id.button_cat_coffee);
-        Button btn_bars     = container.findViewById(R.id.button_cat_bars);
-        Button btn_bistros  = container.findViewById(R.id.button_cat_bistros);
-        Button btn_clubs    = container.findViewById(R.id.button_cat_clubs);
+        Button btn_coffee   = rootView.findViewById(R.id.button_cat_coffee);
+        Button btn_bars     = rootView.findViewById(R.id.button_cat_bars);
+        Button btn_bistros  = rootView.findViewById(R.id.button_cat_bistros);
+        Button btn_clubs    = rootView.findViewById(R.id.button_cat_clubs);
 
         btn_coffee.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -47,7 +48,7 @@ public class MainFragment extends Fragment {
         btn_bars.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mListener.onCategorySelected(FoursquareContract.CATEGORY_FOOD);
+                mListener.onCategorySelected(FoursquareContract.CATEGORY_BARS);
             }
         });
 
@@ -65,7 +66,7 @@ public class MainFragment extends Fragment {
             }
         });
 
-        return inflater.inflate(R.layout.fragment_main, container, false);
+        return rootView;
     }
 
     @Override
