@@ -6,7 +6,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 
 public class FoursquareDbHelper extends SQLiteOpenHelper {
 
-    private static final int DATABASE_VERSION = 10;
+    private static final int DATABASE_VERSION = 12;
 
     static final String DATABASE_NAME = "venues.db";
 
@@ -46,13 +46,14 @@ public class FoursquareDbHelper extends SQLiteOpenHelper {
                 FoursquareContract.VenuesEntry.COLUMN_FACEBOOKUSER + " TEXT , " +
                 FoursquareContract.VenuesEntry.COLUMN_FACEBOOKNAME + " TEXT , " +
                 FoursquareContract.VenuesEntry.COLUMN_VERIFIED + " CHAR , " +
+                FoursquareContract.VenuesEntry.COLUMN_URL + " TEXT , " +
                 FoursquareContract.VenuesEntry.COLUMN_ISOPEN + " STRING , " +
                 FoursquareContract.VenuesEntry.COLUMN_ISLOCALHOLIDAY + " CHAR , " +
                 FoursquareContract.VenuesEntry.COLUMN_POPULAR + " TEXT , " +
                 FoursquareContract.VenuesEntry.COLUMN_RATING + " TEXT , " +
                 FoursquareContract.VenuesEntry.COLUMN_STATUS + " TEXT , " +
                 FoursquareContract.VenuesEntry.COLUMN_CITY + " TEXT NOT NULL, " +
-                FoursquareContract.VenuesEntry.COLUMN_POSTALCODE + " INTEGER NOT NULL, " +
+                FoursquareContract.VenuesEntry.COLUMN_POSTALCODE + " INTEGER , " +
                 FoursquareContract.VenuesEntry.COLUMN_CC + " TEXT NOT NULL, " +
                 FoursquareContract.VenuesEntry.COLUMN_ADDRESS + " TEXT , " +
                 FoursquareContract.VenuesEntry.COLUMN_CROSSSTREET + " TEXT , " +

@@ -31,12 +31,14 @@ import java.util.Vector;
 public class OneService extends IntentService {
 
     private final String LOG_TAG = getClass().getSimpleName();
+    private String category;
 
     public static final String CITY_EXTRA = "gce";
+    public static final String CATEGORY = "cat";
+
 
     private final String VENUE_ID = "id";
     private final String NAME = "name";
-//    private final String CATERGORY = "venue_category";
     private final String PHONE = "phone";
     private final String FORMATTEDPHONE = "formattedPhone";
     private final String TWITTER = "twitter";
@@ -63,9 +65,11 @@ public class OneService extends IntentService {
     private final String STATE = "state";
     private final String COUNTRY = "country";
 
+
     public OneService() {
         super("onesquare");
     }
+
 
     @Override
     public void onCreate() {
@@ -75,6 +79,7 @@ public class OneService extends IntentService {
     @Override
     protected void onHandleIntent(@Nullable Intent intent) {
 
+        String category  = intent.getStringExtra(CATEGORY);
         String cityExtra = intent.getStringExtra(CITY_EXTRA);
 
         HttpURLConnection urlConnection = null;
@@ -83,9 +88,12 @@ public class OneService extends IntentService {
         String oneSquareJsonStr = null;
         String format = "json";
 
-        try
-        {
-            final String API_URL = "https://api.foursquare.com/v2/venues/search?";
+        try {
+            final String API_URL = "https://api.foursquare.com/v2";
+            final String VENUES = "venues";
+            final String SEARCH = "search";
+            final String NEAR   = "near";
+            final String PHOTOS = "photos";
             final String CLIENT_ID = "client_id";
             final String CLIENT_SECRET = "client_secret";
             final String CURRENT_DATE = "v";
@@ -94,20 +102,21 @@ public class OneService extends IntentService {
             final String city_param = "Moscow, RU";
 
             Uri builtUri = Uri.parse(API_URL).buildUpon()
+                    .appendPath(VENUES)
+                    .appendPath(SEARCH)
                     .appendQueryParameter(CITY, city_param)
-                    .appendQueryParameter(CATEGORY_ID, FoursquareContract.CATEGORY_COFFEE)
+                    .appendQueryParameter(CATEGORY_ID, category)
+                    .appendQueryParameter(NEAR, cityExtra)
                     .appendQueryParameter(CLIENT_ID, FoursquareContract.client_id)
                     .appendQueryParameter(CLIENT_SECRET, FoursquareContract.client_secret)
                     .appendQueryParameter(CURRENT_DATE, timeMilisToString(System.currentTimeMillis()))
                     .build();
             URL url = new URL(builtUri.toString());
 
-            // Create the request to OpenWeatherMap, and open the connection
             urlConnection = (HttpURLConnection) url.openConnection();
             urlConnection.setRequestMethod("GET");
             urlConnection.connect();
 
-            // Read the input stream into a String
             InputStream inputStream = urlConnection.getInputStream();
             StringBuffer buffer = new StringBuffer();
             if (inputStream == null) {
@@ -130,15 +139,13 @@ public class OneService extends IntentService {
             }
             oneSquareJsonStr = buffer.toString();
 
-
-            Log.d(LOG_TAG, oneSquareJsonStr );
+            Log.d(LOG_TAG, oneSquareJsonStr);
 
             try {
                 getVenueDataFromJson(oneSquareJsonStr);
             } catch (JSONException e) {
                 e.printStackTrace();
             }
-//            getWeatherDataFromJson(forecastJsonStr, locationQuery);
 
         } catch (IOException e) {
             Log.e(LOG_TAG, "Error ", e);
@@ -156,47 +163,110 @@ public class OneService extends IntentService {
     }
 
     private void getVenueDataFromJson(String venueJsonStr) throws JSONException {
-//        Log.v(TAG, response);
 
-        JSONObject jsonObj = (JSONObject) new JSONTokener(venueJsonStr).nextValue();
+        try {
 
-        JSONArray venues = (JSONArray) jsonObj.getJSONObject("response").getJSONArray("venues");
+            JSONObject jsonObj = (JSONObject) new JSONTokener(venueJsonStr).nextValue();
+            JSONArray venues = jsonObj.getJSONObject("response").getJSONArray("venues");
 
-        int length = venues.length();
+            int length = venues.length();
 
-        Vector<ContentValues> cVVector = new Vector<ContentValues>(length);
+            Vector<ContentValues> cVVector = new Vector<ContentValues>(length);
 
-        if (length > 0) {
-            for (int i = 0; i < length; i++) {
-                JSONObject item = (JSONObject) venues.get(i);
+            if (length > 0) {
+                for (int i = 0; i < length; i++) {
+                    JSONObject item = (JSONObject) venues.get(i);
 
-//                FsqVenue venue = new FsqVenue();
-                ContentValues venueValues = new ContentValues();
+                    ContentValues venueValues = new ContentValues();
 
-                venueValues.put(FoursquareContract.VenuesEntry.COLUMN_VEN_KEY, item.getString(VENUE_ID));
-                venueValues.put(FoursquareContract.VenuesEntry.COLUMN_NAME, item.getString(NAME));
-                venueValues.put(FoursquareContract.VenuesEntry.COLUMN_VERIFIED, item.getString(VERIFIED));
-                venueValues.put(FoursquareContract.VenuesEntry.COLUMN_URL, item.getString(URL));
-//                venueValues.put(FoursquareContract.VenuesEntry.COLUMN_STATUS, item.getString(STATUS));
-//                venueValues.put(FoursquareContract.VenuesEntry.COLUMN_ISOPEN, item.getString(ISOPEN));
-//                venueValues.put(FoursquareContract.VenuesEntry.COLUMN_ISLOCALHOLIDAY, item.getString(ISLOCALHOLIDAY));
-//                venueValues.put(FoursquareContract.VenuesEntry.COLUMN_POPULAR, item.getString(POPULAR));
-//                venueValues.put(FoursquareContract.VenuesEntry.COLUMN_RATING, item.getString(RATING));
-//                venueValues.put(FoursquareContract.VenuesEntry.COLUMN_SHORTURL, item.getString(SHORTURL));
-//                venueValues.put(FoursquareContract.VenuesEntry.COLUMN_CANONICALURL, item.getString(CANONICALURL));
+                    putJsonValue(venueValues, item, FoursquareContract.VenuesEntry.COLUMN_VEN_KEY,VENUE_ID,1);
+                    putJsonValue(venueValues, item, FoursquareContract.VenuesEntry.COLUMN_NAME, NAME, 1);
+                    putJsonValue(venueValues, item, FoursquareContract.VenuesEntry.COLUMN_VERIFIED, VERIFIED , 1);
+                    putJsonValue(venueValues, item, FoursquareContract.VenuesEntry.COLUMN_URL, URL,1);
+                    putJsonValue(venueValues, item, FoursquareContract.VenuesEntry.COLUMN_STATUS, STATUS,1);
+                    putJsonValue(venueValues, item, FoursquareContract.VenuesEntry.COLUMN_ISOPEN, ISOPEN,1);
+                    putJsonValue(venueValues, item, FoursquareContract.VenuesEntry.COLUMN_ISLOCALHOLIDAY, ISLOCALHOLIDAY,1);
+                    putJsonValue(venueValues, item, FoursquareContract.VenuesEntry.COLUMN_POPULAR, POPULAR,1);
+                    putJsonValue(venueValues, item, FoursquareContract.VenuesEntry.COLUMN_RATING, RATING,1);
+                    putJsonValue(venueValues, item, FoursquareContract.VenuesEntry.COLUMN_SHORTURL, SHORTURL,1);
+                    putJsonValue(venueValues, item, FoursquareContract.VenuesEntry.COLUMN_CANONICALURL, CANONICALURL,1);
 
-                JSONObject location = (JSONObject) item.getJSONObject("location");
-                venueValues.put(FoursquareContract.VenuesEntry.COLUMN_ADDRESS, location.getString(ADDRESS));
-                venueValues.put(FoursquareContract.VenuesEntry.COLUMN_CROSSSTREET, location.getString(CROSSSTREET));
-                venueValues.put(FoursquareContract.VenuesEntry.COLUMN_CITY, location.getString(CITY));
-                venueValues.put(FoursquareContract.VenuesEntry.COLUMN_CC, location.getString(CC));
-                venueValues.put(FoursquareContract.VenuesEntry.COLUMN_POSTALCODE, location.getInt(POSTALCODE));
-                venueValues.put(FoursquareContract.VenuesEntry.COLUMN_COUNTRY, location.getString(COUNTRY));
-                venueValues.put(FoursquareContract.VenuesEntry.COLUMN_COORD_LAT, location.getDouble("lat"));
-                venueValues.put(FoursquareContract.VenuesEntry.COLUMN_COORD_LONG, location.getDouble("lng"));
+                    JSONObject location = (JSONObject) item.getJSONObject("location");
 
-                cVVector.add(venueValues);
+                    putJsonValue(venueValues, location, FoursquareContract.VenuesEntry.COLUMN_ADDRESS, ADDRESS ,1);
+                    putJsonValue(venueValues, location, FoursquareContract.VenuesEntry.COLUMN_CROSSSTREET, CROSSSTREET,1);
+                    putJsonValue(venueValues, location, FoursquareContract.VenuesEntry.COLUMN_CITY, CITY, 1);
+                    putJsonValue(venueValues, location, FoursquareContract.VenuesEntry.COLUMN_CC, CC , 1);
+                    putJsonValue(venueValues, location, FoursquareContract.VenuesEntry.COLUMN_POSTALCODE, POSTALCODE, 2);
+                    putJsonValue(venueValues, location, FoursquareContract.VenuesEntry.COLUMN_COUNTRY, COUNTRY,1);
+                    putJsonValue(venueValues, location, FoursquareContract.VenuesEntry.COLUMN_COORD_LAT, COORD_LAT, 3);
+                    putJsonValue(venueValues, location, FoursquareContract.VenuesEntry.COLUMN_COORD_LONG, COORD_LONG,3);
+                    putJsonValue(venueValues, location, FoursquareContract.VenuesEntry.COLUMN_STATE, STATE,1);
+
+                    JSONObject contact = item.getJSONObject("contact");
+                    putJsonValue(venueValues, contact, FoursquareContract.VenuesEntry.COLUMN_PHONE, PHONE ,1);
+                    putJsonValue(venueValues, contact, FoursquareContract.VenuesEntry.COLUMN_FORMATTEDPHONE, FORMATTEDPHONE ,1);
+                    putJsonValue(venueValues, contact, FoursquareContract.VenuesEntry.COLUMN_TWITTER, TWITTER ,1);
+                    putJsonValue(venueValues, contact, FoursquareContract.VenuesEntry.COLUMN_INSTAGRAMM, INSTAGRAMM ,1);
+                    putJsonValue(venueValues, contact, FoursquareContract.VenuesEntry.COLUMN_FACEBOOK, FACEBOOK ,1);
+                    putJsonValue(venueValues, contact, FoursquareContract.VenuesEntry.COLUMN_FACEBOOKNAME, FACEBOOKNAME ,1);
+                    putJsonValue(venueValues, contact, FoursquareContract.VenuesEntry.COLUMN_FACEBOOKUSER, FACEBOOKUSER ,1);
+
+                    cVVector.add(venueValues);
+                }
+
+                if (cVVector.size() > 0) {
+                    ContentValues[] cvArray = new ContentValues[cVVector.size()];
+                    cVVector.toArray(cvArray);
+                    this.getContentResolver().bulkInsert(FoursquareContract.VenuesEntry.CONTENT_URI, cvArray);
+                }
+
+                Log.d(LOG_TAG, "OneService Service Complete. " + cVVector.size() + " Inserted");
+            }
+        } catch (JSONException e) {
+            Log.e(LOG_TAG, e.getMessage(), e);
+            e.printStackTrace();
+        }
+    }
+
+    private void putJsonValue(ContentValues value, JSONObject item, String contractName, String paramName, int mode) {
+        if (!item.isNull(paramName)) {
+            try {
+                switch (mode){
+                    case 1: {
+                        value.put(contractName, item.getString(paramName));
+                        break;
+                    }
+                    case 2: {
+                        value.put(contractName, item.getInt(paramName));
+                        break;
+                    }
+                    case 3: {
+                        value.put(contractName, item.getDouble(paramName));
+                        break;
+                    }
+
+                }
+
+            } catch (JSONException e) {
+                e.printStackTrace();
             }
         }
+//        else {
+//            switch (mode){
+//                case 1: {
+//                    value.put(contractName, (String) null);
+//                    break;
+//                }
+//                case 2: {
+//                }
+//                case 3: {
+//                    value.put(contractName, 0);
+//                    break;
+//                }
+//
+//            }
+
+//        }
     }
 }

@@ -16,10 +16,10 @@ public class FoursquareContract {
     public static final String PATH_VENUES = "venues";
     public static final String PATH_PHOTO = "photo";
 
-    public static final String CATEGORY_COFFEE = "4bf58dd8d48988d1e0931735";
-    public static final String CATEGORY_FASTFOOD = "4bf58dd8d48988d16e941735";
-    public static final String CATEGORY_Nightlife = "4d4b7105d754a06376d81259";
-    public static final String CATEGORY_FOOD = "t4d4b7105d754a06374d81259";
+    public static final String CATEGORY_COFFEE      = "4bf58dd8d48988d1e0931735";
+    public static final String CATEGORY_FASTFOOD    = "4bf58dd8d48988d16e941735";
+    public static final String CATEGORY_Nightlife   = "4d4b7105d754a06376d81259";
+    public static final String CATEGORY_FOOD        = "t4d4b7105d754a06374d81259";
 
     public static final class VenuesEntry implements BaseColumns {
 

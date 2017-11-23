@@ -3,13 +3,11 @@ package com.a_leonov.onesquare;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
-import android.view.View;
-import android.widget.Button;
 
 import com.a_leonov.onesquare.service.OneService;
 
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements MainFragment.OnFragmentInteractionListener {
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -17,18 +15,24 @@ public class MainActivity extends AppCompatActivity {
 
         setContentView(R.layout.activity_main);
 
-        Button connect_btn = (Button) findViewById(R.id.b_connect);
+        if (savedInstanceState != null) {
+            return;
+        }
 
-        connect_btn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                startOneSquare();
-            }
-        });
+        MainFragment mainFragment = new MainFragment();
+
+        getSupportFragmentManager().beginTransaction()
+                .add(R.id.main_container, mainFragment)
+                .commit();
+
     }
-    void startOneSquare() {
-        Intent alarmIntent = new Intent(this, OneService.class);
-        alarmIntent.putExtra(OneService.CITY_EXTRA, "Moscow, RU");
-        startService(alarmIntent);
+
+    @Override
+    public void onCategorySelected(String category) {
+        Intent venueIntent = new Intent(this, OneService.class);
+        venueIntent.putExtra(OneService.CITY_EXTRA, "Moscow, RU");
+        venueIntent.putExtra(OneService.CATEGORY, category);
+
+        startService(venueIntent);
     }
 }
