@@ -3,6 +3,10 @@
     android:layout_height="match_parent"
     android:layout_width="match_parent"
     android:id="@+id/fragment_list">
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Fragment list"/>
     <ListView
         android:layout_width="match_parent"
         android:layout_height="match_parent"

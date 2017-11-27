@@ -42,6 +42,14 @@ public class VenueAdapter extends CursorAdapter {
 
     @Override
     public void bindView(View view, Context context, Cursor cursor) {
+        ViewHolder viewHolder = (ViewHolder) view.getTag();
 
+        String venueName = cursor.getString(VenueListFragment.COL_NAME);
+        String venueAddress = cursor.getString(VenueListFragment.COL_ADDRESS);
+        float venueRating = cursor.getFloat(VenueListFragment.COL_RATING);
+
+        viewHolder.nameView.setText(venueName);
+        viewHolder.addressView.setText(venueAddress);
+        viewHolder.ratingView.setRating(venueRating);
     }
 }

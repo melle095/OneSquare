@@ -93,18 +93,17 @@ public class OneService extends IntentService {
             final String VENUES = "venues";
             final String SEARCH = "search";
             final String NEAR   = "near";
+            final String INTENT = "intent";
             final String PHOTOS = "photos";
             final String CLIENT_ID = "client_id";
             final String CLIENT_SECRET = "client_secret";
             final String CURRENT_DATE = "v";
-            final String CITY = "near";
             final String CATEGORY_ID = "categoryId";
-            final String city_param = "Moscow, RU";
+            final String intentGlobal = "global";
 
             Uri builtUri = Uri.parse(API_URL).buildUpon()
                     .appendPath(VENUES)
                     .appendPath(SEARCH)
-                    .appendQueryParameter(CITY, city_param)
                     .appendQueryParameter(CATEGORY_ID, category)
                     .appendQueryParameter(NEAR, cityExtra)
                     .appendQueryParameter(CLIENT_ID, FoursquareContract.client_id)
@@ -138,18 +137,27 @@ public class OneService extends IntentService {
                 return;
             }
             oneSquareJsonStr = buffer.toString();
-
-            Log.d(LOG_TAG, oneSquareJsonStr);
-
-            try {
-                getVenueDataFromJson(oneSquareJsonStr);
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
-
+            getVenueDataFromJson(oneSquareJsonStr);
         } catch (IOException e) {
             Log.e(LOG_TAG, "Error ", e);
+            // If the code didn't successfully get the weather data, there's no point in attempting
+            // to parse it.
+        } catch (JSONException e) {
+            Log.e(LOG_TAG, e.getMessage(), e);
+            e.printStackTrace();
+        } finally {
+            if (urlConnection != null) {
+                urlConnection.disconnect();
+            }
+            if (reader != null) {
+                try {
+                    reader.close();
+                } catch (final IOException e) {
+                    Log.e(LOG_TAG, "Error closing stream", e);
+                }
+            }
         }
+        return;
 
     }
 
@@ -212,6 +220,15 @@ public class OneService extends IntentService {
                     putJsonValue(venueValues, contact, FoursquareContract.VenuesEntry.COLUMN_FACEBOOKNAME, FACEBOOKNAME ,1);
                     putJsonValue(venueValues, contact, FoursquareContract.VenuesEntry.COLUMN_FACEBOOKUSER, FACEBOOKUSER ,1);
 
+                    JSONArray category = item.getJSONArray("categories");
+                    JSONObject category_item;
+
+                    for (int j=0; j < category.length(); j++) {
+                        category_item = category.getJSONObject(j);
+//                        if (category_item.getString("Primary") == "true")
+                            putJsonValue(venueValues,category_item, FoursquareContract.VenuesEntry.COLUMN_CATERGORY,"id",1);
+                    }
+
                     cVVector.add(venueValues);
                 }
 
@@ -245,28 +262,10 @@ public class OneService extends IntentService {
                         value.put(contractName, item.getDouble(paramName));
                         break;
                     }
-
                 }
-
             } catch (JSONException e) {
                 e.printStackTrace();
             }
         }
-//        else {
-//            switch (mode){
-//                case 1: {
-//                    value.put(contractName, (String) null);
-//                    break;
-//                }
-//                case 2: {
-//                }
-//                case 3: {
-//                    value.put(contractName, 0);
-//                    break;
-//                }
-//
-//            }
-
-//        }
     }
 }
