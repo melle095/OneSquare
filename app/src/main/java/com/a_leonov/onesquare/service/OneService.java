@@ -34,6 +34,9 @@ public class OneService extends IntentService {
     private String category;
 
     public static final String CITY_EXTRA = "gce";
+    public static final String lat = "lat";
+    public static final String lon = "lon";
+
     public static final String CATEGORY = "cat";
 
 
@@ -79,8 +82,10 @@ public class OneService extends IntentService {
     @Override
     protected void onHandleIntent(@Nullable Intent intent) {
 
-        String category  = intent.getStringExtra(CATEGORY);
-        String cityExtra = intent.getStringExtra(CITY_EXTRA);
+//        String category  = intent.getStringExtra(CATEGORY);
+        String current_lat = intent.getStringExtra(lat);
+        String current_lon = intent.getStringExtra(lon);
+
 
         HttpURLConnection urlConnection = null;
         BufferedReader reader = null;
@@ -93,6 +98,7 @@ public class OneService extends IntentService {
             final String VENUES = "venues";
             final String SEARCH = "search";
             final String NEAR   = "near";
+            final String geo_loc = "ll";
             final String INTENT = "intent";
             final String PHOTOS = "photos";
             final String CLIENT_ID = "client_id";
@@ -105,7 +111,7 @@ public class OneService extends IntentService {
                     .appendPath(VENUES)
                     .appendPath(SEARCH)
                     .appendQueryParameter(CATEGORY_ID, category)
-                    .appendQueryParameter(NEAR, cityExtra)
+                    .appendQueryParameter(geo_loc, current_lat + "," + current_lon)
                     .appendQueryParameter(CLIENT_ID, FoursquareContract.client_id)
                     .appendQueryParameter(CLIENT_SECRET, FoursquareContract.client_secret)
                     .appendQueryParameter(CURRENT_DATE, timeMilisToString(System.currentTimeMillis()))
@@ -158,7 +164,6 @@ public class OneService extends IntentService {
             }
         }
         return;
-
     }
 
     private String timeMilisToString(long milis) {

@@ -56,7 +56,7 @@ public class MainFragment extends Fragment implements VenueListFragment.Callback
         btn_bistros.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mListener.onCategorySelected(FoursquareContract.CATEGORY_FASTFOOD);
+                mListener.onCategorySelected(FoursquareContract.CATEGORY_PIESHOP);
             }
         });
 

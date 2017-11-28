@@ -112,8 +112,8 @@ public class VenueListFragment extends Fragment implements LoaderManager.LoaderC
 
 //        String locationSetting = Utility.getPreferredLocation(getActivity());
         MainActivity mainActivity = (MainActivity) getActivity();
-//        Uri venuesUri = FoursquareContract.VenuesEntry.buildVenuesGPSUri(mainActivity.getCategory(),55.76154361388457,37.6122227347307);
-        Uri venuesUri = FoursquareContract.VenuesEntry.CONTENT_URI;
+        Uri venuesUri = FoursquareContract.VenuesEntry.buildVenueCityUri(mainActivity.getCategory(),"Москва");
+//        Uri venuesUri = FoursquareContract.VenuesEntry.CONTENT_URI;
 
         Cursor cursor = getActivity().getContentResolver().query(
                 venuesUri,
