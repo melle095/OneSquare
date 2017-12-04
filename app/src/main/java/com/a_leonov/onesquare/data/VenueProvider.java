@@ -22,13 +22,13 @@ public class VenueProvider extends ContentProvider {
 
     static final int VENUE = 100;
     static final int VENUES = 105;
-    static final int VENUES_BY_GPS = 110;
+    static final int VENUES_BY_CAT = 110;
     static final int VENUES_BY_CITY = 115;
     static final int PHOTO = 120;
     static final int PHOTOS = 121;
     static final int PHOTOS_BY_VENUE = 125;
 
-    static final double radius = 500;
+    static final double radius = 1000;
 
     private static final SQLiteQueryBuilder sVenuesQueryBuilder;
 
@@ -51,7 +51,10 @@ public class VenueProvider extends ContentProvider {
 
     private static final String sVenueByCitySelection =
             FoursquareContract.VenuesEntry.TABLE_NAME + "." + FoursquareContract.VenuesEntry.COLUMN_CATERGORY + " = ? AND " +
-                    FoursquareContract.VenuesEntry.COLUMN_CITY + " = ?";
+                    FoursquareContract.VenuesEntry.COLUMN_CITY + " = ? ";
+
+    private static final String sVenueByCatSelection =
+            FoursquareContract.VenuesEntry.TABLE_NAME + "." + FoursquareContract.VenuesEntry.COLUMN_CATERGORY + " = ? ";
 
     private static final String sPhotoByVenueIDSelection =
             FoursquareContract.PhotoEntry.TABLE_NAME +
@@ -93,6 +96,25 @@ public class VenueProvider extends ContentProvider {
 
         selectionArgs = new String[]{category, venue_city};
         selection = sVenueByCitySelection;
+
+        return sVenuesQueryBuilder.query(mOpenHelper.getReadableDatabase(),
+                projection,
+                selection,
+                selectionArgs,
+                null,
+                null,
+                sortOrder
+        );
+    }
+
+    private Cursor getVenueByCat(Uri uri, String[] projection, String sortOrder) {
+        String category = uri.getPathSegments().get(1);
+
+        String[] selectionArgs;
+        String selection;
+
+        selectionArgs = new String[]{category};
+        selection = sVenueByCatSelection;
 
         return sVenuesQueryBuilder.query(mOpenHelper.getReadableDatabase(),
                 projection,
@@ -181,8 +203,11 @@ public class VenueProvider extends ContentProvider {
                 retCursor = getVenueById(uri, projection, sortOrder);
                 break;
             }
-            case VENUES_BY_GPS: {
-                retCursor = getVenueNear(uri, projection, sortOrder);
+//            case VENUES_BY_GPS: {
+//                retCursor = getVenueNear(uri, projection, sortOrder);
+//                break;
+            case VENUES_BY_CAT: {
+                retCursor = getVenueByCat(uri, projection, sortOrder);
                 break;
             }
             case VENUES_BY_CITY: {
@@ -210,6 +235,7 @@ public class VenueProvider extends ContentProvider {
                 throw new UnsupportedOperationException("Unknown uri: " + uri);
         }
         retCursor.setNotificationUri(getContext().getContentResolver(), uri);
+        Log.d(getClass().getSimpleName(),DatabaseUtils.dumpCursorToString(retCursor));
         return retCursor;
     }
 
@@ -223,7 +249,7 @@ public class VenueProvider extends ContentProvider {
                 return FoursquareContract.VenuesEntry.CONTENT_ITEM_TYPE;
             case VENUES:
                 return FoursquareContract.VenuesEntry.CONTENT_TYPE;
-            case VENUES_BY_GPS:
+            case VENUES_BY_CAT:
                 return FoursquareContract.VenuesEntry.CONTENT_TYPE;
             case VENUES_BY_CITY:
                 return FoursquareContract.VenuesEntry.CONTENT_TYPE;
@@ -374,7 +400,7 @@ public class VenueProvider extends ContentProvider {
         matcher.addURI(authority, FoursquareContract.PATH_VENUES, VENUES);
         matcher.addURI(authority, FoursquareContract.PATH_VENUES + "/#", VENUE);
         matcher.addURI(authority, FoursquareContract.PATH_VENUES + "/*/city/*", VENUES_BY_CITY);
-        matcher.addURI(authority, FoursquareContract.PATH_VENUES + "/*/geo/*/*", VENUES_BY_GPS);
+        matcher.addURI(authority, FoursquareContract.PATH_VENUES + "/*", VENUES_BY_CAT);
         matcher.addURI(authority, FoursquareContract.PATH_PHOTO, PHOTOS);
         matcher.addURI(authority, FoursquareContract.PATH_PHOTO + "/#", PHOTO);
         matcher.addURI(authority, FoursquareContract.PATH_PHOTO + "/venue_id/*", PHOTOS_BY_VENUE);

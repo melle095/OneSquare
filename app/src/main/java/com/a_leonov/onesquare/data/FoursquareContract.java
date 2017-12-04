@@ -7,8 +7,8 @@ import android.provider.BaseColumns;
 
 
 public class FoursquareContract {
-    public static final String client_id = "GPBYVKP11KMUZFNLPUHZFN5SKFZYGL1EAUTTPARVVKEAGWWQ";
-    public static final String client_secret = "RVTYEPM5K5XHKWQ4TUAUXQKOG0TFOD3TIUQPDVG23VPPLNIG";
+//    public static final String client_id = "GPBYVKP11KMUZFNLPUHZFN5SKFZYGL1EAUTTPARVVKEAGWWQ";
+//    public static final String client_secret = "RVTYEPM5K5XHKWQ4TUAUXQKOG0TFOD3TIUQPDVG23VPPLNIG";
 
     public static final String CONTENT_AUTHORITY = "com.a_leonov.onesquare.app";
     public static final Uri BASE_CONTENT_URI = Uri.parse("content://" + CONTENT_AUTHORITY);
@@ -16,7 +16,7 @@ public class FoursquareContract {
     public static final String PATH_VENUES = "venues";
     public static final String PATH_PHOTO = "photo";
 
-    public static final String CATEGORY_COFFEE          = "4bf58dd8d48988d1e0931735";
+    public static final String CATEGORY_COFFEE          = "4bf58dd8d48988d130941735";
     public static final String CATEGORY_PIESHOP         = "5293a7563cf9994f4e043a44";
     public static final String CATEGORY_Nightlife       = "53e510b7498ebcb1801b55d4";
     public static final String CATEGORY_BARS            = "52e81612bcbc57f1066b7a06";
@@ -73,6 +73,12 @@ public class FoursquareContract {
                     .appendPath("geo")
                     .appendPath(String.valueOf(lat))
                     .appendPath(String.valueOf(lon))
+                    .build();
+        }
+
+        public static Uri buildVenuesCatUri(String cat) {
+            return CONTENT_URI.buildUpon()
+                    .appendPath(cat)
                     .build();
         }
 

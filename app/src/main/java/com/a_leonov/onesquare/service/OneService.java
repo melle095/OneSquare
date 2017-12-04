@@ -3,10 +3,15 @@ package com.a_leonov.onesquare.service;
 import android.app.IntentService;
 import android.content.ContentValues;
 import android.content.Intent;
+import android.database.Cursor;
+import android.database.DatabaseUtils;
 import android.net.Uri;
+import android.os.Build;
 import android.support.annotation.Nullable;
+import android.support.annotation.RequiresApi;
 import android.util.Log;
 
+import com.a_leonov.onesquare.BuildConfig;
 import com.a_leonov.onesquare.data.FoursquareContract;
 
 import org.json.JSONArray;
@@ -22,6 +27,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Locale;
 import java.util.Vector;
 
 /**
@@ -33,6 +39,8 @@ public class OneService extends IntentService {
     private final String LOG_TAG = getClass().getSimpleName();
     private String category;
 
+
+    public static final String radius = "500";
     public static final String CITY_EXTRA = "gce";
     public static final String lat = "lat";
     public static final String lon = "lon";
@@ -82,7 +90,7 @@ public class OneService extends IntentService {
     @Override
     protected void onHandleIntent(@Nullable Intent intent) {
 
-//        String category  = intent.getStringExtra(CATEGORY);
+        String category  = intent.getStringExtra(CATEGORY);
         String current_lat = intent.getStringExtra(lat);
         String current_lon = intent.getStringExtra(lon);
 
@@ -105,17 +113,23 @@ public class OneService extends IntentService {
             final String CLIENT_SECRET = "client_secret";
             final String CURRENT_DATE = "v";
             final String CATEGORY_ID = "categoryId";
-            final String intentGlobal = "global";
+            final String RADIUS = "radius";
 
             Uri builtUri = Uri.parse(API_URL).buildUpon()
                     .appendPath(VENUES)
                     .appendPath(SEARCH)
-                    .appendQueryParameter(CATEGORY_ID, category)
-                    .appendQueryParameter(geo_loc, current_lat + "," + current_lon)
-                    .appendQueryParameter(CLIENT_ID, FoursquareContract.client_id)
-                    .appendQueryParameter(CLIENT_SECRET, FoursquareContract.client_secret)
+                    .encodedQuery("&" + CATEGORY_ID + "=" + FoursquareContract.CATEGORY_COFFEE + "," +
+                                                            FoursquareContract.CATEGORY_BARS + "," +
+                                                            FoursquareContract.CATEGORY_Nightlife + "," +
+                                                            FoursquareContract.CATEGORY_PIESHOP)
+//                    .appendQueryParameter(CATEGORY_ID, FoursquareContract.CATEGORY_TOP_LEVEL_FOOD)
+                    .encodedQuery("&" + geo_loc + "=" + current_lat + "," + current_lon)
+                    .appendQueryParameter(RADIUS, radius)
+                    .appendQueryParameter(CLIENT_ID, BuildConfig.CLIENT_ID)
+                    .appendQueryParameter(CLIENT_SECRET, BuildConfig.CLIENT_SECRET)
                     .appendQueryParameter(CURRENT_DATE, timeMilisToString(System.currentTimeMillis()))
                     .build();
+
             URL url = new URL(builtUri.toString());
 
             urlConnection = (HttpURLConnection) url.openConnection();
@@ -142,8 +156,16 @@ public class OneService extends IntentService {
                 // Stream was empty.  No point in parsing.
                 return;
             }
+
+            int deleted = getContentResolver().delete(FoursquareContract.VenuesEntry.CONTENT_URI, null, null);
+
+            Log.d(getClass().getSimpleName(), "Deleted rows: " + deleted);
+
             oneSquareJsonStr = buffer.toString();
+
+            Log.d(getClass().getSimpleName(), "JSON : " + oneSquareJsonStr);
             getVenueDataFromJson(oneSquareJsonStr);
+
         } catch (IOException e) {
             Log.e(LOG_TAG, "Error ", e);
             // If the code didn't successfully get the weather data, there's no point in attempting
@@ -241,6 +263,7 @@ public class OneService extends IntentService {
                     ContentValues[] cvArray = new ContentValues[cVVector.size()];
                     cVVector.toArray(cvArray);
                     this.getContentResolver().bulkInsert(FoursquareContract.VenuesEntry.CONTENT_URI, cvArray);
+
                 }
 
                 Log.d(LOG_TAG, "OneService Service Complete. " + cVVector.size() + " Inserted");
@@ -264,7 +287,7 @@ public class OneService extends IntentService {
                         break;
                     }
                     case 3: {
-                        value.put(contractName, item.getDouble(paramName));
+                        value.put(contractName, String.valueOf(item.getDouble(paramName)));
                         break;
                     }
                 }

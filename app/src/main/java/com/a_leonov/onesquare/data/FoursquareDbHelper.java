@@ -6,7 +6,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 
 public class FoursquareDbHelper extends SQLiteOpenHelper {
 
-    private static final int DATABASE_VERSION = 13;
+    private static final int DATABASE_VERSION = 15;
 
     static final String DATABASE_NAME = "venues.db";
 
@@ -52,15 +52,15 @@ public class FoursquareDbHelper extends SQLiteOpenHelper {
                 FoursquareContract.VenuesEntry.COLUMN_POPULAR + " TEXT , " +
                 FoursquareContract.VenuesEntry.COLUMN_RATING + " TEXT , " +
                 FoursquareContract.VenuesEntry.COLUMN_STATUS + " TEXT , " +
-                FoursquareContract.VenuesEntry.COLUMN_CITY + " TEXT NOT NULL, " +
+                FoursquareContract.VenuesEntry.COLUMN_CITY + " TEXT , " +
                 FoursquareContract.VenuesEntry.COLUMN_POSTALCODE + " INTEGER , " +
-                FoursquareContract.VenuesEntry.COLUMN_CC + " TEXT NOT NULL, " +
+                FoursquareContract.VenuesEntry.COLUMN_CC + " TEXT , " +
                 FoursquareContract.VenuesEntry.COLUMN_ADDRESS + " TEXT , " +
                 FoursquareContract.VenuesEntry.COLUMN_CROSSSTREET + " TEXT , " +
-                FoursquareContract.VenuesEntry.COLUMN_COORD_LAT + " REAL NOT NULL, " +
-                FoursquareContract.VenuesEntry.COLUMN_COORD_LONG + " REAL NOT NULL, " +
+                FoursquareContract.VenuesEntry.COLUMN_COORD_LAT + " TEXT NOT NULL, " +
+                FoursquareContract.VenuesEntry.COLUMN_COORD_LONG + " TEXT NOT NULL, " +
                 FoursquareContract.VenuesEntry.COLUMN_STATE + " TEXT , " +
-                FoursquareContract.VenuesEntry.COLUMN_COUNTRY + " TEXT NOT NULL, " +
+                FoursquareContract.VenuesEntry.COLUMN_COUNTRY + " TEXT , " +
                 FoursquareContract.VenuesEntry.COLUMN_CATERGORY + " CHAR ," +
 
                 " UNIQUE (" + FoursquareContract.VenuesEntry.COLUMN_VEN_KEY + ") ON CONFLICT REPLACE);";

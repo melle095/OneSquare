@@ -25,12 +25,15 @@ import com.a_leonov.onesquare.data.FoursquareContract;
 
 public class VenueListFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
 
+    private String BUNDLE_CATEGORY = "category";
+    private String BUNDLE_LAT = "lat";
+    private String BUNDLE_LON = "lon";
     private ListView mListView;
     private static final String SELECTED_KEY = "selected_position";
     private static final int VENUE_LOADER = 0;
     String category;
-    private static final double lat = 55.7604;
-    private static final double lon = 37.5779;
+    private double lat;
+    private double lon;
     private VenueAdapter mVenueAdapter;
     private int mPosition;
 
@@ -93,15 +96,14 @@ public class VenueListFragment extends Fragment implements LoaderManager.LoaderC
     }
 
     @Override
-    public void onAttach(Context context) {
-        super.onAttach(context);
-
-        MainActivity activiy = (MainActivity) context;
-        category = activiy.getCategory();
-    }
-
-    @Override
     public void onActivityCreated(Bundle savedInstanceState) {
+        Bundle bundle = this.getArguments();
+        if (bundle != null) {
+            category = bundle.getString(BUNDLE_CATEGORY);
+            lat      = bundle.getDouble(BUNDLE_LAT);
+            lon      = bundle.getDouble(BUNDLE_LON);
+        }
+
         getLoaderManager().initLoader(VENUE_LOADER, null, this);
         super.onActivityCreated(savedInstanceState);
     }
@@ -109,21 +111,18 @@ public class VenueListFragment extends Fragment implements LoaderManager.LoaderC
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
         String sortOrder = FoursquareContract.VenuesEntry.COLUMN_NAME + " ASC";
-
-//        String locationSetting = Utility.getPreferredLocation(getActivity());
-        MainActivity mainActivity = (MainActivity) getActivity();
-        Uri venuesUri = FoursquareContract.VenuesEntry.buildVenueCityUri(mainActivity.getCategory(),"Москва");
-//        Uri venuesUri = FoursquareContract.VenuesEntry.CONTENT_URI;
+        Uri venuesUri = FoursquareContract.VenuesEntry.buildVenuesCatUri(category);
+        Uri venuesTestUri = FoursquareContract.VenuesEntry.CONTENT_URI;
 
         Cursor cursor = getActivity().getContentResolver().query(
-                venuesUri,
+                venuesTestUri,
                 null,
                 null,
                 null,
-                null
+                sortOrder
         );
 
-        Log.d(getClass().getSimpleName(), DatabaseUtils.dumpCursorToString(cursor));
+//        Log.d(getClass().getSimpleName(), DatabaseUtils.dumpCursorToString(cursor));
 
         return new CursorLoader(getActivity(),
                 venuesUri,
