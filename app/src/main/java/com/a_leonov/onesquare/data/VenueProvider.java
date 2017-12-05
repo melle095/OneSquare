@@ -14,6 +14,8 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.Log;
 
+import com.a_leonov.onesquare.PointD;
+
 
 public class VenueProvider extends ContentProvider {
 
@@ -22,7 +24,7 @@ public class VenueProvider extends ContentProvider {
 
     static final int VENUE = 100;
     static final int VENUES = 105;
-    static final int VENUES_BY_CAT = 110;
+    static final int VENUES_BY_GPS = 110;
     static final int VENUES_BY_CITY = 115;
     static final int PHOTO = 120;
     static final int PHOTOS = 121;
@@ -47,26 +49,29 @@ public class VenueProvider extends ContentProvider {
 
     private static final String sVenueIDSelection =
             FoursquareContract.VenuesEntry.TABLE_NAME +
-                    "." + FoursquareContract.VenuesEntry._ID + " = ? ";
+                    "." + FoursquareContract.VenuesEntry._ID + " == ? ";
 
     private static final String sVenueByCitySelection =
-            FoursquareContract.VenuesEntry.TABLE_NAME + "." + FoursquareContract.VenuesEntry.COLUMN_CATERGORY + " = ? AND " +
-                    FoursquareContract.VenuesEntry.COLUMN_CITY + " = ? ";
+            FoursquareContract.VenuesEntry.TABLE_NAME + "." + FoursquareContract.VenuesEntry.COLUMN_CATERGORY + " == ? AND " +
+                    FoursquareContract.VenuesEntry.COLUMN_CITY + " == ? ";
 
     private static final String sVenueByCatSelection =
-            FoursquareContract.VenuesEntry.TABLE_NAME + "." + FoursquareContract.VenuesEntry.COLUMN_CATERGORY + " = ? ";
+            FoursquareContract.VenuesEntry.TABLE_NAME + "." + FoursquareContract.VenuesEntry.COLUMN_CATERGORY + " == ? ";
 
     private static final String sPhotoByVenueIDSelection =
             FoursquareContract.PhotoEntry.TABLE_NAME +
-                    "." + FoursquareContract.PhotoEntry.COLUMN_VENUE_ID + " = ? ";
+                    "." + FoursquareContract.PhotoEntry.COLUMN_VENUE_ID + " == ? ";
 
     private static final String sVenueNearSelection =
-            FoursquareContract.VenuesEntry.TABLE_NAME + "." +
-                    FoursquareContract.VenuesEntry.COLUMN_CATERGORY + " = ? AND " +
-                    FoursquareContract.VenuesEntry.COLUMN_COORD_LAT + " > ? AND " +
-                    FoursquareContract.VenuesEntry.COLUMN_COORD_LAT + " < ? AND " +
-                    FoursquareContract.VenuesEntry.COLUMN_COORD_LONG + " > ? AND " +
-                    FoursquareContract.VenuesEntry.COLUMN_COORD_LONG + " < ? ";
+//            FoursquareContract.VenuesEntry.TABLE_NAME + "." +
+//                    FoursquareContract.VenuesEntry.COLUMN_CATERGORY + " == ? AND " +
+//                    FoursquareContract.VenuesEntry.COLUMN_COORD_LAT + " > ? AND " +
+//                    FoursquareContract.VenuesEntry.COLUMN_COORD_LAT + " < ? AND " +
+//                    FoursquareContract.VenuesEntry.COLUMN_COORD_LONG + " > ? AND " +
+//                    FoursquareContract.VenuesEntry.COLUMN_COORD_LONG + " < ? ";
+//                    FoursquareContract.VenuesEntry.COLUMN_COORD_LAT + " BETWEEN ? AND ? AND " +
+                    FoursquareContract.VenuesEntry.TABLE_NAME + "." +
+                    FoursquareContract.VenuesEntry.COLUMN_COORD_LONG + " BETWEEN ? AND ? ";
 
     private Cursor getVenueById(Uri uri, String[] projection, String sortOrder) {
         String venueId = uri.getPathSegments().get(1);
@@ -150,16 +155,17 @@ public class VenueProvider extends ContentProvider {
         double current_lat = Double.parseDouble(uri.getPathSegments().get(3));
         double current_lon = Double.parseDouble(uri.getPathSegments().get(4));
 
-        PointF center = new PointF((float) current_lat, (float) current_lon);
+        PointD center = new PointD(current_lat, current_lon);
         final double mult = 1; // mult = 1.1; is more reliable
-        PointF p1 = calculateDerivedPosition(center, mult * radius, 0);
-        PointF p2 = calculateDerivedPosition(center, mult * radius, 90);
-        PointF p3 = calculateDerivedPosition(center, mult * radius, 180);
-        PointF p4 = calculateDerivedPosition(center, mult * radius, 270);
+//        PointD p1 = calculateDerivedPosition(center, mult * radius, 0);
+        PointD p2 = calculateDerivedPosition(center, mult * radius, 90);
+//        PointD p3 = calculateDerivedPosition(center, mult * radius, 180);
+        PointD p4 = calculateDerivedPosition(center, mult * radius, 270);
 
         String[] selectionArgs;
         String selection;
-        selectionArgs = new String[]{category, String.valueOf(p3.x), String.valueOf(p1.x), String.valueOf(p4.y), String.valueOf(p2.y)};
+//        selectionArgs = new String[]{String.valueOf(p3.x), String.valueOf(p1.x), String.valueOf(p4.y), String.valueOf(p2.y)};
+        selectionArgs = new String[]{String.valueOf(p4.y), String.valueOf(p2.y)};
 
         selection = sVenueNearSelection;
 
@@ -203,12 +209,12 @@ public class VenueProvider extends ContentProvider {
                 retCursor = getVenueById(uri, projection, sortOrder);
                 break;
             }
-//            case VENUES_BY_GPS: {
-//                retCursor = getVenueNear(uri, projection, sortOrder);
-//                break;
-            case VENUES_BY_CAT: {
-                retCursor = getVenueByCat(uri, projection, sortOrder);
+            case VENUES_BY_GPS: {
+                retCursor = getVenueNear(uri, projection, sortOrder);
                 break;
+//            case VENUES_BY_CAT: {
+//                retCursor = getVenueByCat(uri, projection, sortOrder);
+//                break;
             }
             case VENUES_BY_CITY: {
                 retCursor = getVenueByCity(uri, projection, sortOrder);
@@ -249,7 +255,7 @@ public class VenueProvider extends ContentProvider {
                 return FoursquareContract.VenuesEntry.CONTENT_ITEM_TYPE;
             case VENUES:
                 return FoursquareContract.VenuesEntry.CONTENT_TYPE;
-            case VENUES_BY_CAT:
+            case VENUES_BY_GPS:
                 return FoursquareContract.VenuesEntry.CONTENT_TYPE;
             case VENUES_BY_CITY:
                 return FoursquareContract.VenuesEntry.CONTENT_TYPE;
@@ -400,7 +406,7 @@ public class VenueProvider extends ContentProvider {
         matcher.addURI(authority, FoursquareContract.PATH_VENUES, VENUES);
         matcher.addURI(authority, FoursquareContract.PATH_VENUES + "/#", VENUE);
         matcher.addURI(authority, FoursquareContract.PATH_VENUES + "/*/city/*", VENUES_BY_CITY);
-        matcher.addURI(authority, FoursquareContract.PATH_VENUES + "/*", VENUES_BY_CAT);
+        matcher.addURI(authority, FoursquareContract.PATH_VENUES + "/*/geo/*/*", VENUES_BY_GPS);
         matcher.addURI(authority, FoursquareContract.PATH_PHOTO, PHOTOS);
         matcher.addURI(authority, FoursquareContract.PATH_PHOTO + "/#", PHOTO);
         matcher.addURI(authority, FoursquareContract.PATH_PHOTO + "/venue_id/*", PHOTOS_BY_VENUE);
@@ -415,7 +421,7 @@ public class VenueProvider extends ContentProvider {
         super.shutdown();
     }
 
-    public static PointF calculateDerivedPosition(PointF point, double range, double bearing) {
+    public static PointD calculateDerivedPosition(PointD point, double range, double bearing) {
         double EarthRadius = 6371000; // m
 
         double latA = Math.toRadians(point.x);
@@ -438,7 +444,7 @@ public class VenueProvider extends ContentProvider {
         lat = Math.toDegrees(lat);
         lon = Math.toDegrees(lon);
 
-        PointF newPoint = new PointF((float) lat, (float) lon);
+        PointD newPoint = new PointD(lat, lon);
 
         return newPoint;
 

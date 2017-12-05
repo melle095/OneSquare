@@ -111,11 +111,11 @@ public class VenueListFragment extends Fragment implements LoaderManager.LoaderC
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
         String sortOrder = FoursquareContract.VenuesEntry.COLUMN_NAME + " ASC";
-        Uri venuesUri = FoursquareContract.VenuesEntry.buildVenuesCatUri(category);
+        Uri venuesUri = FoursquareContract.VenuesEntry.buildVenuesGPSUri(category, lat, lon);
         Uri venuesTestUri = FoursquareContract.VenuesEntry.CONTENT_URI;
 
         Cursor cursor = getActivity().getContentResolver().query(
-                venuesTestUri,
+                venuesUri,
                 null,
                 null,
                 null,

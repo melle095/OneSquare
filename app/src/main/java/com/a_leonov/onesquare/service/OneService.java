@@ -40,7 +40,7 @@ public class OneService extends IntentService {
     private String category;
 
 
-    public static final String radius = "500";
+    public static final String radius = "1000";
     public static final String CITY_EXTRA = "gce";
     public static final String lat = "lat";
     public static final String lon = "lon";
@@ -118,11 +118,11 @@ public class OneService extends IntentService {
             Uri builtUri = Uri.parse(API_URL).buildUpon()
                     .appendPath(VENUES)
                     .appendPath(SEARCH)
-                    .encodedQuery("&" + CATEGORY_ID + "=" + FoursquareContract.CATEGORY_COFFEE + "," +
-                                                            FoursquareContract.CATEGORY_BARS + "," +
-                                                            FoursquareContract.CATEGORY_Nightlife + "," +
-                                                            FoursquareContract.CATEGORY_PIESHOP)
-//                    .appendQueryParameter(CATEGORY_ID, FoursquareContract.CATEGORY_TOP_LEVEL_FOOD)
+//                    .encodedQuery("&" + CATEGORY_ID + "=" + FoursquareContract.CATEGORY_COFFEE + "," +
+//                                                            FoursquareContract.CATEGORY_BARS + "," +
+//                                                            FoursquareContract.CATEGORY_Nightlife + "," +
+//                                                            FoursquareContract.CATEGORY_PIESHOP)
+                    .appendQueryParameter(CATEGORY_ID, FoursquareContract.CATEGORY_TOP_LEVEL_FOOD)
                     .encodedQuery("&" + geo_loc + "=" + current_lat + "," + current_lon)
                     .appendQueryParameter(RADIUS, radius)
                     .appendQueryParameter(CLIENT_ID, BuildConfig.CLIENT_ID)
@@ -157,13 +157,8 @@ public class OneService extends IntentService {
                 return;
             }
 
-            int deleted = getContentResolver().delete(FoursquareContract.VenuesEntry.CONTENT_URI, null, null);
-
-            Log.d(getClass().getSimpleName(), "Deleted rows: " + deleted);
-
             oneSquareJsonStr = buffer.toString();
 
-            Log.d(getClass().getSimpleName(), "JSON : " + oneSquareJsonStr);
             getVenueDataFromJson(oneSquareJsonStr);
 
         } catch (IOException e) {
