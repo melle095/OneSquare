@@ -11,7 +11,7 @@ import android.widget.Button;
 
 import com.a_leonov.onesquare.data.FoursquareContract;
 
-public class MainFragment extends Fragment implements VenueListFragment.Callback{
+public class MainFragment extends Fragment{
 
     private OnFragmentInteractionListener mListener;
 
@@ -42,28 +42,28 @@ public class MainFragment extends Fragment implements VenueListFragment.Callback
         btn_coffee.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mListener.onCategorySelected(FoursquareContract.CATEGORY_COFFEE);
+                mListener.onCategorySelected(FoursquareContract.CATEGORY_FOOD);
             }
         });
 
         btn_bars.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mListener.onCategorySelected(FoursquareContract.CATEGORY_BARS);
+                mListener.onCategorySelected(FoursquareContract.CATEGORY_NIGHTLIFE);
             }
         });
 
         btn_bistros.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mListener.onCategorySelected(FoursquareContract.CATEGORY_PIESHOP);
+                mListener.onCategorySelected(FoursquareContract.CATEGORY_Entertainment);
             }
         });
 
         btn_clubs.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mListener.onCategorySelected(FoursquareContract.CATEGORY_Nightlife);
+                mListener.onCategorySelected(FoursquareContract.CATEGORY_OUTDOOR);
             }
         });
 
@@ -85,11 +85,6 @@ public class MainFragment extends Fragment implements VenueListFragment.Callback
     public void onDetach() {
         super.onDetach();
         mListener = null;
-    }
-
-    @Override
-    public void onItemSelected(Uri dateUri) {
-
     }
 
     public interface OnFragmentInteractionListener {

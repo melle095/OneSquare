@@ -45,11 +45,10 @@ import java.util.Locale;
 
 public class MainActivity extends AppCompatActivity implements MainFragment.OnFragmentInteractionListener {
 
+    private String selectedCategory;
     private String BUNDLE_CATEGORY = "category";
     private String BUNDLE_LAT = "lat";
     private String BUNDLE_LON = "lon";
-
-    private String selectedCategory;
 
     private static final String TAG = MainActivity.class.getSimpleName();
 
@@ -68,7 +67,6 @@ public class MainActivity extends AppCompatActivity implements MainFragment.OnFr
     private Location mCurrentLocation;
     private Boolean mRequestingLocationUpdates;
     private String mLastUpdateTime;
-
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -222,20 +220,36 @@ public class MainActivity extends AppCompatActivity implements MainFragment.OnFr
     private void updateLocationUI() {
         if (mCurrentLocation != null) {
             Intent venueIntent = new Intent(this, OneService.class);
-            venueIntent.putExtra(OneService.CATEGORY, FoursquareContract.CATEGORY_TOP_LEVEL_FOOD);
+            venueIntent.putExtra(OneService.CATEGORY, FoursquareContract.CATEGORY_FOOD);
             venueIntent.putExtra(OneService.lat, String.valueOf(mCurrentLocation.getLatitude()));
             venueIntent.putExtra(OneService.lon, String.valueOf(mCurrentLocation.getLongitude()));
 
             startService(venueIntent);
-            Log.i(TAG, " Update location. Called service OneService");
+            Log.i(TAG, " Update location1. Called service OneService");
 
-
-//            mLatitudeTextView.setText(String.format(Locale.ENGLISH, "%s: %f", mLatitudeLabel,
-//                    mCurrentLocation.getLatitude()));
-//            mLongitudeTextView.setText(String.format(Locale.ENGLISH, "%s: %f", mLongitudeLabel,
-//                    mCurrentLocation.getLongitude()));
-//            mLastUpdateTimeTextView.setText(String.format(Locale.ENGLISH, "%s: %s",
-//                    mLastUpdateTimeLabel, mLastUpdateTime));
+//            Intent venueIntent2 = new Intent(this, OneService.class);
+//            venueIntent2.putExtra(OneService.CATEGORY, FoursquareContract.CATEGORY_Entertainment);
+//            venueIntent2.putExtra(OneService.lat, String.valueOf(mCurrentLocation.getLatitude()));
+//            venueIntent2.putExtra(OneService.lon, String.valueOf(mCurrentLocation.getLongitude()));
+//
+//            startService(venueIntent2);
+//            Log.i(TAG, " Update location2. Called service OneService");
+//
+//            Intent venueIntent3 = new Intent(this, OneService.class);
+//            venueIntent3.putExtra(OneService.CATEGORY, FoursquareContract.CATEGORY_NIGHTLIFE);
+//            venueIntent3.putExtra(OneService.lat, String.valueOf(mCurrentLocation.getLatitude()));
+//            venueIntent3.putExtra(OneService.lon, String.valueOf(mCurrentLocation.getLongitude()));
+//
+//            startService(venueIntent3);
+//            Log.i(TAG, " Update location3. Called service OneService");
+//
+//            Intent venueIntent4 = new Intent(this, OneService.class);
+//            venueIntent4.putExtra(OneService.CATEGORY, FoursquareContract.CATEGORY_OUTDOOR);
+//            venueIntent4.putExtra(OneService.lat, String.valueOf(mCurrentLocation.getLatitude()));
+//            venueIntent4.putExtra(OneService.lon, String.valueOf(mCurrentLocation.getLongitude()));
+//
+//            startService(venueIntent4);
+//            Log.i(TAG, " Update location4. Called service OneService");
         }
     }
 

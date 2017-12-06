@@ -37,8 +37,6 @@ import java.util.Vector;
 public class OneService extends IntentService {
 
     private final String LOG_TAG = getClass().getSimpleName();
-    private String category;
-
 
     public static final String radius = "1000";
     public static final String CITY_EXTRA = "gce";
@@ -76,6 +74,10 @@ public class OneService extends IntentService {
     private final String STATE = "state";
     private final String COUNTRY = "country";
 
+    String category;
+    String current_lat;
+    String current_lon;
+
 
     public OneService() {
         super("onesquare");
@@ -90,9 +92,9 @@ public class OneService extends IntentService {
     @Override
     protected void onHandleIntent(@Nullable Intent intent) {
 
-        String category  = intent.getStringExtra(CATEGORY);
-        String current_lat = intent.getStringExtra(lat);
-        String current_lon = intent.getStringExtra(lon);
+        category  = intent.getStringExtra(CATEGORY);
+        current_lat = intent.getStringExtra(lat);
+        current_lon = intent.getStringExtra(lon);
 
 
         HttpURLConnection urlConnection = null;
@@ -113,6 +115,7 @@ public class OneService extends IntentService {
             final String CLIENT_SECRET = "client_secret";
             final String CURRENT_DATE = "v";
             final String CATEGORY_ID = "categoryId";
+            final String LIMIT = "limit";
             final String RADIUS = "radius";
 
             Uri builtUri = Uri.parse(API_URL).buildUpon()
@@ -122,9 +125,10 @@ public class OneService extends IntentService {
 //                                                            FoursquareContract.CATEGORY_BARS + "," +
 //                                                            FoursquareContract.CATEGORY_Nightlife + "," +
 //                                                            FoursquareContract.CATEGORY_PIESHOP)
-                    .appendQueryParameter(CATEGORY_ID, FoursquareContract.CATEGORY_TOP_LEVEL_FOOD)
+                    .appendQueryParameter(CATEGORY_ID, category)
                     .encodedQuery("&" + geo_loc + "=" + current_lat + "," + current_lon)
-                    .appendQueryParameter(RADIUS, radius)
+                    .appendQueryParameter(LIMIT, "50")
+                    .appendQueryParameter(RADIUS, "500")
                     .appendQueryParameter(CLIENT_ID, BuildConfig.CLIENT_ID)
                     .appendQueryParameter(CLIENT_SECRET, BuildConfig.CLIENT_SECRET)
                     .appendQueryParameter(CURRENT_DATE, timeMilisToString(System.currentTimeMillis()))
@@ -158,6 +162,8 @@ public class OneService extends IntentService {
             }
 
             oneSquareJsonStr = buffer.toString();
+
+//            getContentResolver().delete(FoursquareContract.VenuesEntry.CONTENT_URI, null, null);
 
             getVenueDataFromJson(oneSquareJsonStr);
 
@@ -261,7 +267,7 @@ public class OneService extends IntentService {
 
                 }
 
-                Log.d(LOG_TAG, "OneService Service Complete. " + cVVector.size() + " Inserted");
+                Log.d(LOG_TAG, "OneService Complete. " + cVVector.size() + " Inserted of category " + category);
             }
         } catch (JSONException e) {
             Log.e(LOG_TAG, e.getMessage(), e);
@@ -291,4 +297,5 @@ public class OneService extends IntentService {
             }
         }
     }
+
 }

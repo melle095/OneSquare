@@ -63,15 +63,15 @@ public class VenueProvider extends ContentProvider {
                     "." + FoursquareContract.PhotoEntry.COLUMN_VENUE_ID + " == ? ";
 
     private static final String sVenueNearSelection =
-//            FoursquareContract.VenuesEntry.TABLE_NAME + "." +
-//                    FoursquareContract.VenuesEntry.COLUMN_CATERGORY + " == ? AND " +
-//                    FoursquareContract.VenuesEntry.COLUMN_COORD_LAT + " > ? AND " +
-//                    FoursquareContract.VenuesEntry.COLUMN_COORD_LAT + " < ? AND " +
-//                    FoursquareContract.VenuesEntry.COLUMN_COORD_LONG + " > ? AND " +
-//                    FoursquareContract.VenuesEntry.COLUMN_COORD_LONG + " < ? ";
+            FoursquareContract.VenuesEntry.TABLE_NAME + "." +
+                    FoursquareContract.VenuesEntry.COLUMN_CATERGORY + " == ? AND " +
+                    FoursquareContract.VenuesEntry.COLUMN_COORD_LAT + " > ? AND " +
+                    FoursquareContract.VenuesEntry.COLUMN_COORD_LAT + " < ? AND " +
+                    FoursquareContract.VenuesEntry.COLUMN_COORD_LONG + " < ? AND " +
+                    FoursquareContract.VenuesEntry.COLUMN_COORD_LONG + " > ? ";
 //                    FoursquareContract.VenuesEntry.COLUMN_COORD_LAT + " BETWEEN ? AND ? AND " +
-                    FoursquareContract.VenuesEntry.TABLE_NAME + "." +
-                    FoursquareContract.VenuesEntry.COLUMN_COORD_LONG + " BETWEEN ? AND ? ";
+//                    FoursquareContract.VenuesEntry.TABLE_NAME + "." +
+//                    FoursquareContract.VenuesEntry.COLUMN_COORD_LONG + " BETWEEN ? AND ? ";
 
     private Cursor getVenueById(Uri uri, String[] projection, String sortOrder) {
         String venueId = uri.getPathSegments().get(1);
@@ -157,15 +157,15 @@ public class VenueProvider extends ContentProvider {
 
         PointD center = new PointD(current_lat, current_lon);
         final double mult = 1; // mult = 1.1; is more reliable
-//        PointD p1 = calculateDerivedPosition(center, mult * radius, 0);
+        PointD p1 = calculateDerivedPosition(center, mult * radius, 0);
         PointD p2 = calculateDerivedPosition(center, mult * radius, 90);
-//        PointD p3 = calculateDerivedPosition(center, mult * radius, 180);
+        PointD p3 = calculateDerivedPosition(center, mult * radius, 180);
         PointD p4 = calculateDerivedPosition(center, mult * radius, 270);
 
         String[] selectionArgs;
         String selection;
-//        selectionArgs = new String[]{String.valueOf(p3.x), String.valueOf(p1.x), String.valueOf(p4.y), String.valueOf(p2.y)};
-        selectionArgs = new String[]{String.valueOf(p4.y), String.valueOf(p2.y)};
+        selectionArgs = new String[]{category, String.valueOf(p3.x), String.valueOf(p1.x), String.valueOf(p2.y), String.valueOf(p4.y)};
+//        selectionArgs = new String[]{category};
 
         selection = sVenueNearSelection;
 
@@ -222,7 +222,7 @@ public class VenueProvider extends ContentProvider {
             }
             case PHOTOS_BY_VENUE: {
                 retCursor = getPhotoByVenue(uri, projection, sortOrder);
-                Log.d(getClass().getSimpleName(), "VenueProvider: " + DatabaseUtils.dumpCursorToString(retCursor));
+//                Log.d(getClass().getSimpleName(), "VenueProvider: " + DatabaseUtils.dumpCursorToString(retCursor));
                 break;
             }
             case PHOTOS: {
@@ -448,5 +448,20 @@ public class VenueProvider extends ContentProvider {
 
         return newPoint;
 
+    }
+
+    public static double getDistanceBetweenTwoPoints(PointD p1, PointD p2) {
+        double R = 6371000; // m
+        double dLat = Math.toRadians(p2.x - p1.x);
+        double dLon = Math.toRadians(p2.y - p1.y);
+        double lat1 = Math.toRadians(p1.x);
+        double lat2 = Math.toRadians(p2.x);
+
+        double a = Math.sin(dLat / 2) * Math.sin(dLat / 2) + Math.sin(dLon / 2)
+                * Math.sin(dLon / 2) * Math.cos(lat1) * Math.cos(lat2);
+        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        double d = R * c;
+
+        return d;
     }
 }
