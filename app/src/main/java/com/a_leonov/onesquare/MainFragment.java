@@ -34,26 +34,26 @@ public class MainFragment extends Fragment{
 
         View rootView =  inflater.inflate(R.layout.fragment_main, container, false);
 
-        Button btn_coffee   = rootView.findViewById(R.id.button_cat_coffee);
-        Button btn_bars     = rootView.findViewById(R.id.button_cat_bars);
-        Button btn_bistros  = rootView.findViewById(R.id.button_cat_bistros);
+        Button btn_food   = rootView.findViewById(R.id.button_cat_food);
+        Button btn_outdoor     = rootView.findViewById(R.id.button_cat_outdoor);
+        Button btn_ent  = rootView.findViewById(R.id.button_cat_ent);
         Button btn_clubs    = rootView.findViewById(R.id.button_cat_clubs);
 
-        btn_coffee.setOnClickListener(new View.OnClickListener() {
+        btn_food.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 mListener.onCategorySelected(FoursquareContract.CATEGORY_FOOD);
             }
         });
 
-        btn_bars.setOnClickListener(new View.OnClickListener() {
+        btn_outdoor.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mListener.onCategorySelected(FoursquareContract.CATEGORY_NIGHTLIFE);
+                mListener.onCategorySelected(FoursquareContract.CATEGORY_OUTDOOR);
             }
         });
 
-        btn_bistros.setOnClickListener(new View.OnClickListener() {
+        btn_ent.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 mListener.onCategorySelected(FoursquareContract.CATEGORY_Entertainment);
@@ -63,7 +63,7 @@ public class MainFragment extends Fragment{
         btn_clubs.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mListener.onCategorySelected(FoursquareContract.CATEGORY_OUTDOOR);
+                mListener.onCategorySelected(FoursquareContract.CATEGORY_NIGHTLIFE);
             }
         });
 

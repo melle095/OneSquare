@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">OneSquare</string>
+    <string name="app_name">𝓞𝓷𝓮𝓢𝓺𝓾𝓪𝓻𝓮</string>
     <string name="content_authority">com.a_leonov.onesquare.app</string>
     <string name="no_location_detected">
         No location detected. Make sure location is enabled on the device.

@@ -91,6 +91,7 @@ public class MainActivity extends AppCompatActivity implements MainFragment.OnFr
 
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
         mSettingsClient = LocationServices.getSettingsClient(this);
+        createGetLastLocationCallback();
         createLocationCallback();
         createLocationRequest();
         buildLocationSettingsRequest();
@@ -141,6 +142,17 @@ public class MainActivity extends AppCompatActivity implements MainFragment.OnFr
             }
         };
     }
+
+    private void createGetLastLocationCallback() {
+        mFusedLocationClient.getLastLocation()
+                .addOnSuccessListener(this, new OnSuccessListener<Location>() {
+                    @Override
+                    public void onSuccess(Location location) {
+                        mCurrentLocation = location;
+                    }
+                });
+
+        };
 
     private void buildLocationSettingsRequest() {
         LocationSettingsRequest.Builder builder = new LocationSettingsRequest.Builder();
