@@ -224,32 +224,25 @@ public class MainActivity extends AppCompatActivity implements MainFragment.OnFr
             venueIntent.putExtra(OneService.lat, String.valueOf(mCurrentLocation.getLatitude()));
             venueIntent.putExtra(OneService.lon, String.valueOf(mCurrentLocation.getLongitude()));
 
-            startService(venueIntent);
-            Log.i(TAG, " Update location1. Called service OneService");
+            Intent venueIntent2 = new Intent(this, OneService.class);
+            venueIntent2.putExtra(OneService.CATEGORY, FoursquareContract.CATEGORY_Entertainment);
+            venueIntent2.putExtra(OneService.lat, String.valueOf(mCurrentLocation.getLatitude()));
+            venueIntent2.putExtra(OneService.lon, String.valueOf(mCurrentLocation.getLongitude()));
 
-//            Intent venueIntent2 = new Intent(this, OneService.class);
-//            venueIntent2.putExtra(OneService.CATEGORY, FoursquareContract.CATEGORY_Entertainment);
-//            venueIntent2.putExtra(OneService.lat, String.valueOf(mCurrentLocation.getLatitude()));
-//            venueIntent2.putExtra(OneService.lon, String.valueOf(mCurrentLocation.getLongitude()));
-//
-//            startService(venueIntent2);
-//            Log.i(TAG, " Update location2. Called service OneService");
-//
-//            Intent venueIntent3 = new Intent(this, OneService.class);
-//            venueIntent3.putExtra(OneService.CATEGORY, FoursquareContract.CATEGORY_NIGHTLIFE);
-//            venueIntent3.putExtra(OneService.lat, String.valueOf(mCurrentLocation.getLatitude()));
-//            venueIntent3.putExtra(OneService.lon, String.valueOf(mCurrentLocation.getLongitude()));
-//
-//            startService(venueIntent3);
-//            Log.i(TAG, " Update location3. Called service OneService");
-//
-//            Intent venueIntent4 = new Intent(this, OneService.class);
-//            venueIntent4.putExtra(OneService.CATEGORY, FoursquareContract.CATEGORY_OUTDOOR);
-//            venueIntent4.putExtra(OneService.lat, String.valueOf(mCurrentLocation.getLatitude()));
-//            venueIntent4.putExtra(OneService.lon, String.valueOf(mCurrentLocation.getLongitude()));
-//
-//            startService(venueIntent4);
-//            Log.i(TAG, " Update location4. Called service OneService");
+            Intent venueIntent3 = new Intent(this, OneService.class);
+            venueIntent3.putExtra(OneService.CATEGORY, FoursquareContract.CATEGORY_NIGHTLIFE);
+            venueIntent3.putExtra(OneService.lat, String.valueOf(mCurrentLocation.getLatitude()));
+            venueIntent3.putExtra(OneService.lon, String.valueOf(mCurrentLocation.getLongitude()));
+
+            Intent venueIntent4 = new Intent(this, OneService.class);
+            venueIntent4.putExtra(OneService.CATEGORY, FoursquareContract.CATEGORY_OUTDOOR);
+            venueIntent4.putExtra(OneService.lat, String.valueOf(mCurrentLocation.getLatitude()));
+            venueIntent4.putExtra(OneService.lon, String.valueOf(mCurrentLocation.getLongitude()));
+
+            startService(venueIntent);
+            startService(venueIntent2);
+            startService(venueIntent3);
+            startService(venueIntent4);
         }
     }
 

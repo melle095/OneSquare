@@ -3,12 +3,8 @@ package com.a_leonov.onesquare.service;
 import android.app.IntentService;
 import android.content.ContentValues;
 import android.content.Intent;
-import android.database.Cursor;
-import android.database.DatabaseUtils;
 import android.net.Uri;
-import android.os.Build;
 import android.support.annotation.Nullable;
-import android.support.annotation.RequiresApi;
 import android.util.Log;
 
 import com.a_leonov.onesquare.BuildConfig;
@@ -27,7 +23,6 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
-import java.util.Locale;
 import java.util.Vector;
 
 /**
@@ -92,7 +87,11 @@ public class OneService extends IntentService {
     @Override
     protected void onHandleIntent(@Nullable Intent intent) {
 
-        category  = intent.getStringExtra(CATEGORY);
+        category = intent.getStringExtra(CATEGORY);
+
+        Log.i(LOG_TAG, " Start OneService. By category " + category);
+
+
         current_lat = intent.getStringExtra(lat);
         current_lon = intent.getStringExtra(lon);
 
@@ -107,7 +106,7 @@ public class OneService extends IntentService {
             final String API_URL = "https://api.foursquare.com/v2";
             final String VENUES = "venues";
             final String SEARCH = "search";
-            final String NEAR   = "near";
+            final String NEAR = "near";
             final String geo_loc = "ll";
             final String INTENT = "intent";
             final String PHOTOS = "photos";
@@ -121,12 +120,8 @@ public class OneService extends IntentService {
             Uri builtUri = Uri.parse(API_URL).buildUpon()
                     .appendPath(VENUES)
                     .appendPath(SEARCH)
-//                    .encodedQuery("&" + CATEGORY_ID + "=" + FoursquareContract.CATEGORY_COFFEE + "," +
-//                                                            FoursquareContract.CATEGORY_BARS + "," +
-//                                                            FoursquareContract.CATEGORY_Nightlife + "," +
-//                                                            FoursquareContract.CATEGORY_PIESHOP)
-                    .appendQueryParameter(CATEGORY_ID, category)
                     .encodedQuery("&" + geo_loc + "=" + current_lat + "," + current_lon)
+                    .appendQueryParameter(CATEGORY_ID, category)
                     .appendQueryParameter(LIMIT, "50")
                     .appendQueryParameter(RADIUS, "500")
                     .appendQueryParameter(CLIENT_ID, BuildConfig.CLIENT_ID)
@@ -135,6 +130,8 @@ public class OneService extends IntentService {
                     .build();
 
             URL url = new URL(builtUri.toString());
+
+            Log.d(LOG_TAG, builtUri.toString());
 
             urlConnection = (HttpURLConnection) url.openConnection();
             urlConnection.setRequestMethod("GET");
@@ -215,59 +212,62 @@ public class OneService extends IntentService {
 
                     ContentValues venueValues = new ContentValues();
 
-                    putJsonValue(venueValues, item, FoursquareContract.VenuesEntry.COLUMN_VEN_KEY,VENUE_ID,1);
+                    putJsonValue(venueValues, item, FoursquareContract.VenuesEntry.COLUMN_VEN_KEY, VENUE_ID, 1);
                     putJsonValue(venueValues, item, FoursquareContract.VenuesEntry.COLUMN_NAME, NAME, 1);
-                    putJsonValue(venueValues, item, FoursquareContract.VenuesEntry.COLUMN_VERIFIED, VERIFIED , 1);
-                    putJsonValue(venueValues, item, FoursquareContract.VenuesEntry.COLUMN_URL, URL,1);
-                    putJsonValue(venueValues, item, FoursquareContract.VenuesEntry.COLUMN_STATUS, STATUS,1);
-                    putJsonValue(venueValues, item, FoursquareContract.VenuesEntry.COLUMN_ISOPEN, ISOPEN,1);
-                    putJsonValue(venueValues, item, FoursquareContract.VenuesEntry.COLUMN_ISLOCALHOLIDAY, ISLOCALHOLIDAY,1);
-                    putJsonValue(venueValues, item, FoursquareContract.VenuesEntry.COLUMN_POPULAR, POPULAR,1);
-                    putJsonValue(venueValues, item, FoursquareContract.VenuesEntry.COLUMN_RATING, RATING,1);
-                    putJsonValue(venueValues, item, FoursquareContract.VenuesEntry.COLUMN_SHORTURL, SHORTURL,1);
-                    putJsonValue(venueValues, item, FoursquareContract.VenuesEntry.COLUMN_CANONICALURL, CANONICALURL,1);
+                    putJsonValue(venueValues, item, FoursquareContract.VenuesEntry.COLUMN_VERIFIED, VERIFIED, 1);
+                    putJsonValue(venueValues, item, FoursquareContract.VenuesEntry.COLUMN_URL, URL, 1);
+                    putJsonValue(venueValues, item, FoursquareContract.VenuesEntry.COLUMN_STATUS, STATUS, 1);
+                    putJsonValue(venueValues, item, FoursquareContract.VenuesEntry.COLUMN_ISOPEN, ISOPEN, 1);
+                    putJsonValue(venueValues, item, FoursquareContract.VenuesEntry.COLUMN_ISLOCALHOLIDAY, ISLOCALHOLIDAY, 1);
+                    putJsonValue(venueValues, item, FoursquareContract.VenuesEntry.COLUMN_POPULAR, POPULAR, 1);
+                    putJsonValue(venueValues, item, FoursquareContract.VenuesEntry.COLUMN_RATING, RATING, 1);
+                    putJsonValue(venueValues, item, FoursquareContract.VenuesEntry.COLUMN_SHORTURL, SHORTURL, 1);
+                    putJsonValue(venueValues, item, FoursquareContract.VenuesEntry.COLUMN_CANONICALURL, CANONICALURL, 1);
 
                     JSONObject location = (JSONObject) item.getJSONObject("location");
 
-                    putJsonValue(venueValues, location, FoursquareContract.VenuesEntry.COLUMN_ADDRESS, ADDRESS ,1);
-                    putJsonValue(venueValues, location, FoursquareContract.VenuesEntry.COLUMN_CROSSSTREET, CROSSSTREET,1);
+                    putJsonValue(venueValues, location, FoursquareContract.VenuesEntry.COLUMN_ADDRESS, ADDRESS, 1);
+                    putJsonValue(venueValues, location, FoursquareContract.VenuesEntry.COLUMN_CROSSSTREET, CROSSSTREET, 1);
                     putJsonValue(venueValues, location, FoursquareContract.VenuesEntry.COLUMN_CITY, CITY, 1);
-                    putJsonValue(venueValues, location, FoursquareContract.VenuesEntry.COLUMN_CC, CC , 1);
+                    putJsonValue(venueValues, location, FoursquareContract.VenuesEntry.COLUMN_CC, CC, 1);
                     putJsonValue(venueValues, location, FoursquareContract.VenuesEntry.COLUMN_POSTALCODE, POSTALCODE, 2);
-                    putJsonValue(venueValues, location, FoursquareContract.VenuesEntry.COLUMN_COUNTRY, COUNTRY,1);
+                    putJsonValue(venueValues, location, FoursquareContract.VenuesEntry.COLUMN_COUNTRY, COUNTRY, 1);
                     putJsonValue(venueValues, location, FoursquareContract.VenuesEntry.COLUMN_COORD_LAT, COORD_LAT, 3);
-                    putJsonValue(venueValues, location, FoursquareContract.VenuesEntry.COLUMN_COORD_LONG, COORD_LONG,3);
-                    putJsonValue(venueValues, location, FoursquareContract.VenuesEntry.COLUMN_STATE, STATE,1);
+                    putJsonValue(venueValues, location, FoursquareContract.VenuesEntry.COLUMN_COORD_LONG, COORD_LONG, 3);
+                    putJsonValue(venueValues, location, FoursquareContract.VenuesEntry.COLUMN_STATE, STATE, 1);
 
                     JSONObject contact = item.getJSONObject("contact");
-                    putJsonValue(venueValues, contact, FoursquareContract.VenuesEntry.COLUMN_PHONE, PHONE ,1);
-                    putJsonValue(venueValues, contact, FoursquareContract.VenuesEntry.COLUMN_FORMATTEDPHONE, FORMATTEDPHONE ,1);
-                    putJsonValue(venueValues, contact, FoursquareContract.VenuesEntry.COLUMN_TWITTER, TWITTER ,1);
-                    putJsonValue(venueValues, contact, FoursquareContract.VenuesEntry.COLUMN_INSTAGRAMM, INSTAGRAMM ,1);
-                    putJsonValue(venueValues, contact, FoursquareContract.VenuesEntry.COLUMN_FACEBOOK, FACEBOOK ,1);
-                    putJsonValue(venueValues, contact, FoursquareContract.VenuesEntry.COLUMN_FACEBOOKNAME, FACEBOOKNAME ,1);
-                    putJsonValue(venueValues, contact, FoursquareContract.VenuesEntry.COLUMN_FACEBOOKUSER, FACEBOOKUSER ,1);
 
-                    JSONArray category = item.getJSONArray("categories");
-                    JSONObject category_item;
+                    putJsonValue(venueValues, contact, FoursquareContract.VenuesEntry.COLUMN_PHONE, PHONE, 1);
+                    putJsonValue(venueValues, contact, FoursquareContract.VenuesEntry.COLUMN_FORMATTEDPHONE, FORMATTEDPHONE, 1);
+                    putJsonValue(venueValues, contact, FoursquareContract.VenuesEntry.COLUMN_TWITTER, TWITTER, 1);
+                    putJsonValue(venueValues, contact, FoursquareContract.VenuesEntry.COLUMN_INSTAGRAMM, INSTAGRAMM, 1);
+                    putJsonValue(venueValues, contact, FoursquareContract.VenuesEntry.COLUMN_FACEBOOK, FACEBOOK, 1);
+                    putJsonValue(venueValues, contact, FoursquareContract.VenuesEntry.COLUMN_FACEBOOKNAME, FACEBOOKNAME, 1);
+                    putJsonValue(venueValues, contact, FoursquareContract.VenuesEntry.COLUMN_FACEBOOKUSER, FACEBOOKUSER, 1);
 
-                    for (int j=0; j < category.length(); j++) {
-                        category_item = category.getJSONObject(j);
-//                        if (category_item.getString("Primary") == "true")
-                            putJsonValue(venueValues,category_item, FoursquareContract.VenuesEntry.COLUMN_CATERGORY,"id",1);
-                    }
+                    venueValues.put(FoursquareContract.VenuesEntry.COLUMN_CATERGORY, category);
+
+//                    JSONArray category = item.getJSONArray("categories");
+//                    JSONObject category_item;
+//
+//                    for (int j=0; j < category.length(); j++) {
+//                        category_item = category.getJSONObject(j);
+////                        if (category_item.getString("Primary") == "true")
+//                            putJsonValue(venueValues,category_item, FoursquareContract.VenuesEntry.COLUMN_CATERGORY,"id",1);
+//                    }
 
                     cVVector.add(venueValues);
                 }
-
+                int inserted = 0;
                 if (cVVector.size() > 0) {
                     ContentValues[] cvArray = new ContentValues[cVVector.size()];
                     cVVector.toArray(cvArray);
-                    this.getContentResolver().bulkInsert(FoursquareContract.VenuesEntry.CONTENT_URI, cvArray);
+                    inserted = this.getContentResolver().bulkInsert(FoursquareContract.VenuesEntry.CONTENT_URI, cvArray);
 
                 }
 
-                Log.d(LOG_TAG, "OneService Complete. " + cVVector.size() + " Inserted of category " + category);
+                Log.d(LOG_TAG, "OneService Complete. " + cVVector.size() + " Inserted of category " + inserted);
             }
         } catch (JSONException e) {
             Log.e(LOG_TAG, e.getMessage(), e);
@@ -278,7 +278,7 @@ public class OneService extends IntentService {
     private void putJsonValue(ContentValues value, JSONObject item, String contractName, String paramName, int mode) {
         if (!item.isNull(paramName)) {
             try {
-                switch (mode){
+                switch (mode) {
                     case 1: {
                         value.put(contractName, item.getString(paramName));
                         break;
