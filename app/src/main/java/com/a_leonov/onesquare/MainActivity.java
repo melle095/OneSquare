@@ -11,11 +11,10 @@ import android.os.Bundle;
 import android.os.Looper;
 import android.provider.Settings;
 import android.support.annotation.NonNull;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
-import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
-import android.support.design.widget.Snackbar;
 import android.widget.Toast;
 
 import com.a_leonov.onesquare.data.FoursquareContract;
@@ -36,14 +35,11 @@ import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.text.DateFormat;
 import java.util.Date;
-import java.util.Locale;
 
 
-public class MainActivity extends AppCompatActivity implements MainFragment.OnFragmentInteractionListener {
+public class MainActivity extends Activity implements MainFragment.OnFragmentInteractionListener {
 
     private String selectedCategory;
     private String BUNDLE_CATEGORY = "category";
@@ -80,7 +76,7 @@ public class MainActivity extends AppCompatActivity implements MainFragment.OnFr
 
         MainFragment mainFragment = new MainFragment();
 
-        getSupportFragmentManager().beginTransaction()
+        getFragmentManager().beginTransaction()
                 .add(R.id.main_container, mainFragment)
                 .commit();
 
@@ -417,7 +413,7 @@ public class MainActivity extends AppCompatActivity implements MainFragment.OnFr
             bundle.putDouble(BUNDLE_LON, mCurrentLocation.getLongitude());
             venueListFragment.setArguments(bundle);
 
-            getSupportFragmentManager().beginTransaction()
+            getFragmentManager().beginTransaction()
                     .replace(R.id.main_container, venueListFragment)
                     .addToBackStack(null)
                     .commit();

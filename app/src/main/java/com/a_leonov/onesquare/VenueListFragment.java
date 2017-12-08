@@ -1,12 +1,10 @@
 package com.a_leonov.onesquare;
 
-import android.content.Context;
+import android.app.Fragment;
 import android.database.Cursor;
-import android.database.DatabaseUtils;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
@@ -107,7 +105,7 @@ public class VenueListFragment extends Fragment implements LoaderManager.LoaderC
             mVenueAdapter.setCurrentPoint(new PointD(lat, lon));
         }
 
-        getLoaderManager().initLoader(VENUE_LOADER, null, this);
+        getLoaderManager().initLoader(VENUE_LOADER, null, null);
         super.onActivityCreated(savedInstanceState);
     }
 
