@@ -1,4 +1,4 @@
-package com.a_leonov.onesquare;
+package com.a_leonov.onesquare.ui;
 
 import android.Manifest;
 import android.app.Activity;
@@ -17,6 +17,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
 
+import com.a_leonov.onesquare.BuildConfig;
 import com.a_leonov.onesquare.data.FoursquareContract;
 import com.a_leonov.onesquare.service.OneService;
 import com.google.android.gms.common.api.ApiException;

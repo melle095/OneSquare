@@ -1,4 +1,4 @@
-package com.a_leonov.onesquare;
+package com.a_leonov.onesquare.ui;
 
 import android.app.Fragment;
 import android.content.Context;

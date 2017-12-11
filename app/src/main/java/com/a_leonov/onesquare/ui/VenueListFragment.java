@@ -1,4 +1,4 @@
-package com.a_leonov.onesquare;
+package com.a_leonov.onesquare.ui;
 
 import android.app.Fragment;
 import android.database.Cursor;
@@ -15,7 +15,9 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ListView;
 
+import com.a_leonov.onesquare.PointD;
 import com.a_leonov.onesquare.data.FoursquareContract;
+import com.a_leonov.onesquare.ui.VenueAdapter;
 
 /**
  * Created by a_leonov on 24.11.2017.

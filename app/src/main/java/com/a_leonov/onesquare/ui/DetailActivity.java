@@ -1,7 +1,9 @@
-package com.a_leonov.onesquare;
+package com.a_leonov.onesquare.ui;
 
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
+
+import com.a_leonov.onesquare.R;
 
 public class DetailActivity extends AppCompatActivity {
 
