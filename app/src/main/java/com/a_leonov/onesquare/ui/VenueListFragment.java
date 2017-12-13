@@ -1,23 +1,22 @@
 package com.a_leonov.onesquare.ui;
 
-import android.app.Fragment;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
-import android.util.Log;
+import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
 import android.widget.ListView;
 
 import com.a_leonov.onesquare.PointD;
+import com.a_leonov.onesquare.R;
 import com.a_leonov.onesquare.data.FoursquareContract;
-import com.a_leonov.onesquare.ui.VenueAdapter;
 
 /**
  * Created by a_leonov on 24.11.2017.
@@ -28,12 +27,9 @@ public class VenueListFragment extends Fragment implements LoaderManager.LoaderC
     private String BUNDLE_CATEGORY = "category";
     private String BUNDLE_LAT = "lat";
     private String BUNDLE_LON = "lon";
-    private ListView mListView;
+    private RecyclerView mRecyclerView;
     private static final String SELECTED_KEY = "selected_position";
     private static final int VENUE_LOADER = 0;
-    String category;
-    private double lat;
-    private double lon;
 
     private VenueAdapter mVenueAdapter;
     private int mPosition;
@@ -64,31 +60,13 @@ public class VenueListFragment extends Fragment implements LoaderManager.LoaderC
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
 
-        View rootView = inflater.inflate(R.layout.fragment_list, container, false);
+        View rootView = inflater.inflate(R.layout.include_article_list, container, false);
 
-        mVenueAdapter = new VenueAdapter(getActivity(), null, 0);
+        mVenueAdapter = new VenueAdapter(null);
 
-        mListView = (ListView) rootView.findViewById(R.id.listView);
-        mListView.setAdapter(null);
-        // We'll call our MainActivity
-        mListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+        mRecyclerView = (RecyclerView) rootView.findViewById(R.id.recycler_view);
+        mRecyclerView.setAdapter(mVenueAdapter);
 
-            @Override
-            public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
-                // CursorAdapter returns a cursor at the correct position for getItem(), or null
-                // if it cannot seek to that position.
-                Cursor cursor = (Cursor) adapterView.getItemAtPosition(position);
-                Log.d(getClass().getSimpleName(), String.valueOf(position));
-//                if (cursor != null) {
-//                    String locationSetting = Utility.getPreferredLocation(getActivity());
-//                    ((Callback) getActivity())
-//                            .onItemSelected(WeatherContract.WeatherEntry.buildWeatherLocationWithDate(
-//                                    locationSetting, cursor.getLong(COL_WEATHER_DATE)
-//                            ));
-//                }
-//                mPosition = position;
-            }
-        });
 
         if (savedInstanceState != null && savedInstanceState.containsKey(SELECTED_KEY)) {
             // The listview probably hasn't even been populated yet.  Actually perform the
@@ -102,35 +80,34 @@ public class VenueListFragment extends Fragment implements LoaderManager.LoaderC
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         Bundle bundle = this.getArguments();
-        if (bundle != null) {
-            category = bundle.getString(BUNDLE_CATEGORY);
-            lat      = bundle.getDouble(BUNDLE_LAT);
-            lon      = bundle.getDouble(BUNDLE_LON);
-            mVenueAdapter.setCurrentPoint(new PointD(lat, lon));
-        }
 
-        getLoaderManager().initLoader(VENUE_LOADER, null, null);
+        getLoaderManager().initLoader(VENUE_LOADER, bundle, this);
         super.onActivityCreated(savedInstanceState);
     }
 
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+
         String sortOrder = FoursquareContract.VenuesEntry.COLUMN_NAME + " ASC";
-        Uri venuesUri = FoursquareContract.VenuesEntry.buildVenuesGPSUri(category, lat, lon);
-        Uri venuesTestUri = FoursquareContract.VenuesEntry.CONTENT_URI;
 
-//        Cursor cursor = getActivity().getContentResolver().query(
-//                venuesUri,
-//                null,
-//                null,
-//                null,
-//                sortOrder
-//        );
+        if (args != null) {
+            String category = args.getString(BUNDLE_CATEGORY);
+            double lat      = args.getDouble(BUNDLE_LAT);
+            double lon      = args.getDouble(BUNDLE_LON);
+            mVenueAdapter.setCurrentPoint(new PointD(lat, lon));
+            Uri venuesUri = FoursquareContract.VenuesEntry.buildVenuesGPSUri(category, lat, lon);
 
-//        Log.d(getClass().getSimpleName(), DatabaseUtils.dumpCursorToString(cursor));
+            return new CursorLoader(getActivity(),
+                    venuesUri,
+                    VENUE_COLUMNS,
+                    null,
+                    null,
+                    sortOrder);
+
+        }
 
         return new CursorLoader(getActivity(),
-                venuesUri,
+                FoursquareContract.VenuesEntry.CONTENT_URI,
                 VENUE_COLUMNS,
                 null,
                 null,
@@ -143,7 +120,7 @@ public class VenueListFragment extends Fragment implements LoaderManager.LoaderC
         if (mPosition != ListView.INVALID_POSITION) {
             // If we don't need to restart the loader, and there's a desired position to restore
             // to, do so now.
-            mListView.smoothScrollToPosition(mPosition);
+            mRecyclerView.smoothScrollToPosition(mPosition);
         }
     }
 

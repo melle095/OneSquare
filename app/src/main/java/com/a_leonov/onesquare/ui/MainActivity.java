@@ -13,11 +13,13 @@ import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
 
 import com.a_leonov.onesquare.BuildConfig;
+import com.a_leonov.onesquare.R;
 import com.a_leonov.onesquare.data.FoursquareContract;
 import com.a_leonov.onesquare.service.OneService;
 import com.google.android.gms.common.api.ApiException;
@@ -40,12 +42,13 @@ import java.text.DateFormat;
 import java.util.Date;
 
 
-public class MainActivity extends Activity implements MainFragment.OnFragmentInteractionListener {
+public class MainActivity extends AppCompatActivity {
 
     private String selectedCategory;
     private String BUNDLE_CATEGORY = "category";
     private String BUNDLE_LAT = "lat";
     private String BUNDLE_LON = "lon";
+    private static final String FRAGMENT_LIST_TAG = "frag_list";
 
     private static final String TAG = MainActivity.class.getSimpleName();
 
@@ -64,6 +67,7 @@ public class MainActivity extends Activity implements MainFragment.OnFragmentInt
     private Location mCurrentLocation;
     private Boolean mRequestingLocationUpdates;
     private String mLastUpdateTime;
+    VenueListFragment listFragment;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -75,10 +79,11 @@ public class MainActivity extends Activity implements MainFragment.OnFragmentInt
             return;
         }
 
-        MainFragment mainFragment = new MainFragment();
+        //TODO: Stops here
+        listFragment = new VenueListFragment();
 
-        getFragmentManager().beginTransaction()
-                .add(R.id.main_container, mainFragment)
+        getSupportFragmentManager().beginTransaction()
+                .add(R.id.frameLayout, listFragment, FRAGMENT_LIST_TAG)
                 .commit();
 
         mRequestingLocationUpdates = true;
@@ -223,6 +228,13 @@ public class MainActivity extends Activity implements MainFragment.OnFragmentInt
 
     private void updateUI() {
 //        setButtonsEnabledState();
+        Bundle bundle = new Bundle();
+        bundle.putString(BUNDLE_CATEGORY, selectedCategory);
+        bundle.putDouble(BUNDLE_LAT, mCurrentLocation.getLatitude());
+        bundle.putDouble(BUNDLE_LON, mCurrentLocation.getLongitude());
+
+        getSupportFragmentManager().findFragmentByTag(FRAGMENT_LIST_TAG)
+
         updateLocationUI();
     }
 
@@ -398,28 +410,6 @@ public class MainActivity extends Activity implements MainFragment.OnFragmentInt
                         });
             }
         }
-    }
-
-    @Override
-    public void onCategorySelected(String category) {
-
-        selectedCategory = category;
-
-        if (mCurrentLocation != null) {
-            VenueListFragment venueListFragment = new VenueListFragment();
-
-            Bundle bundle = new Bundle();
-            bundle.putString(BUNDLE_CATEGORY, category);
-            bundle.putDouble(BUNDLE_LAT, mCurrentLocation.getLatitude());
-            bundle.putDouble(BUNDLE_LON, mCurrentLocation.getLongitude());
-            venueListFragment.setArguments(bundle);
-
-            getFragmentManager().beginTransaction()
-                    .replace(R.id.main_container, venueListFragment)
-                    .addToBackStack(null)
-                    .commit();
-        }
-
     }
 
 }
