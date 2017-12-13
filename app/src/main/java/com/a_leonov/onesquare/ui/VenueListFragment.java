@@ -45,7 +45,8 @@ public class VenueListFragment extends Fragment implements LoaderManager.LoaderC
             FoursquareContract.VenuesEntry.COLUMN_RATING,
             FoursquareContract.VenuesEntry.COLUMN_CATERGORY,
             FoursquareContract.VenuesEntry.COLUMN_COORD_LAT,
-            FoursquareContract.VenuesEntry.COLUMN_COORD_LONG
+            FoursquareContract.VenuesEntry.COLUMN_COORD_LONG,
+            FoursquareContract.VenuesEntry.COLUMN_STATUS
     };
 
     static final int COL_VENUE_ID = 0;
@@ -55,6 +56,7 @@ public class VenueListFragment extends Fragment implements LoaderManager.LoaderC
     static final int COL_CAT = 4;
     static final int COL_LAT = 5;
     static final int COL_LON = 6;
+    static final int COL_HOURS = 7;
 
     PointD currentLoc;
 
@@ -67,7 +69,7 @@ public class VenueListFragment extends Fragment implements LoaderManager.LoaderC
         mVenueAdapter = new VenueAdapter(getActivity(), null, 0);
 
         mListView = (ListView) rootView.findViewById(R.id.listView);
-        mListView.setAdapter(mVenueAdapter);
+        mListView.setAdapter(null);
         // We'll call our MainActivity
         mListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
 

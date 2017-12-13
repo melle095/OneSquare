@@ -31,20 +31,22 @@ public class VenueAdapter extends CursorRecyclerViewAdapter<VenueAdapter.ViewHol
     public void onBindViewHolder(final ViewHolder viewHolder, final Cursor cursor) {
 //        ViewHolder viewHolder = (ViewHolder) view.getTag();
 
+        String thumbnail = null;
         String venueName = cursor.getString(VenueListFragment.COL_NAME);
         String venueAddress = cursor.getString(VenueListFragment.COL_ADDRESS);
         float venueRating = cursor.getFloat(VenueListFragment.COL_RATING);
-        String venueCategory = cursor.getString(VenueListFragment.COL_CAT);
+        String venueWorkhours = cursor.getString(VenueListFragment.COL_HOURS);
 
         double lat = cursor.getDouble(VenueListFragment.COL_LAT);
         double lon = cursor.getDouble(VenueListFragment.COL_LON);
         targetPoint = new PointD(lat, lon);
         double dist = VenueProvider.getDistanceBetweenTwoPoints(currentPoint,targetPoint);
-        viewHolder.nameView.setText(venueName);
-        viewHolder.addressView.setText(venueAddress);
-        viewHolder.ratingView.setRating(venueRating);
-        viewHolder.catText.setText(venueCategory);
-        viewHolder.distText.setText("Distanse: " + String.valueOf(dist));
+//        viewHolder.venueThumbnail.setImageDrawable(R.drawa);
+        viewHolder.venueName.setText(venueName);
+        viewHolder.venueAddress.setText(venueAddress);
+        viewHolder.venueRating.setRating(venueRating);
+        viewHolder.workHours.setText(venueWorkhours);
+        viewHolder.venueDistance.setText("Distanse: " + String.valueOf(dist));
     }
 
     @Override
