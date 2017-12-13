@@ -3,6 +3,8 @@ package com.a_leonov.onesquare.service;
 import android.app.IntentService;
 import android.content.ContentValues;
 import android.content.Intent;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.net.Uri;
 import android.support.annotation.Nullable;
 import android.util.Log;
@@ -86,6 +88,13 @@ public class OneService extends IntentService {
 
     @Override
     protected void onHandleIntent(@Nullable Intent intent) {
+
+//        ConnectivityManager cm = (ConnectivityManager) getSystemService(CONNECTIVITY_SERVICE);
+//        NetworkInfo ni = cm.getActiveNetworkInfo();
+//        if (ni == null || !ni.isConnected()) {
+//            Log.w(LOG_TAG, "Not online, not refreshing.");
+//            return;
+//        }
 
         category = intent.getStringExtra(CATEGORY);
 

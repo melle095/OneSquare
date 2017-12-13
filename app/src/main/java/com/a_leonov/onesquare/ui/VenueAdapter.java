@@ -1,5 +1,6 @@
 package com.a_leonov.onesquare.ui;
 
+import android.content.Intent;
 import android.database.Cursor;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -21,10 +22,10 @@ public class VenueAdapter extends CursorRecyclerViewAdapter<VenueAdapter.ViewHol
 
     PointD currentPoint;
     PointD targetPoint;
-
+    private Cursor mCursor;
 
     public VenueAdapter(Cursor c) {
-        super(c);
+        this.mCursor = c;
     }
 
     @Override
@@ -41,7 +42,7 @@ public class VenueAdapter extends CursorRecyclerViewAdapter<VenueAdapter.ViewHol
         double lon = cursor.getDouble(VenueListFragment.COL_LON);
         targetPoint = new PointD(lat, lon);
         double dist = VenueProvider.getDistanceBetweenTwoPoints(currentPoint,targetPoint);
-//        viewHolder.venueThumbnail.setImageDrawable(R.drawa);
+//        viewHolder.venueThumbnail.setImageDrawable(getResources().getIdentifier);
         viewHolder.venueName.setText(venueName);
         viewHolder.venueAddress.setText(venueAddress);
         viewHolder.venueRating.setRating(venueRating);
@@ -84,27 +85,11 @@ public class VenueAdapter extends CursorRecyclerViewAdapter<VenueAdapter.ViewHol
 
         }
     }
-
-
-//    @Override
-//    public void bindView(View view, Context context, Cursor cursor) {
-//        ViewHolder viewHolder = (ViewHolder) view.getTag();
-//
-//        String venueName = cursor.getString(VenueListFragment.COL_NAME);
-//        String venueAddress = cursor.getString(VenueListFragment.COL_ADDRESS);
-//        float venueRating = cursor.getFloat(VenueListFragment.COL_RATING);
-//        String venueCategory = cursor.getString(VenueListFragment.COL_CAT);
-//
-//        double lat = cursor.getDouble(VenueListFragment.COL_LAT);
-//        double lon = cursor.getDouble(VenueListFragment.COL_LON);
-//        targetPoint = new PointD(lat, lon);
-//        double dist = VenueProvider.getDistanceBetweenTwoPoints(currentPoint,targetPoint);
-//        viewHolder.nameView.setText(venueName);
-//        viewHolder.addressView.setText(venueAddress);
-//        viewHolder.ratingView.setRating(venueRating);
-//        viewHolder.catText.setText(venueCategory);
-//        viewHolder.distText.setText("Distanse: " + String.valueOf(dist));
-//    }
+    @Override
+    public long getItemId(int position) {
+        mCursor.moveToPosition(position);
+        return mCursor.getLong(ArticleLoader.Query._ID);
+    }
 
     public void setCurrentPoint(PointD currentPoint) {
         this.currentPoint = currentPoint;

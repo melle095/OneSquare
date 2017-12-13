@@ -80,8 +80,8 @@ public class VenueListFragment extends Fragment implements LoaderManager.LoaderC
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         Bundle bundle = this.getArguments();
-
-        getLoaderManager().initLoader(VENUE_LOADER, bundle, this);
+        LoaderManager loaderManager = getLoaderManager();
+        loaderManager.initLoader(VENUE_LOADER, bundle, this);
         super.onActivityCreated(savedInstanceState);
     }
 

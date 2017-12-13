@@ -1,6 +1,7 @@
 package com.a_leonov.onesquare.ui;
 
 import android.Manifest;
+
 import android.app.Activity;
 import android.content.Intent;
 import android.content.IntentSender;
@@ -75,9 +76,9 @@ public class MainActivity extends AppCompatActivity {
 
         setContentView(R.layout.activity_main);
 
-        if (savedInstanceState != null) {
-            return;
-        }
+//        if (savedInstanceState != null) {
+//            return;
+//        }
 
         //TODO: Stops here
         listFragment = new VenueListFragment();
@@ -154,7 +155,9 @@ public class MainActivity extends AppCompatActivity {
                     }
                 });
 
-        };
+    }
+
+    ;
 
     private void buildLocationSettingsRequest() {
         LocationSettingsRequest.Builder builder = new LocationSettingsRequest.Builder();
@@ -228,13 +231,15 @@ public class MainActivity extends AppCompatActivity {
 
     private void updateUI() {
 //        setButtonsEnabledState();
-        Bundle bundle = new Bundle();
-        bundle.putString(BUNDLE_CATEGORY, selectedCategory);
-        bundle.putDouble(BUNDLE_LAT, mCurrentLocation.getLatitude());
-        bundle.putDouble(BUNDLE_LON, mCurrentLocation.getLongitude());
+        if (mCurrentLocation != null) {
+            Bundle bundle = new Bundle();
+            bundle.putString(BUNDLE_CATEGORY, selectedCategory);
+            bundle.putDouble(BUNDLE_LAT, mCurrentLocation.getLatitude());
+            bundle.putDouble(BUNDLE_LON, mCurrentLocation.getLongitude());
 
-        getSupportFragmentManager().findFragmentByTag(FRAGMENT_LIST_TAG)
-
+            listFragment = (VenueListFragment) getSupportFragmentManager().findFragmentByTag(FRAGMENT_LIST_TAG);
+            listFragment.setArguments(bundle);
+        }
         updateLocationUI();
     }
 
