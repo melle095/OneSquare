@@ -9,6 +9,7 @@ import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.StaggeredGridLayoutManager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -65,8 +66,12 @@ public class VenueListFragment extends Fragment implements LoaderManager.LoaderC
         mVenueAdapter = new VenueAdapter(null);
 
         mRecyclerView = (RecyclerView) rootView.findViewById(R.id.recycler_view);
+        mVenueAdapter.setHasStableIds(true);
         mRecyclerView.setAdapter(mVenueAdapter);
 
+        StaggeredGridLayoutManager staggeredGridLayoutManager =
+                new StaggeredGridLayoutManager(1, StaggeredGridLayoutManager.VERTICAL);
+        mRecyclerView.setLayoutManager(staggeredGridLayoutManager);
 
         if (savedInstanceState != null && savedInstanceState.containsKey(SELECTED_KEY)) {
             // The listview probably hasn't even been populated yet.  Actually perform the
@@ -99,19 +104,19 @@ public class VenueListFragment extends Fragment implements LoaderManager.LoaderC
 
             return new CursorLoader(getActivity(),
                     venuesUri,
-                    VENUE_COLUMNS,
                     null,
                     null,
-                    sortOrder);
+                    null,
+                    null);
 
         }
 
         return new CursorLoader(getActivity(),
                 FoursquareContract.VenuesEntry.CONTENT_URI,
-                VENUE_COLUMNS,
                 null,
                 null,
-                sortOrder);
+                null,
+                null);
     }
 
     @Override

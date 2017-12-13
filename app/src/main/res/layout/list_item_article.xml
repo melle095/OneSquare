@@ -24,18 +24,20 @@
             android:layout_height="wrap_content"
             android:ellipsize="end"
             android:maxLines="2"
-            android:textColor="@color/material_light_white"
             android:paddingLeft="@dimen/material_component_cards_left_and_right_padding"
             android:paddingRight="@dimen/material_component_cards_left_and_right_padding"
-            android:paddingTop="@dimen/material_component_cards_top_and_bottom_padding" />
+            android:paddingTop="@dimen/material_component_cards_top_and_bottom_padding"
+            android:text="Starbuks"/>
 
         <RatingBar
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:id="@+id/venue_rating"
             android:numStars="@integer/rating_star_count"
+            android:rating="5"
             android:mirrorForRtl="true"
-            android:contentDescription="@string/discription_ratingbar"/>
+            android:contentDescription="@string/discription_ratingbar"
+            style = "?android:attr/ratingBarStyleSmall"/>
 
         <TextView
             android:id="@+id/venue_distance"
@@ -44,11 +46,11 @@
             android:layout_height="wrap_content"
             android:ellipsize="end"
             android:maxLines="1"
-            android:textColor="@color/material_light_white"
             android:paddingLeft="@dimen/material_component_cards_left_and_right_padding"
             android:paddingRight="@dimen/material_component_cards_left_and_right_padding"
             android:paddingTop="@dimen/material_component_cards_primary_title_bottom_padding"
-            android:contentDescription="@string/description_venuedist"/>
+            android:contentDescription="@string/description_venuedist"
+            android:text="around 20 meters"/>
 
         <TextView
             android:id="@+id/venue_address"
@@ -57,11 +59,11 @@
             android:layout_height="wrap_content"
             android:ellipsize="end"
             android:maxLines="1"
-            android:textColor="@color/material_light_white"
             android:paddingLeft="@dimen/material_component_cards_left_and_right_padding"
             android:paddingRight="@dimen/material_component_cards_left_and_right_padding"
             android:paddingTop="@dimen/material_component_cards_primary_title_bottom_padding"
-            android:contentDescription="@string/description_address"/>
+            android:contentDescription="@string/description_address"
+            android:text="Moscow, somestreet, 19\6"/>
 
 
         <TextView
@@ -71,7 +73,6 @@
             android:layout_height="wrap_content"
             android:ellipsize="end"
             android:maxLines="1"
-            android:textColor="@color/material_light_white"
             android:paddingBottom="@dimen/material_component_cards_top_and_bottom_padding"
             android:paddingLeft="@dimen/material_component_cards_left_and_right_padding"
             android:paddingRight="@dimen/material_component_cards_left_and_right_padding"

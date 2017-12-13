@@ -24,9 +24,10 @@ public class VenueAdapter extends CursorRecyclerViewAdapter<VenueAdapter.ViewHol
     PointD targetPoint;
     private Cursor mCursor;
 
-    public VenueAdapter(Cursor c) {
-        this.mCursor = c;
+    public VenueAdapter(Cursor cursor) {
+        super(cursor);
     }
+
 
     @Override
     public void onBindViewHolder(final ViewHolder viewHolder, final Cursor cursor) {
@@ -38,10 +39,10 @@ public class VenueAdapter extends CursorRecyclerViewAdapter<VenueAdapter.ViewHol
         float venueRating = cursor.getFloat(VenueListFragment.COL_RATING);
         String venueWorkhours = cursor.getString(VenueListFragment.COL_HOURS);
 
-        double lat = cursor.getDouble(VenueListFragment.COL_LAT);
-        double lon = cursor.getDouble(VenueListFragment.COL_LON);
-        targetPoint = new PointD(lat, lon);
-        double dist = VenueProvider.getDistanceBetweenTwoPoints(currentPoint,targetPoint);
+//        double lat = cursor.getDouble(VenueListFragment.COL_LAT);
+//        double lon = cursor.getDouble(VenueListFragment.COL_LON);
+//        targetPoint = new PointD(lat, lon);
+        double dist = 20;//VenueProvider.getDistanceBetweenTwoPoints(currentPoint,targetPoint);
 //        viewHolder.venueThumbnail.setImageDrawable(getResources().getIdentifier);
         viewHolder.venueName.setText(venueName);
         viewHolder.venueAddress.setText(venueAddress);
@@ -85,11 +86,13 @@ public class VenueAdapter extends CursorRecyclerViewAdapter<VenueAdapter.ViewHol
 
         }
     }
+
     @Override
     public long getItemId(int position) {
-        mCursor.moveToPosition(position);
-        return mCursor.getLong(ArticleLoader.Query._ID);
+        return super.getItemId(position);
     }
+
+
 
     public void setCurrentPoint(PointD currentPoint) {
         this.currentPoint = currentPoint;

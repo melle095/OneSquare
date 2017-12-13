@@ -32,7 +32,7 @@ public class FoursquareContract {
                 ContentResolver.CURSOR_ITEM_BASE_TYPE + "/" + CONTENT_AUTHORITY + "/" + PATH_VENUES;
 
         public static final String TABLE_NAME = "venues";
-
+        public static final String COLUMN_ID = "_id";
         public static final String COLUMN_VEN_KEY = "venue_key_id";
         public static final String COLUMN_NAME = "name";
         public static final String COLUMN_CATERGORY = "venue_category";
@@ -103,6 +103,7 @@ public class FoursquareContract {
 
         // Table name
         public static final String TABLE_NAME = "photo";
+        public static final String COLUMN_ID = "_id";
         public static final String COLUMN_VENUE_ID = "venue_id";
         public static final String COLUMN_PHOTO_ID = "photo_id";
         public static final String COLUMN_PREFIX = "prefix";
