@@ -1,6 +1,5 @@
 package com.a_leonov.onesquare.ui;
 
-import android.content.Intent;
 import android.database.Cursor;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -20,9 +19,10 @@ import com.a_leonov.onesquare.data.VenueProvider;
 
 public class VenueAdapter extends CursorRecyclerViewAdapter<VenueAdapter.ViewHolder> {
 
-    PointD currentPoint;
-    PointD targetPoint;
+    private PointD currentPoint;
+    private PointD targetPoint;
     private Cursor mCursor;
+    double dist = 0;
 
     public VenueAdapter(Cursor cursor) {
         super(cursor);
@@ -39,11 +39,15 @@ public class VenueAdapter extends CursorRecyclerViewAdapter<VenueAdapter.ViewHol
         float venueRating = cursor.getFloat(VenueListFragment.COL_RATING);
         String venueWorkhours = cursor.getString(VenueListFragment.COL_HOURS);
 
-//        double lat = cursor.getDouble(VenueListFragment.COL_LAT);
-//        double lon = cursor.getDouble(VenueListFragment.COL_LON);
-//        targetPoint = new PointD(lat, lon);
-        double dist = 20;//VenueProvider.getDistanceBetweenTwoPoints(currentPoint,targetPoint);
-//        viewHolder.venueThumbnail.setImageDrawable(getResources().getIdentifier);
+        double lat = cursor.getDouble(VenueListFragment.COL_LAT);
+        double lon = cursor.getDouble(VenueListFragment.COL_LON);
+
+        targetPoint = new PointD(lat, lon);
+
+        if ((targetPoint != null)&&(currentPoint != null))
+            dist = VenueProvider.getDistanceBetweenTwoPoints(currentPoint, targetPoint);
+
+
         viewHolder.venueName.setText(venueName);
         viewHolder.venueAddress.setText(venueAddress);
         viewHolder.venueRating.setRating(venueRating);
@@ -91,7 +95,6 @@ public class VenueAdapter extends CursorRecyclerViewAdapter<VenueAdapter.ViewHol
     public long getItemId(int position) {
         return super.getItemId(position);
     }
-
 
 
     public void setCurrentPoint(PointD currentPoint) {

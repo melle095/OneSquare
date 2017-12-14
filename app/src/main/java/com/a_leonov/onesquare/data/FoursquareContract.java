@@ -7,8 +7,6 @@ import android.provider.BaseColumns;
 
 
 public class FoursquareContract {
-//    public static final String client_id = "GPBYVKP11KMUZFNLPUHZFN5SKFZYGL1EAUTTPARVVKEAGWWQ";
-//    public static final String client_secret = "RVTYEPM5K5XHKWQ4TUAUXQKOG0TFOD3TIUQPDVG23VPPLNIG";
 
     public static final String CONTENT_AUTHORITY = "com.a_leonov.onesquare.app";
     public static final Uri BASE_CONTENT_URI = Uri.parse("content://" + CONTENT_AUTHORITY);
@@ -19,7 +17,7 @@ public class FoursquareContract {
     public static final String CATEGORY_FOOD          = "4d4b7105d754a06374d81259";
     public static final String CATEGORY_OUTDOOR       = "4d4b7105d754a06377d81259";
     public static final String CATEGORY_Entertainment = "4d4b7104d754a06370d81259";
-    public static final String CATEGORY_NIGHTLIFE           = "4d4b7105d754a06376d81259";
+    public static final String CATEGORY_NIGHTLIFE     = "4d4b7105d754a06376d81259";
 
     public static final class VenuesEntry implements BaseColumns {
 
@@ -32,7 +30,6 @@ public class FoursquareContract {
                 ContentResolver.CURSOR_ITEM_BASE_TYPE + "/" + CONTENT_AUTHORITY + "/" + PATH_VENUES;
 
         public static final String TABLE_NAME = "venues";
-        public static final String COLUMN_ID = "_id";
         public static final String COLUMN_VEN_KEY = "venue_key_id";
         public static final String COLUMN_NAME = "name";
         public static final String COLUMN_CATERGORY = "venue_category";
@@ -103,7 +100,6 @@ public class FoursquareContract {
 
         // Table name
         public static final String TABLE_NAME = "photo";
-        public static final String COLUMN_ID = "_id";
         public static final String COLUMN_VENUE_ID = "venue_id";
         public static final String COLUMN_PHOTO_ID = "photo_id";
         public static final String COLUMN_PREFIX = "prefix";

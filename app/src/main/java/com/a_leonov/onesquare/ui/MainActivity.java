@@ -69,6 +69,12 @@ public class MainActivity extends AppCompatActivity {
     private Boolean mRequestingLocationUpdates;
     private String mLastUpdateTime;
     VenueListFragment listFragment;
+    OnLocationUpdateListener onLocationUpdateListener;
+
+
+    public interface OnLocationUpdateListener {
+        public void onLocationUpdate (Location newLocation);
+    }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -76,12 +82,14 @@ public class MainActivity extends AppCompatActivity {
 
         setContentView(R.layout.activity_main);
 
-//        if (savedInstanceState != null) {
-//            return;
-//        }
+        if (savedInstanceState != null) {
+            return;
+        }
 
         //TODO: Stops here
         listFragment = new VenueListFragment();
+
+        onLocationUpdateListener = (OnLocationUpdateListener) listFragment;
 
         getSupportFragmentManager().beginTransaction()
                 .add(R.id.frameLayout, listFragment, FRAGMENT_LIST_TAG)
@@ -231,15 +239,9 @@ public class MainActivity extends AppCompatActivity {
 
     private void updateUI() {
 //        setButtonsEnabledState();
-        if (mCurrentLocation != null) {
-            Bundle bundle = new Bundle();
-            bundle.putString(BUNDLE_CATEGORY, selectedCategory);
-            bundle.putDouble(BUNDLE_LAT, mCurrentLocation.getLatitude());
-            bundle.putDouble(BUNDLE_LON, mCurrentLocation.getLongitude());
+        if (mCurrentLocation != null)
+            onLocationUpdateListener.onLocationUpdate(mCurrentLocation);
 
-            listFragment = (VenueListFragment) getSupportFragmentManager().findFragmentByTag(FRAGMENT_LIST_TAG);
-            listFragment.setArguments(bundle);
-        }
         updateLocationUI();
     }
 

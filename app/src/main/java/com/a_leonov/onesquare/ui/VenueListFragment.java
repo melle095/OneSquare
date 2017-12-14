@@ -1,6 +1,7 @@
 package com.a_leonov.onesquare.ui;
 
 import android.database.Cursor;
+import android.location.Location;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -8,8 +9,8 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
+import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.StaggeredGridLayoutManager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -23,16 +24,13 @@ import com.a_leonov.onesquare.data.FoursquareContract;
  * Created by a_leonov on 24.11.2017.
  */
 
-public class VenueListFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
+public class VenueListFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor>, MainActivity.OnLocationUpdateListener {
 
-    private String BUNDLE_CATEGORY = "category";
-    private String BUNDLE_LAT = "lat";
-    private String BUNDLE_LON = "lon";
     private RecyclerView mRecyclerView;
     private static final String SELECTED_KEY = "selected_position";
     private static final int VENUE_LOADER = 0;
-
     private VenueAdapter mVenueAdapter;
+    private Location currentLocation = null;
     private int mPosition;
 
     private static final String[] VENUE_COLUMNS = {
@@ -69,9 +67,9 @@ public class VenueListFragment extends Fragment implements LoaderManager.LoaderC
         mVenueAdapter.setHasStableIds(true);
         mRecyclerView.setAdapter(mVenueAdapter);
 
-        StaggeredGridLayoutManager staggeredGridLayoutManager =
-                new StaggeredGridLayoutManager(1, StaggeredGridLayoutManager.VERTICAL);
-        mRecyclerView.setLayoutManager(staggeredGridLayoutManager);
+        LinearLayoutManager linearLayoutManager =
+                new LinearLayoutManager(null, LinearLayoutManager.VERTICAL, false);
+        mRecyclerView.setLayoutManager(linearLayoutManager);
 
         if (savedInstanceState != null && savedInstanceState.containsKey(SELECTED_KEY)) {
             // The listview probably hasn't even been populated yet.  Actually perform the
@@ -84,9 +82,8 @@ public class VenueListFragment extends Fragment implements LoaderManager.LoaderC
 
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
-        Bundle bundle = this.getArguments();
         LoaderManager loaderManager = getLoaderManager();
-        loaderManager.initLoader(VENUE_LOADER, bundle, this);
+        loaderManager.initLoader(VENUE_LOADER,null, this);
         super.onActivityCreated(savedInstanceState);
     }
 
@@ -95,28 +92,26 @@ public class VenueListFragment extends Fragment implements LoaderManager.LoaderC
 
         String sortOrder = FoursquareContract.VenuesEntry.COLUMN_NAME + " ASC";
 
-        if (args != null) {
-            String category = args.getString(BUNDLE_CATEGORY);
-            double lat      = args.getDouble(BUNDLE_LAT);
-            double lon      = args.getDouble(BUNDLE_LON);
-            mVenueAdapter.setCurrentPoint(new PointD(lat, lon));
-            Uri venuesUri = FoursquareContract.VenuesEntry.buildVenuesGPSUri(category, lat, lon);
+        if (currentLocation != null) {
+            String category = FoursquareContract.CATEGORY_FOOD;
+            mVenueAdapter.setCurrentPoint(new PointD(currentLocation.getLatitude(), currentLocation.getLongitude()));
+            Uri venuesUri = FoursquareContract.VenuesEntry.buildVenuesGPSUri(category, currentLocation.getLatitude(), currentLocation.getLongitude());
 
             return new CursorLoader(getActivity(),
                     venuesUri,
+                    VENUE_COLUMNS,
                     null,
                     null,
-                    null,
-                    null);
+                    sortOrder);
 
         }
 
         return new CursorLoader(getActivity(),
                 FoursquareContract.VenuesEntry.CONTENT_URI,
+                VENUE_COLUMNS,
                 null,
                 null,
-                null,
-                null);
+                sortOrder);
     }
 
     @Override
@@ -143,5 +138,12 @@ public class VenueListFragment extends Fragment implements LoaderManager.LoaderC
             outState.putInt(SELECTED_KEY, mPosition);
         }
         super.onSaveInstanceState(outState);
+    }
+
+
+    @Override
+    public void onLocationUpdate(Location newLocation) {
+        this.currentLocation = newLocation;
+        getLoaderManager().restartLoader(VENUE_LOADER, null, this);
     }
 }
