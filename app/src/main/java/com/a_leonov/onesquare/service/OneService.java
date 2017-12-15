@@ -3,13 +3,13 @@ package com.a_leonov.onesquare.service;
 import android.app.IntentService;
 import android.content.ContentValues;
 import android.content.Intent;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
 import android.net.Uri;
 import android.support.annotation.Nullable;
 import android.util.Log;
 
 import com.a_leonov.onesquare.BuildConfig;
+import com.a_leonov.onesquare.PointD;
+import com.a_leonov.onesquare.Utils;
 import com.a_leonov.onesquare.data.FoursquareContract;
 
 import org.json.JSONArray;
@@ -27,9 +27,6 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Vector;
 
-/**
- * Created by Пользователь on 20.11.2017.
- */
 
 public class OneService extends IntentService {
 
@@ -72,8 +69,8 @@ public class OneService extends IntentService {
     private final String COUNTRY = "country";
 
     String category;
-    String current_lat;
-    String current_lon;
+    double current_lat;
+    double current_lon;
 
 
     public OneService() {
@@ -100,10 +97,8 @@ public class OneService extends IntentService {
 
         Log.i(LOG_TAG, " Start OneService. By category " + category);
 
-
-        current_lat = intent.getStringExtra(lat);
-        current_lon = intent.getStringExtra(lon);
-
+        current_lat = intent.getDoubleExtra(lat, 0);
+        current_lon = intent.getDoubleExtra(lon, 0);
 
         HttpURLConnection urlConnection = null;
         BufferedReader reader = null;
@@ -245,6 +240,14 @@ public class OneService extends IntentService {
                     putJsonValue(venueValues, location, FoursquareContract.VenuesEntry.COLUMN_COORD_LONG, COORD_LONG, 3);
                     putJsonValue(venueValues, location, FoursquareContract.VenuesEntry.COLUMN_STATE, STATE, 1);
 
+                    double target_lat = location.getDouble(COORD_LAT);
+                    double target_lon = location.getDouble(COORD_LONG);
+
+                    PointD targetPoint = new PointD(target_lat, target_lon);
+                    PointD currentPoint = new PointD(current_lat, current_lon);
+
+                    venueValues.put(FoursquareContract.VenuesEntry.COLUMN_DISTANCE, Utils.getDistanceBetweenTwoPoints(targetPoint, currentPoint));
+
                     JSONObject contact = item.getJSONObject("contact");
 
                     putJsonValue(venueValues, contact, FoursquareContract.VenuesEntry.COLUMN_PHONE, PHONE, 1);
@@ -256,15 +259,6 @@ public class OneService extends IntentService {
                     putJsonValue(venueValues, contact, FoursquareContract.VenuesEntry.COLUMN_FACEBOOKUSER, FACEBOOKUSER, 1);
 
                     venueValues.put(FoursquareContract.VenuesEntry.COLUMN_CATERGORY, category);
-
-//                    JSONArray category = item.getJSONArray("categories");
-//                    JSONObject category_item;
-//
-//                    for (int j=0; j < category.length(); j++) {
-//                        category_item = category.getJSONObject(j);
-////                        if (category_item.getString("Primary") == "true")
-//                            putJsonValue(venueValues,category_item, FoursquareContract.VenuesEntry.COLUMN_CATERGORY,"id",1);
-//                    }
 
                     cVVector.add(venueValues);
                 }

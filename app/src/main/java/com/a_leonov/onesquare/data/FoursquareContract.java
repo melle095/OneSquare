@@ -58,6 +58,7 @@ public class FoursquareContract {
         public static final String COLUMN_CITY = "city";
         public static final String COLUMN_STATE = "state";
         public static final String COLUMN_COUNTRY = "country";
+        public static final String COLUMN_DISTANCE = "dist";
 
         public static Uri buildVenuesUri(long id) {
             return ContentUris.withAppendedId(CONTENT_URI, id);

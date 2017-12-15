@@ -1,5 +1,6 @@
 package com.a_leonov.onesquare.ui;
 
+import android.content.Context;
 import android.database.Cursor;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -9,9 +10,7 @@ import android.widget.ImageView;
 import android.widget.RatingBar;
 import android.widget.TextView;
 
-import com.a_leonov.onesquare.PointD;
 import com.a_leonov.onesquare.R;
-import com.a_leonov.onesquare.data.VenueProvider;
 
 /**
  * Created by Пользователь on 24.11.2017.
@@ -19,13 +18,12 @@ import com.a_leonov.onesquare.data.VenueProvider;
 
 public class VenueAdapter extends CursorRecyclerViewAdapter<VenueAdapter.ViewHolder> {
 
-    private PointD currentPoint;
-    private PointD targetPoint;
     private Cursor mCursor;
-    double dist = 0;
+    private Context mContext;
 
-    public VenueAdapter(Cursor cursor) {
+    public VenueAdapter(Context context, Cursor cursor) {
         super(cursor);
+        mContext = context;
     }
 
 
@@ -38,21 +36,12 @@ public class VenueAdapter extends CursorRecyclerViewAdapter<VenueAdapter.ViewHol
         String venueAddress = cursor.getString(VenueListFragment.COL_ADDRESS);
         float venueRating = cursor.getFloat(VenueListFragment.COL_RATING);
         String venueWorkhours = cursor.getString(VenueListFragment.COL_HOURS);
-
-        double lat = cursor.getDouble(VenueListFragment.COL_LAT);
-        double lon = cursor.getDouble(VenueListFragment.COL_LON);
-
-        targetPoint = new PointD(lat, lon);
-
-        if ((targetPoint != null)&&(currentPoint != null))
-            dist = VenueProvider.getDistanceBetweenTwoPoints(currentPoint, targetPoint);
-
-
+        double venueDistance = cursor.getDouble(VenueListFragment.COL_DIST);
         viewHolder.venueName.setText(venueName);
-        viewHolder.venueAddress.setText(venueAddress);
+        viewHolder.venueAddress.setText(mContext.getString(R.string.venue_address, venueAddress));
         viewHolder.venueRating.setRating(venueRating);
         viewHolder.workHours.setText(venueWorkhours);
-        viewHolder.venueDistance.setText("Distanse: " + String.valueOf(dist));
+        viewHolder.venueDistance.setText(mContext.getString(R.string.venue_distance, Math.round(venueDistance)));
     }
 
     @Override
@@ -96,8 +85,4 @@ public class VenueAdapter extends CursorRecyclerViewAdapter<VenueAdapter.ViewHol
         return super.getItemId(position);
     }
 
-
-    public void setCurrentPoint(PointD currentPoint) {
-        this.currentPoint = currentPoint;
-    }
 }

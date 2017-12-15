@@ -41,7 +41,8 @@ public class VenueListFragment extends Fragment implements LoaderManager.LoaderC
             FoursquareContract.VenuesEntry.COLUMN_CATERGORY,
             FoursquareContract.VenuesEntry.COLUMN_COORD_LAT,
             FoursquareContract.VenuesEntry.COLUMN_COORD_LONG,
-            FoursquareContract.VenuesEntry.COLUMN_STATUS
+            FoursquareContract.VenuesEntry.COLUMN_STATUS,
+            FoursquareContract.VenuesEntry.COLUMN_DISTANCE
     };
 
     static final int COL_VENUE_ID = 0;
@@ -52,6 +53,7 @@ public class VenueListFragment extends Fragment implements LoaderManager.LoaderC
     static final int COL_LAT = 5;
     static final int COL_LON = 6;
     static final int COL_HOURS = 7;
+    static final int COL_DIST = 8;
 
     PointD currentLoc;
 
@@ -61,7 +63,7 @@ public class VenueListFragment extends Fragment implements LoaderManager.LoaderC
 
         View rootView = inflater.inflate(R.layout.include_article_list, container, false);
 
-        mVenueAdapter = new VenueAdapter(null);
+        mVenueAdapter = new VenueAdapter(getActivity(), null);
 
         mRecyclerView = (RecyclerView) rootView.findViewById(R.id.recycler_view);
         mVenueAdapter.setHasStableIds(true);
@@ -90,11 +92,10 @@ public class VenueListFragment extends Fragment implements LoaderManager.LoaderC
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
 
-        String sortOrder = FoursquareContract.VenuesEntry.COLUMN_NAME + " ASC";
+        String sortOrder = FoursquareContract.VenuesEntry.COLUMN_DISTANCE + " ASC";
 
         if (currentLocation != null) {
             String category = FoursquareContract.CATEGORY_FOOD;
-            mVenueAdapter.setCurrentPoint(new PointD(currentLocation.getLatitude(), currentLocation.getLongitude()));
             Uri venuesUri = FoursquareContract.VenuesEntry.buildVenuesGPSUri(category, currentLocation.getLatitude(), currentLocation.getLongitude());
 
             return new CursorLoader(getActivity(),

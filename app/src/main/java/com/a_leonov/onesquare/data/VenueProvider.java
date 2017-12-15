@@ -8,13 +8,13 @@ import android.database.Cursor;
 import android.database.DatabaseUtils;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteQueryBuilder;
-import android.graphics.PointF;
 import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.Log;
 
 import com.a_leonov.onesquare.PointD;
+import com.a_leonov.onesquare.Utils;
 
 
 public class VenueProvider extends ContentProvider {
@@ -157,10 +157,10 @@ public class VenueProvider extends ContentProvider {
 
         PointD center = new PointD(current_lat, current_lon);
         final double mult = 1; // mult = 1.1; is more reliable
-        PointD p1 = calculateDerivedPosition(center, mult * radius, 0);
-        PointD p2 = calculateDerivedPosition(center, mult * radius, 90);
-        PointD p3 = calculateDerivedPosition(center, mult * radius, 180);
-        PointD p4 = calculateDerivedPosition(center, mult * radius, 270);
+        PointD p1 = Utils.calculateDerivedPosition(center, mult * radius, 0);
+        PointD p2 = Utils.calculateDerivedPosition(center, mult * radius, 90);
+        PointD p3 = Utils.calculateDerivedPosition(center, mult * radius, 180);
+        PointD p4 = Utils.calculateDerivedPosition(center, mult * radius, 270);
 
         String[] selectionArgs;
         String selection;
@@ -286,6 +286,7 @@ public class VenueProvider extends ContentProvider {
                 break;
 
             }
+
             case PHOTOS: {
                 long _id = db.insert(FoursquareContract.PhotoEntry.TABLE_NAME, null, contentValues);
                 if (_id > 0)
@@ -421,47 +422,7 @@ public class VenueProvider extends ContentProvider {
         super.shutdown();
     }
 
-    public static PointD calculateDerivedPosition(PointD point, double range, double bearing) {
-        double EarthRadius = 6371000; // m
 
-        double latA = Math.toRadians(point.x);
-        double lonA = Math.toRadians(point.y);
-        double angularDistance = range / EarthRadius;
-        double trueCourse = Math.toRadians(bearing);
 
-        double lat = Math.asin(
-                Math.sin(latA) * Math.cos(angularDistance) +
-                        Math.cos(latA) * Math.sin(angularDistance)
-                                * Math.cos(trueCourse));
 
-        double dlon = Math.atan2(
-                Math.sin(trueCourse) * Math.sin(angularDistance)
-                        * Math.cos(latA),
-                Math.cos(angularDistance) - Math.sin(latA) * Math.sin(lat));
-
-        double lon = ((lonA + dlon + Math.PI) % (Math.PI * 2)) - Math.PI;
-
-        lat = Math.toDegrees(lat);
-        lon = Math.toDegrees(lon);
-
-        PointD newPoint = new PointD(lat, lon);
-
-        return newPoint;
-
-    }
-
-    public static double getDistanceBetweenTwoPoints(PointD p1, PointD p2) {
-        double R = 6371000; // m
-        double dLat = Math.toRadians(p2.x - p1.x);
-        double dLon = Math.toRadians(p2.y - p1.y);
-        double lat1 = Math.toRadians(p1.x);
-        double lat2 = Math.toRadians(p2.x);
-
-        double a = Math.sin(dLat / 2) * Math.sin(dLat / 2) + Math.sin(dLon / 2)
-                * Math.sin(dLon / 2) * Math.cos(lat1) * Math.cos(lat2);
-        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-        double d = R * c;
-
-        return d;
-    }
 }
