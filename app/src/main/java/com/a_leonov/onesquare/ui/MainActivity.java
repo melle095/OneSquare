@@ -86,7 +86,6 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
 
-        //TODO: Stops here
         listFragment = new VenueListFragment();
 
         onLocationUpdateListener = (OnLocationUpdateListener) listFragment;
@@ -248,33 +247,29 @@ public class MainActivity extends AppCompatActivity {
     private void updateLocationUI() {
         if (mCurrentLocation != null) {
             Intent venueIntent = new Intent(this, OneService.class);
-            venueIntent.putExtra(OneService.CATEGORY, FoursquareContract.CATEGORY_FOOD + ", " +
-                                                            FoursquareContract.CATEGORY_NIGHTLIFE + ", " +
-                                                            FoursquareContract.CATEGORY_Entertainment + ", " +
-                                                            FoursquareContract.CATEGORY_OUTDOOR);
+            venueIntent.putExtra(OneService.CATEGORY, FoursquareContract.CATEGORY_FOOD);
             venueIntent.putExtra(OneService.lat, mCurrentLocation.getLatitude());
             venueIntent.putExtra(OneService.lon, mCurrentLocation.getLongitude());
+
+            Intent venueIntent2 = new Intent(this, OneService.class);
+            venueIntent2.putExtra(OneService.CATEGORY, FoursquareContract.CATEGORY_Entertainment);
+            venueIntent2.putExtra(OneService.lat, mCurrentLocation.getLatitude());
+            venueIntent2.putExtra(OneService.lon, mCurrentLocation.getLongitude());
+
+            Intent venueIntent3 = new Intent(this, OneService.class);
+            venueIntent3.putExtra(OneService.CATEGORY, FoursquareContract.CATEGORY_NIGHTLIFE);
+            venueIntent3.putExtra(OneService.lat, mCurrentLocation.getLatitude());
+            venueIntent3.putExtra(OneService.lon, mCurrentLocation.getLongitude());
+
+            Intent venueIntent4 = new Intent(this, OneService.class);
+            venueIntent4.putExtra(OneService.CATEGORY, FoursquareContract.CATEGORY_OUTDOOR);
+            venueIntent4.putExtra(OneService.lat, mCurrentLocation.getLatitude());
+            venueIntent4.putExtra(OneService.lon, mCurrentLocation.getLongitude());
+
             startService(venueIntent);
-
-//            Intent venueIntent2 = new Intent(this, OneService.class);
-//            venueIntent2.putExtra(OneService.CATEGORY, FoursquareContract.CATEGORY_Entertainment);
-//            venueIntent2.putExtra(OneService.lat, mCurrentLocation.getLatitude());
-//            venueIntent2.putExtra(OneService.lon, mCurrentLocation.getLongitude());
-//
-//            Intent venueIntent3 = new Intent(this, OneService.class);
-//            venueIntent3.putExtra(OneService.CATEGORY, FoursquareContract.CATEGORY_NIGHTLIFE);
-//            venueIntent3.putExtra(OneService.lat, mCurrentLocation.getLatitude());
-//            venueIntent3.putExtra(OneService.lon, mCurrentLocation.getLongitude());
-//
-//            Intent venueIntent4 = new Intent(this, OneService.class);
-//            venueIntent4.putExtra(OneService.CATEGORY, FoursquareContract.CATEGORY_OUTDOOR);
-//            venueIntent4.putExtra(OneService.lat, mCurrentLocation.getLatitude());
-//            venueIntent4.putExtra(OneService.lon, mCurrentLocation.getLongitude());
-
-
-//            startService(venueIntent2);
-//            startService(venueIntent3);
-//            startService(venueIntent4);
+            startService(venueIntent2);
+            startService(venueIntent3);
+            startService(venueIntent4);
         }
     }
 

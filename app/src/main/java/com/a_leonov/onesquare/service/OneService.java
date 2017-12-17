@@ -3,6 +3,7 @@ package com.a_leonov.onesquare.service;
 import android.app.IntentService;
 import android.content.ContentValues;
 import android.content.Intent;
+import android.database.Cursor;
 import android.net.Uri;
 import android.support.annotation.Nullable;
 import android.util.Log;
@@ -39,7 +40,7 @@ public class OneService extends IntentService {
 
     public static final String CATEGORY = "cat";
 
-
+//**********venue fields*****************************************
     private final String VENUE_ID = "id";
     private final String NAME = "name";
     private final String PHONE = "phone";
@@ -67,7 +68,19 @@ public class OneService extends IntentService {
     private final String CITY = "city";
     private final String STATE = "state";
     private final String COUNTRY = "country";
+//************Photo fields*********************************
 
+    private final String PHOTO_ID   = "id";
+    private final String PREFIX     = "prefix";
+    private final String HEIGHT     = "height";
+    private final String WIDTH      = "width";
+    private final String SUFFIX     = "suffix";
+
+
+
+
+
+//*********************************************************
     String category;
     double current_lat;
     double current_lon;
@@ -100,95 +113,28 @@ public class OneService extends IntentService {
         current_lat = intent.getDoubleExtra(lat, 0);
         current_lon = intent.getDoubleExtra(lon, 0);
 
-        HttpURLConnection urlConnection = null;
-        BufferedReader reader = null;
-
-        String oneSquareJsonStr = null;
-        String format = "json";
-
+        //fill venue table
         try {
-            final String API_URL = "https://api.foursquare.com/v2";
-            final String VENUES = "venues";
-            final String SEARCH = "search";
-            final String NEAR = "near";
-            final String geo_loc = "ll";
-            final String INTENT = "intent";
-            final String PHOTOS = "photos";
-            final String CLIENT_ID = "client_id";
-            final String CLIENT_SECRET = "client_secret";
-            final String CURRENT_DATE = "v";
-            final String CATEGORY_ID = "categoryId";
-            final String LIMIT = "limit";
-            final String RADIUS = "radius";
-
-            Uri builtUri = Uri.parse(API_URL).buildUpon()
-                    .appendPath(VENUES)
-                    .appendPath(SEARCH)
-                    .encodedQuery("&" + geo_loc + "=" + current_lat + "," + current_lon)
-                    .appendQueryParameter(CATEGORY_ID, category)
-                    .appendQueryParameter(LIMIT, "50")
-                    .appendQueryParameter(RADIUS, "500")
-                    .appendQueryParameter(CLIENT_ID, BuildConfig.CLIENT_ID)
-                    .appendQueryParameter(CLIENT_SECRET, BuildConfig.CLIENT_SECRET)
-                    .appendQueryParameter(CURRENT_DATE, timeMilisToString(System.currentTimeMillis()))
-                    .build();
-
-            URL url = new URL(builtUri.toString());
-
-            Log.d(LOG_TAG, builtUri.toString());
-
-            urlConnection = (HttpURLConnection) url.openConnection();
-            urlConnection.setRequestMethod("GET");
-            urlConnection.connect();
-
-            InputStream inputStream = urlConnection.getInputStream();
-            StringBuffer buffer = new StringBuffer();
-            if (inputStream == null) {
-                // Nothing to do.
-                return;
-            }
-            reader = new BufferedReader(new InputStreamReader(inputStream));
-
-            String line;
-            while ((line = reader.readLine()) != null) {
-                // Since it's JSON, adding a newline isn't necessary (it won't affect parsing)
-                // But it does make debugging a *lot* easier if you print out the completed
-                // buffer for debugging.
-                buffer.append(line + "\n");
-            }
-
-            if (buffer.length() == 0) {
-                // Stream was empty.  No point in parsing.
-                return;
-            }
-
-            oneSquareJsonStr = buffer.toString();
-
-//            getContentResolver().delete(FoursquareContract.VenuesEntry.CONTENT_URI, null, null);
-
-            getVenueDataFromJson(oneSquareJsonStr);
-
-        } catch (IOException e) {
-            Log.e(LOG_TAG, "Error ", e);
-            // If the code didn't successfully get the weather data, there's no point in attempting
-            // to parse it.
+            getVenueDataFromJson(parseJSONVenue(null));
         } catch (JSONException e) {
-            Log.e(LOG_TAG, e.getMessage(), e);
             e.printStackTrace();
-        } finally {
-            if (urlConnection != null) {
-                urlConnection.disconnect();
-            }
-            if (reader != null) {
+        }
+
+        Cursor venue_id_cur = this.getContentResolver().query(FoursquareContract.VenuesEntry.CONTENT_URI, new String[]{FoursquareContract.VenuesEntry.COLUMN_VEN_KEY},null,null,null);
+        if ((venue_id_cur != null)&&(venue_id_cur.getCount()>0)) {
+            while (venue_id_cur.moveToNext()){
+                String venue_id = venue_id_cur.getString(0);
+                String photoJSONstring = parseJSONVenue(venue_id);
                 try {
-                    reader.close();
-                } catch (final IOException e) {
-                    Log.e(LOG_TAG, "Error closing stream", e);
+                    getPhotoDataFromJson(photoJSONstring);
+                } catch (JSONException e) {
+                    e.printStackTrace();
                 }
             }
         }
-        return;
+
     }
+
 
     private String timeMilisToString(long milis) {
         SimpleDateFormat sd = new SimpleDateFormat("yyyyMMdd");
@@ -278,6 +224,49 @@ public class OneService extends IntentService {
         }
     }
 
+    private void getPhotoDataFromJson(String venueJsonStr) throws JSONException {
+
+        try {
+
+            JSONObject jsonObj = (JSONObject) new JSONTokener(venueJsonStr).nextValue();
+            JSONArray items = jsonObj.getJSONObject("response").getJSONObject("photos")
+                    .getJSONArray("items");
+
+            int length = items.length();
+
+            Vector<ContentValues> cVVector = new Vector<ContentValues>(length);
+
+            if (length > 0) {
+                for (int i = 0; i < length; i++) {
+                    JSONObject item = (JSONObject) items.get(i);
+
+                    ContentValues venueValues = new ContentValues();
+
+                    putJsonValue(venueValues, item, FoursquareContract.PhotoEntry.COLUMN_PHOTO_ID, PHOTO_ID, 1);
+                    putJsonValue(venueValues, item, FoursquareContract.PhotoEntry.COLUMN_PREFIX, PREFIX, 1);
+                    putJsonValue(venueValues, item, FoursquareContract.PhotoEntry.COLUMN_HEIGHT, HEIGHT, 1);
+                    putJsonValue(venueValues, item, FoursquareContract.PhotoEntry.COLUMN_PREFIX, WIDTH, 1);
+                    putJsonValue(venueValues, item, FoursquareContract.PhotoEntry.COLUMN_PREFIX, SUFFIX, 1);
+
+                    cVVector.add(venueValues);
+                }
+                int inserted = 0;
+                if (cVVector.size() > 0) {
+                    ContentValues[] cvArray = new ContentValues[cVVector.size()];
+                    cVVector.toArray(cvArray);
+                    inserted = this.getContentResolver().bulkInsert(FoursquareContract.PhotoEntry.CONTENT_URI, cvArray);
+
+                }
+
+                Log.d(LOG_TAG, "OneService Complete. " + cVVector.size() + " Inserted photos " + inserted);
+            }
+        } catch (JSONException e) {
+            Log.e(LOG_TAG, e.getMessage(), e);
+            e.printStackTrace();
+        }
+    }
+
+
     private void putJsonValue(ContentValues value, JSONObject item, String contractName, String paramName, int mode) {
         if (!item.isNull(paramName)) {
             try {
@@ -301,4 +290,99 @@ public class OneService extends IntentService {
         }
     }
 
+    private String parseJSONVenue(String venue_id){
+
+        HttpURLConnection urlConnection = null;
+        BufferedReader reader = null;
+
+        String oneSquareJsonStr = null;
+        String format = "json";
+
+        try {
+            final String API_URL = "https://api.foursquare.com/v2";
+            final String VENUES = "venues";
+            final String SEARCH = "search";
+            final String NEAR = "near";
+            final String geo_loc = "ll";
+            final String INTENT = "intent";
+            final String PHOTOS = "photos";
+            final String CLIENT_ID = "client_id";
+            final String CLIENT_SECRET = "client_secret";
+            final String CURRENT_DATE = "v";
+            final String CATEGORY_ID = "categoryId";
+            final String LIMIT = "limit";
+            final String RADIUS = "radius";
+
+            Uri builtUri = null;
+            if (venue_id == null) {
+                builtUri = Uri.parse(API_URL).buildUpon()
+                        .appendPath(VENUES)
+                        .appendPath(SEARCH)
+                        .encodedQuery("&" + geo_loc + "=" + current_lat + "," + current_lon + "&" + CATEGORY_ID + "=" + category)
+                        .appendQueryParameter(LIMIT, "50")
+                        .appendQueryParameter(RADIUS, "500")
+                        .appendQueryParameter(CLIENT_ID, BuildConfig.CLIENT_ID)
+                        .appendQueryParameter(CLIENT_SECRET, BuildConfig.CLIENT_SECRET)
+                        .appendQueryParameter(CURRENT_DATE, timeMilisToString(System.currentTimeMillis()))
+                        .build();
+            } else {
+                builtUri = Uri.parse(API_URL).buildUpon()
+                        .appendPath(VENUES)
+                        .appendPath(venue_id)
+                        .appendPath(PHOTOS)
+                        .appendQueryParameter(CLIENT_ID, BuildConfig.CLIENT_ID)
+                        .appendQueryParameter(CLIENT_SECRET, BuildConfig.CLIENT_SECRET)
+                        .appendQueryParameter(CURRENT_DATE, timeMilisToString(System.currentTimeMillis()))
+                        .build();
+
+            }
+            URL url = new URL(builtUri.toString());
+
+            Log.d(LOG_TAG, builtUri.toString());
+
+            urlConnection = (HttpURLConnection) url.openConnection();
+            urlConnection.setRequestMethod("GET");
+            urlConnection.connect();
+
+            InputStream inputStream = urlConnection.getInputStream();
+            StringBuffer buffer = new StringBuffer();
+            if (inputStream == null) {
+                // Nothing to do.
+                return null;
+            }
+            reader = new BufferedReader(new InputStreamReader(inputStream));
+
+            String line;
+            while ((line = reader.readLine()) != null) {
+                // Since it's JSON, adding a newline isn't necessary (it won't affect parsing)
+                // But it does make debugging a *lot* easier if you print out the completed
+                // buffer for debugging.
+                buffer.append(line + "\n");
+            }
+
+            if (buffer.length() == 0) {
+                // Stream was empty.  No point in parsing.
+                return null;
+            }
+
+            return buffer.toString();
+
+        } catch (IOException e) {
+            Log.e(LOG_TAG, "Error ", e);
+            // If the code didn't successfully get the weather data, there's no point in attempting
+            // to parse it.
+        } finally {
+            if (urlConnection != null) {
+                urlConnection.disconnect();
+            }
+            if (reader != null) {
+                try {
+                    reader.close();
+                } catch (final IOException e) {
+                    Log.e(LOG_TAG, "Error closing stream", e);
+                }
+            }
+        }
+        return null;
+    }
 }

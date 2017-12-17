@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">OneSquare</string>
-    <string name="venue_distance" translatable="false">Расстояние: %1$2d</string>
+    <string name="venue_distance" translatable="false">Расстояние: %1$2d метров</string>
     <string name="venue_address" translatable="false">Адрес: %1$2s</string>
 </resources>
