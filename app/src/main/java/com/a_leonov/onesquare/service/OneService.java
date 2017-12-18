@@ -4,6 +4,7 @@ import android.app.IntentService;
 import android.content.ContentValues;
 import android.content.Intent;
 import android.database.Cursor;
+import android.database.DatabaseUtils;
 import android.net.Uri;
 import android.support.annotation.Nullable;
 import android.util.Log;
@@ -120,13 +121,20 @@ public class OneService extends IntentService {
             e.printStackTrace();
         }
 
-        Cursor venue_id_cur = this.getContentResolver().query(FoursquareContract.VenuesEntry.CONTENT_URI, new String[]{FoursquareContract.VenuesEntry.COLUMN_VEN_KEY},null,null,null);
+        Cursor venue_id_cur = this.getContentResolver().query(FoursquareContract.VenuesEntry.CONTENT_URI,
+                new String[]{FoursquareContract.VenuesEntry.TABLE_NAME +"."+FoursquareContract.VenuesEntry._ID,
+                        FoursquareContract.VenuesEntry.COLUMN_VEN_KEY},
+                null,
+                null,
+                null);
+
         if ((venue_id_cur != null)&&(venue_id_cur.getCount()>0)) {
             while (venue_id_cur.moveToNext()){
-                String venue_id = venue_id_cur.getString(0);
+                int venue_row_id = venue_id_cur.getInt(0);
+                String venue_id = venue_id_cur.getString(1);
                 String photoJSONstring = parseJSONVenue(venue_id);
                 try {
-                    getPhotoDataFromJson(venue_id, photoJSONstring);
+                    getPhotoDataFromJson(venue_row_id, photoJSONstring);
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
@@ -224,7 +232,7 @@ public class OneService extends IntentService {
         }
     }
 
-    private void getPhotoDataFromJson(String venue_id, String venueJsonStr) throws JSONException {
+    private void getPhotoDataFromJson(int venue_id, String venueJsonStr) throws JSONException {
 
         try {
 

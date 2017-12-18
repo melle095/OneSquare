@@ -1,5 +1,6 @@
 package com.a_leonov.onesquare.ui;
 
+import android.content.Context;
 import android.database.Cursor;
 import android.location.Location;
 import android.net.Uri;
@@ -22,7 +23,7 @@ import com.a_leonov.onesquare.R;
 import com.a_leonov.onesquare.data.FoursquareContract;
 
 
-public class VenueListFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor>, SwipeRefreshLayout.OnRefreshListener, MainActivity.OnLocationUpdateListener {
+public class VenueListFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor>, SwipeRefreshLayout.OnRefreshListener {
 
     private RecyclerView mRecyclerView;
     private static final String SELECTED_KEY = "selected_position";
@@ -41,20 +42,40 @@ public class VenueListFragment extends Fragment implements LoaderManager.LoaderC
             FoursquareContract.VenuesEntry.COLUMN_COORD_LAT,
             FoursquareContract.VenuesEntry.COLUMN_COORD_LONG,
             FoursquareContract.VenuesEntry.COLUMN_STATUS,
-            FoursquareContract.VenuesEntry.COLUMN_DISTANCE
+            FoursquareContract.VenuesEntry.COLUMN_DISTANCE,
+            FoursquareContract.PhotoEntry.COLUMN_PREFIX,
+            FoursquareContract.PhotoEntry.COLUMN_SUFFIX
     };
+//
+//    static final int COL_VENUE_ID = 0;
+//    static final int COL_NAME = 1;
+//    static final int COL_ADDRESS = 2;
+//    static final int COL_RATING = 3;
+//    static final int COL_CAT = 4;
+//    static final int COL_LAT = 5;
+//    static final int COL_LON = 6;
+//    static final int COL_HOURS = 7;
+//    static final int COL_DIST = 8;
 
-    static final int COL_VENUE_ID = 0;
-    static final int COL_NAME = 1;
-    static final int COL_ADDRESS = 2;
-    static final int COL_RATING = 3;
-    static final int COL_CAT = 4;
-    static final int COL_LAT = 5;
-    static final int COL_LON = 6;
-    static final int COL_HOURS = 7;
-    static final int COL_DIST = 8;
+    OnListUpdateListener onListUpdateListener;
 
     PointD currentLoc;
+
+    public interface OnListUpdateListener {
+        public void onListUpdate();
+    }
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        onListUpdateListener = (OnListUpdateListener) context;
+    }
+
+    @Override
+    public void onDetach() {
+        super.onDetach();
+        onListUpdateListener = null;
+    }
 
     @Nullable
     @Override
@@ -68,6 +89,8 @@ public class VenueListFragment extends Fragment implements LoaderManager.LoaderC
         mSwipeRefreshLayout = (SwipeRefreshLayout) rootView.findViewById(R.id.swipe_refresh_layout);
         mVenueAdapter.setHasStableIds(true);
         mRecyclerView.setAdapter(mVenueAdapter);
+
+        mSwipeRefreshLayout.setOnRefreshListener(this);
 
         LinearLayoutManager linearLayoutManager =
                 new LinearLayoutManager(null, LinearLayoutManager.VERTICAL, false);
@@ -123,6 +146,7 @@ public class VenueListFragment extends Fragment implements LoaderManager.LoaderC
             // to, do so now.
             mRecyclerView.smoothScrollToPosition(mPosition);
         }
+        mSwipeRefreshLayout.setRefreshing(false);
     }
 
     @Override
@@ -141,15 +165,8 @@ public class VenueListFragment extends Fragment implements LoaderManager.LoaderC
         super.onSaveInstanceState(outState);
     }
 
-
-    @Override
-    public void onLocationUpdate(Location newLocation) {
-        this.currentLocation = newLocation;
-        getLoaderManager().restartLoader(VENUE_LOADER, null, this);
-    }
-
     @Override
     public void onRefresh() {
-        
+        onListUpdateListener.onListUpdate();
     }
 }

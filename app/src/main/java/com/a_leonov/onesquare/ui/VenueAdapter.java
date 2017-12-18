@@ -11,6 +11,8 @@ import android.widget.RatingBar;
 import android.widget.TextView;
 
 import com.a_leonov.onesquare.R;
+import com.a_leonov.onesquare.data.FoursquareContract;
+import com.bumptech.glide.Glide;
 
 /**
  * Created by Пользователь on 24.11.2017.
@@ -18,8 +20,23 @@ import com.a_leonov.onesquare.R;
 
 public class VenueAdapter extends CursorRecyclerViewAdapter<VenueAdapter.ViewHolder> {
 
-    private Cursor mCursor;
     private Context mContext;
+
+    static final int COL_VENUE_ID = 0;
+    static final int COL_NAME = 1;
+    static final int COL_ADDRESS = 2;
+    static final int COL_RATING = 3;
+    static final int COL_CAT = 4;
+    static final int COL_LAT = 5;
+    static final int COL_LON = 6;
+    static final int COL_HOURS = 7;
+    static final int COL_DIST = 8;
+
+    static final String PHOTO_ID   = "id";
+    static final String PREFIX     = "prefix";
+    static final String HEIGHT     = "height";
+    static final String WIDTH      = "width";
+    static final String SUFFIX     = "suffix";
 
     public VenueAdapter(Context context, Cursor cursor) {
         super(cursor);
@@ -31,17 +48,21 @@ public class VenueAdapter extends CursorRecyclerViewAdapter<VenueAdapter.ViewHol
     public void onBindViewHolder(final ViewHolder viewHolder, final Cursor cursor) {
 //        ViewHolder viewHolder = (ViewHolder) view.getTag();
 
-        String thumbnail = null;
-        String venueName = cursor.getString(VenueListFragment.COL_NAME);
-        String venueAddress = cursor.getString(VenueListFragment.COL_ADDRESS);
-        float venueRating = cursor.getFloat(VenueListFragment.COL_RATING);
-        String venueWorkhours = cursor.getString(VenueListFragment.COL_HOURS);
-        double venueDistance = cursor.getDouble(VenueListFragment.COL_DIST);
+        String venueName = cursor.getString(COL_NAME);
+        String venueAddress = cursor.getString(COL_ADDRESS);
+        float venueRating = cursor.getFloat(COL_RATING);
+        String venueWorkhours = cursor.getString(COL_HOURS);
+        double venueDistance = cursor.getDouble(COL_DIST);
         viewHolder.venueName.setText(venueName);
         viewHolder.venueAddress.setText(mContext.getString(R.string.venue_address, venueAddress));
         viewHolder.venueRating.setRating(venueRating);
         viewHolder.workHours.setText(venueWorkhours);
         viewHolder.venueDistance.setText(mContext.getString(R.string.venue_distance, Math.round(venueDistance)));
+
+//        String thumbnailUrl = cursor.getString(VenueListFragment.COL_)
+
+        Glide.clear(viewHolder.venueThumbnail);
+
     }
 
     @Override

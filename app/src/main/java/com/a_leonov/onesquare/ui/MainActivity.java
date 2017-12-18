@@ -43,7 +43,7 @@ import java.text.DateFormat;
 import java.util.Date;
 
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements VenueListFragment.OnListUpdateListener{
 
     private String selectedCategory;
     private String BUNDLE_CATEGORY = "category";
@@ -69,12 +69,7 @@ public class MainActivity extends AppCompatActivity {
     private Boolean mRequestingLocationUpdates;
     private String mLastUpdateTime;
     VenueListFragment listFragment;
-    OnLocationUpdateListener onLocationUpdateListener;
 
-
-    public interface OnLocationUpdateListener {
-        public void onLocationUpdate(Location newLocation);
-    }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -87,8 +82,6 @@ public class MainActivity extends AppCompatActivity {
         }
 
         listFragment = new VenueListFragment();
-
-        onLocationUpdateListener = (OnLocationUpdateListener) listFragment;
 
         getSupportFragmentManager().beginTransaction()
                 .add(R.id.frameLayout, listFragment, FRAGMENT_LIST_TAG)
@@ -129,7 +122,6 @@ public class MainActivity extends AppCompatActivity {
             if (savedInstanceState.keySet().contains(KEY_LAST_UPDATED_TIME_STRING)) {
                 mLastUpdateTime = savedInstanceState.getString(KEY_LAST_UPDATED_TIME_STRING);
             }
-            updateUI();
         }
     }
 
@@ -145,10 +137,8 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onLocationResult(LocationResult locationResult) {
                 super.onLocationResult(locationResult);
-
                 mCurrentLocation = locationResult.getLastLocation();
                 mLastUpdateTime = DateFormat.getTimeInstance().format(new Date());
-                updateLocationUI();
             }
         };
     }
@@ -163,8 +153,6 @@ public class MainActivity extends AppCompatActivity {
                 });
 
     }
-
-    ;
 
     private void buildLocationSettingsRequest() {
         LocationSettingsRequest.Builder builder = new LocationSettingsRequest.Builder();
@@ -184,7 +172,7 @@ public class MainActivity extends AppCompatActivity {
                     case Activity.RESULT_CANCELED:
                         Log.i(TAG, "User chose not to make required location settings changes.");
                         mRequestingLocationUpdates = false;
-                        updateUI();
+
                         break;
                 }
                 break;
@@ -203,7 +191,6 @@ public class MainActivity extends AppCompatActivity {
                         mFusedLocationClient.requestLocationUpdates(mLocationRequest,
                                 mLocationCallback, Looper.myLooper());
 
-                        updateUI();
                     }
                 })
                 .addOnFailureListener(this, new OnFailureListener() {
@@ -230,18 +217,8 @@ public class MainActivity extends AppCompatActivity {
                                 Toast.makeText(MainActivity.this, errorMessage, Toast.LENGTH_LONG).show();
                                 mRequestingLocationUpdates = false;
                         }
-
-                        updateUI();
                     }
                 });
-    }
-
-    private void updateUI() {
-//        setButtonsEnabledState();
-//        if (mCurrentLocation != null)
-//            onLocationUpdateListener.onLocationUpdate(mCurrentLocation);
-
-//        updateLocationUI();
     }
 
     private void updateLocationUI() {
@@ -251,25 +228,25 @@ public class MainActivity extends AppCompatActivity {
             venueIntent.putExtra(OneService.lat, mCurrentLocation.getLatitude());
             venueIntent.putExtra(OneService.lon, mCurrentLocation.getLongitude());
 
-            Intent venueIntent2 = new Intent(this, OneService.class);
-            venueIntent2.putExtra(OneService.CATEGORY, FoursquareContract.CATEGORY_Entertainment);
-            venueIntent2.putExtra(OneService.lat, mCurrentLocation.getLatitude());
-            venueIntent2.putExtra(OneService.lon, mCurrentLocation.getLongitude());
-
-            Intent venueIntent3 = new Intent(this, OneService.class);
-            venueIntent3.putExtra(OneService.CATEGORY, FoursquareContract.CATEGORY_NIGHTLIFE);
-            venueIntent3.putExtra(OneService.lat, mCurrentLocation.getLatitude());
-            venueIntent3.putExtra(OneService.lon, mCurrentLocation.getLongitude());
-
-            Intent venueIntent4 = new Intent(this, OneService.class);
-            venueIntent4.putExtra(OneService.CATEGORY, FoursquareContract.CATEGORY_OUTDOOR);
-            venueIntent4.putExtra(OneService.lat, mCurrentLocation.getLatitude());
-            venueIntent4.putExtra(OneService.lon, mCurrentLocation.getLongitude());
+//            Intent venueIntent2 = new Intent(this, OneService.class);
+//            venueIntent2.putExtra(OneService.CATEGORY, FoursquareContract.CATEGORY_Entertainment);
+//            venueIntent2.putExtra(OneService.lat, mCurrentLocation.getLatitude());
+//            venueIntent2.putExtra(OneService.lon, mCurrentLocation.getLongitude());
+//
+//            Intent venueIntent3 = new Intent(this, OneService.class);
+//            venueIntent3.putExtra(OneService.CATEGORY, FoursquareContract.CATEGORY_NIGHTLIFE);
+//            venueIntent3.putExtra(OneService.lat, mCurrentLocation.getLatitude());
+//            venueIntent3.putExtra(OneService.lon, mCurrentLocation.getLongitude());
+//
+//            Intent venueIntent4 = new Intent(this, OneService.class);
+//            venueIntent4.putExtra(OneService.CATEGORY, FoursquareContract.CATEGORY_OUTDOOR);
+//            venueIntent4.putExtra(OneService.lat, mCurrentLocation.getLatitude());
+//            venueIntent4.putExtra(OneService.lon, mCurrentLocation.getLongitude());
 
             startService(venueIntent);
-            startService(venueIntent2);
-            startService(venueIntent3);
-            startService(venueIntent4);
+//            startService(venueIntent2);
+//            startService(venueIntent3);
+//            startService(venueIntent4);
         }
     }
 
@@ -303,8 +280,6 @@ public class MainActivity extends AppCompatActivity {
         } else if (!checkPermissions()) {
             requestPermissions();
         }
-
-        updateUI();
     }
 
     @Override
@@ -418,4 +393,8 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    @Override
+    public void onListUpdate() {
+        updateLocationUI();
+    }
 }

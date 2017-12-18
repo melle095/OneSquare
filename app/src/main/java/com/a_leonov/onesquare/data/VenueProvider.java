@@ -175,7 +175,8 @@ public class VenueProvider extends ContentProvider {
                 selectionArgs,
                 null,
                 null,
-                sortOrder
+                sortOrder,
+                "1"
         );
     }
 
@@ -193,15 +194,15 @@ public class VenueProvider extends ContentProvider {
 //                Log.d(getClass().getSimpleName()," Query matches VENUES");
 //                Log.d(getClass().getSimpleName()," Query param: uri-"+uri.toString() + "; projection: "+ projection.toString() + "; selection:" + selection + "; selArgs:" + selectionArgs.toString());
 
-                retCursor = mOpenHelper.getReadableDatabase().query(
-                        FoursquareContract.VenuesEntry.TABLE_NAME,
+                retCursor = sVenuesQueryBuilder.query(mOpenHelper.getReadableDatabase(),
                         projection,
-                        selection,
-                        selectionArgs,
+                        null,
+                        null,
                         null,
                         null,
                         sortOrder
                 );
+//                Log.d(getClass().getSimpleName(), "VenueProvider: " + DatabaseUtils.dumpCursorToString(retCursor));
                 break;
             }
             case VENUE: {
@@ -212,9 +213,7 @@ public class VenueProvider extends ContentProvider {
             case VENUES_BY_GPS: {
                 retCursor = getVenueNear(uri, projection, sortOrder);
                 break;
-//            case VENUES_BY_CAT: {
-//                retCursor = getVenueByCat(uri, projection, sortOrder);
-//                break;
+//
             }
             case VENUES_BY_CITY: {
                 retCursor = getVenueByCity(uri, projection, sortOrder);
@@ -222,7 +221,6 @@ public class VenueProvider extends ContentProvider {
             }
             case PHOTOS_BY_VENUE: {
                 retCursor = getPhotoByVenue(uri, projection, sortOrder);
-//                Log.d(getClass().getSimpleName(), "VenueProvider: " + DatabaseUtils.dumpCursorToString(retCursor));
                 break;
             }
             case PHOTOS: {
@@ -241,7 +239,7 @@ public class VenueProvider extends ContentProvider {
                 throw new UnsupportedOperationException("Unknown uri: " + uri);
         }
         retCursor.setNotificationUri(getContext().getContentResolver(), uri);
-        Log.d(getClass().getSimpleName(),DatabaseUtils.dumpCursorToString(retCursor));
+        Log.d(getClass().getSimpleName(), DatabaseUtils.dumpCursorToString(retCursor));
         return retCursor;
     }
 
@@ -366,7 +364,7 @@ public class VenueProvider extends ContentProvider {
                         long _id = db.insert(FoursquareContract.VenuesEntry.TABLE_NAME, null, value);
                         if (_id != -1) {
                             returnCount++;
-                       }
+                        }
                     }
                     db.setTransactionSuccessful();
                 } finally {
@@ -421,8 +419,6 @@ public class VenueProvider extends ContentProvider {
         mOpenHelper.close();
         super.shutdown();
     }
-
-
 
 
 }
