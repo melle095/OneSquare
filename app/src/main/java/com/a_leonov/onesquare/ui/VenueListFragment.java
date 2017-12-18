@@ -9,6 +9,7 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -20,11 +21,8 @@ import com.a_leonov.onesquare.PointD;
 import com.a_leonov.onesquare.R;
 import com.a_leonov.onesquare.data.FoursquareContract;
 
-/**
- * Created by a_leonov on 24.11.2017.
- */
 
-public class VenueListFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor>, MainActivity.OnLocationUpdateListener {
+public class VenueListFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor>, SwipeRefreshLayout.OnRefreshListener, MainActivity.OnLocationUpdateListener {
 
     private RecyclerView mRecyclerView;
     private static final String SELECTED_KEY = "selected_position";
@@ -32,6 +30,7 @@ public class VenueListFragment extends Fragment implements LoaderManager.LoaderC
     private VenueAdapter mVenueAdapter;
     private Location currentLocation = null;
     private int mPosition;
+    SwipeRefreshLayout mSwipeRefreshLayout;
 
     private static final String[] VENUE_COLUMNS = {
             FoursquareContract.VenuesEntry.TABLE_NAME + "." + FoursquareContract.VenuesEntry._ID,
@@ -66,6 +65,7 @@ public class VenueListFragment extends Fragment implements LoaderManager.LoaderC
         mVenueAdapter = new VenueAdapter(getActivity(), null);
 
         mRecyclerView = (RecyclerView) rootView.findViewById(R.id.recycler_view);
+        mSwipeRefreshLayout = (SwipeRefreshLayout) rootView.findViewById(R.id.swipe_refresh_layout);
         mVenueAdapter.setHasStableIds(true);
         mRecyclerView.setAdapter(mVenueAdapter);
 
@@ -146,5 +146,10 @@ public class VenueListFragment extends Fragment implements LoaderManager.LoaderC
     public void onLocationUpdate(Location newLocation) {
         this.currentLocation = newLocation;
         getLoaderManager().restartLoader(VENUE_LOADER, null, this);
+    }
+
+    @Override
+    public void onRefresh() {
+        
     }
 }

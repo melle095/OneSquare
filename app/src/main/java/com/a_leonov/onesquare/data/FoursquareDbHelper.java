@@ -6,7 +6,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 
 public class FoursquareDbHelper extends SQLiteOpenHelper {
 
-    private static final int DATABASE_VERSION = 17;
+    private static final int DATABASE_VERSION = 18;
 
     static final String DATABASE_NAME = "venues.db";
 
@@ -22,11 +22,9 @@ public class FoursquareDbHelper extends SQLiteOpenHelper {
                 FoursquareContract.PhotoEntry.COLUMN_HEIGHT + " INTEGER , " +
                 FoursquareContract.PhotoEntry.COLUMN_WIDTH  + " INTEGER , " +
                 FoursquareContract.PhotoEntry.COLUMN_PREFIX + " TEXT , " +
-                FoursquareContract.PhotoEntry.COLUMN_SOURCE + " TEXT , " +
                 FoursquareContract.PhotoEntry.COLUMN_SUFFIX + " TEXT , " +
                 FoursquareContract.PhotoEntry.COLUMN_VENUE_ID + " INTEGER NOT NULL , " +
-                FoursquareContract.PhotoEntry.COLUMN_PHOTO_ID + " CHAR NOT NULL , " +
-                FoursquareContract.PhotoEntry.COLUMN_VISIBILITY + " CHAR NOT NULL, " +
+                FoursquareContract.PhotoEntry.COLUMN_PHOTO_ID + " CHAR NOT NULL, " +
 
                 " FOREIGN KEY (" + FoursquareContract.PhotoEntry.COLUMN_VENUE_ID + ") REFERENCES " +
                 FoursquareContract.VenuesEntry.TABLE_NAME + " (" + FoursquareContract.VenuesEntry._ID + ")" +

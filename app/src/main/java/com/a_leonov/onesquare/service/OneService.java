@@ -126,7 +126,7 @@ public class OneService extends IntentService {
                 String venue_id = venue_id_cur.getString(0);
                 String photoJSONstring = parseJSONVenue(venue_id);
                 try {
-                    getPhotoDataFromJson(photoJSONstring);
+                    getPhotoDataFromJson(venue_id, photoJSONstring);
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
@@ -224,7 +224,7 @@ public class OneService extends IntentService {
         }
     }
 
-    private void getPhotoDataFromJson(String venueJsonStr) throws JSONException {
+    private void getPhotoDataFromJson(String venue_id, String venueJsonStr) throws JSONException {
 
         try {
 
@@ -242,6 +242,7 @@ public class OneService extends IntentService {
 
                     ContentValues venueValues = new ContentValues();
 
+                    venueValues.put(FoursquareContract.PhotoEntry.COLUMN_VENUE_ID, venue_id);
                     putJsonValue(venueValues, item, FoursquareContract.PhotoEntry.COLUMN_PHOTO_ID, PHOTO_ID, 1);
                     putJsonValue(venueValues, item, FoursquareContract.PhotoEntry.COLUMN_PREFIX, PREFIX, 1);
                     putJsonValue(venueValues, item, FoursquareContract.PhotoEntry.COLUMN_HEIGHT, HEIGHT, 1);
@@ -265,7 +266,6 @@ public class OneService extends IntentService {
             e.printStackTrace();
         }
     }
-
 
     private void putJsonValue(ContentValues value, JSONObject item, String contractName, String paramName, int mode) {
         if (!item.isNull(paramName)) {

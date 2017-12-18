@@ -107,8 +107,6 @@ public class FoursquareContract {
         public static final String COLUMN_HEIGHT = "height";
         public static final String COLUMN_WIDTH = "width";
         public static final String COLUMN_SUFFIX = "suffix";
-        public static final String COLUMN_VISIBILITY = "visibility";
-        public static final String COLUMN_SOURCE = "source";
 
         public static Uri buildPhotoUri(long id) {
             return ContentUris.withAppendedId(CONTENT_URI, id);

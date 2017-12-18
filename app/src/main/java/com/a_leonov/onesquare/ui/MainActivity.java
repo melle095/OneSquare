@@ -238,10 +238,10 @@ public class MainActivity extends AppCompatActivity {
 
     private void updateUI() {
 //        setButtonsEnabledState();
-        if (mCurrentLocation != null)
-            onLocationUpdateListener.onLocationUpdate(mCurrentLocation);
+//        if (mCurrentLocation != null)
+//            onLocationUpdateListener.onLocationUpdate(mCurrentLocation);
 
-        updateLocationUI();
+//        updateLocationUI();
     }
 
     private void updateLocationUI() {
