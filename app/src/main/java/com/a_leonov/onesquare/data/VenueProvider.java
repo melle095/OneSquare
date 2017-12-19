@@ -40,12 +40,17 @@ public class VenueProvider extends ContentProvider {
         sVenuesQueryBuilder.setTables(
                 FoursquareContract.VenuesEntry.TABLE_NAME + " LEFT JOIN " +
                         FoursquareContract.PhotoEntry.TABLE_NAME +
-                        " ON " + FoursquareContract.VenuesEntry.TABLE_NAME +
-                        "." + FoursquareContract.VenuesEntry._ID +
-                        " = " + FoursquareContract.PhotoEntry.TABLE_NAME +
-                        "." + FoursquareContract.PhotoEntry.COLUMN_VENUE_ID);
-    }
+                        " ON " + FoursquareContract.VenuesEntry.TABLE_NAME + "." + FoursquareContract.VenuesEntry._ID +
+                        " = " + FoursquareContract.PhotoEntry.TABLE_NAME + "." + FoursquareContract.PhotoEntry.COLUMN_VENUE_ID);
+//                FoursquareContract.VenuesEntry.TABLE_NAME + " LEFT JOIN " +
+//                        "( SELECT " + FoursquareContract.PhotoEntry.TABLE_NAME + "." + FoursquareContract.PhotoEntry.COLUMN_VENUE_ID + " , " +
+//                                    FoursquareContract.PhotoEntry.TABLE_NAME + "." + FoursquareContract.PhotoEntry.COLUMN_PREFIX + " , " +
+//                                    FoursquareContract.PhotoEntry.TABLE_NAME + "." + FoursquareContract.PhotoEntry.COLUMN_SUFFIX +
+//                        " FROM " + FoursquareContract.PhotoEntry.TABLE_NAME + " LIMIT 1 ) AS " + FoursquareContract.PhotoEntry.TABLE_NAME +
+//                        " ON " + FoursquareContract.VenuesEntry.TABLE_NAME + "." + FoursquareContract.VenuesEntry._ID +
+//                        " = " + FoursquareContract.PhotoEntry.TABLE_NAME + "." + FoursquareContract.PhotoEntry.COLUMN_VENUE_ID);
 
+    }
 
     private static final String sVenueIDSelection =
             FoursquareContract.VenuesEntry.TABLE_NAME +

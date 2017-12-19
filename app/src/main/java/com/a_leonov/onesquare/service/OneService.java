@@ -4,7 +4,6 @@ import android.app.IntentService;
 import android.content.ContentValues;
 import android.content.Intent;
 import android.database.Cursor;
-import android.database.DatabaseUtils;
 import android.net.Uri;
 import android.support.annotation.Nullable;
 import android.util.Log;
@@ -128,18 +127,18 @@ public class OneService extends IntentService {
                 null,
                 null);
 
-        if ((venue_id_cur != null)&&(venue_id_cur.getCount()>0)) {
-            while (venue_id_cur.moveToNext()){
-                int venue_row_id = venue_id_cur.getInt(0);
-                String venue_id = venue_id_cur.getString(1);
-                String photoJSONstring = parseJSONVenue(venue_id);
-                try {
-                    getPhotoDataFromJson(venue_row_id, photoJSONstring);
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
+//        if ((venue_id_cur != null)&&(venue_id_cur.getCount()>0)) {
+//            while (venue_id_cur.moveToNext()){
+//                int venue_row_id = venue_id_cur.getInt(0);
+//                String venue_id = venue_id_cur.getString(1);
+//                String photoJSONstring = parseJSONVenue(venue_id);
+//                try {
+//                    getPhotoDataFromJson(venue_row_id, photoJSONstring);
+//                } catch (JSONException e) {
+//                    e.printStackTrace();
+//                }
+//            }
+//        }
 
     }
 
@@ -158,7 +157,9 @@ public class OneService extends IntentService {
         try {
 
             JSONObject jsonObj = (JSONObject) new JSONTokener(venueJsonStr).nextValue();
-            JSONArray venues = jsonObj.getJSONObject("response").getJSONArray("venues");
+            JSONArray groups = jsonObj.getJSONObject("response").getJSONArray("groups");
+
+            JSONArray venues = (JSONArray) groups.get(1);
 
             int length = venues.length();
 
@@ -166,7 +167,8 @@ public class OneService extends IntentService {
 
             if (length > 0) {
                 for (int i = 0; i < length; i++) {
-                    JSONObject item = (JSONObject) venues.get(i);
+                    JSONObject venue_item = (JSONObject) venues.get(i);
+                    JSONObject item = venue_item.getJSONObject("venue");
 
                     ContentValues venueValues = new ContentValues();
 
@@ -309,7 +311,7 @@ public class OneService extends IntentService {
         try {
             final String API_URL = "https://api.foursquare.com/v2";
             final String VENUES = "venues";
-            final String SEARCH = "search";
+            final String SEARCH = "explore";
             final String NEAR = "near";
             final String geo_loc = "ll";
             final String INTENT = "intent";
@@ -326,7 +328,9 @@ public class OneService extends IntentService {
                 builtUri = Uri.parse(API_URL).buildUpon()
                         .appendPath(VENUES)
                         .appendPath(SEARCH)
-                        .encodedQuery("&" + geo_loc + "=" + current_lat + "," + current_lon + "&" + CATEGORY_ID + "=" + category)
+                        .encodedQuery("&" + geo_loc + "=" + current_lat + "," + current_lon)
+                        .appendQueryParameter("section", "food")
+                        .appendQueryParameter("venuePhotos", "1")
                         .appendQueryParameter(LIMIT, "50")
                         .appendQueryParameter(RADIUS, "500")
                         .appendQueryParameter(CLIENT_ID, BuildConfig.CLIENT_ID)
