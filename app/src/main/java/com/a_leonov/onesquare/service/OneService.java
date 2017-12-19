@@ -68,18 +68,8 @@ public class OneService extends IntentService {
     private final String CITY = "city";
     private final String STATE = "state";
     private final String COUNTRY = "country";
-//************Photo fields*********************************
-
-    private final String PHOTO_ID   = "id";
     private final String PREFIX     = "prefix";
-    private final String HEIGHT     = "height";
-    private final String WIDTH      = "width";
     private final String SUFFIX     = "suffix";
-
-
-
-
-
 //*********************************************************
     String category;
     double current_lat;
@@ -119,27 +109,6 @@ public class OneService extends IntentService {
         } catch (JSONException e) {
             e.printStackTrace();
         }
-
-        Cursor venue_id_cur = this.getContentResolver().query(FoursquareContract.VenuesEntry.CONTENT_URI,
-                new String[]{FoursquareContract.VenuesEntry.TABLE_NAME +"."+FoursquareContract.VenuesEntry._ID,
-                        FoursquareContract.VenuesEntry.COLUMN_VEN_KEY},
-                null,
-                null,
-                null);
-
-//        if ((venue_id_cur != null)&&(venue_id_cur.getCount()>0)) {
-//            while (venue_id_cur.moveToNext()){
-//                int venue_row_id = venue_id_cur.getInt(0);
-//                String venue_id = venue_id_cur.getString(1);
-//                String photoJSONstring = parseJSONVenue(venue_id);
-//                try {
-//                    getPhotoDataFromJson(venue_row_id, photoJSONstring);
-//                } catch (JSONException e) {
-//                    e.printStackTrace();
-//                }
-//            }
-//        }
-
     }
 
 
@@ -157,18 +126,19 @@ public class OneService extends IntentService {
         try {
 
             JSONObject jsonObj = (JSONObject) new JSONTokener(venueJsonStr).nextValue();
-            JSONArray groups = jsonObj.getJSONObject("response").getJSONArray("groups");
+            JSONArray items = jsonObj.getJSONObject("response")
+                    .getJSONArray("groups")
+                    .getJSONObject(0)
+                    .getJSONArray("items");
 
-            JSONArray venues = (JSONArray) groups.get(1);
-
-            int length = venues.length();
+            int length = items.length();
 
             Vector<ContentValues> cVVector = new Vector<ContentValues>(length);
 
             if (length > 0) {
                 for (int i = 0; i < length; i++) {
-                    JSONObject venue_item = (JSONObject) venues.get(i);
-                    JSONObject item = venue_item.getJSONObject("venue");
+
+                    JSONObject item = items.getJSONObject(i).getJSONObject("venue");
 
                     ContentValues venueValues = new ContentValues();
 
@@ -214,7 +184,16 @@ public class OneService extends IntentService {
                     putJsonValue(venueValues, contact, FoursquareContract.VenuesEntry.COLUMN_FACEBOOKNAME, FACEBOOKNAME, 1);
                     putJsonValue(venueValues, contact, FoursquareContract.VenuesEntry.COLUMN_FACEBOOKUSER, FACEBOOKUSER, 1);
 
-                    venueValues.put(FoursquareContract.VenuesEntry.COLUMN_CATERGORY, category);
+                    JSONObject photo = item.getJSONObject("photos")
+                            .getJSONArray("groups")
+                            .getJSONObject(0)
+                            .getJSONArray("items")
+                            .getJSONObject(0);
+
+                    putJsonValue(venueValues, photo, FoursquareContract.VenuesEntry.COLUMN_PHOTO_PREFIX, PREFIX, 1);
+                    putJsonValue(venueValues, photo, FoursquareContract.VenuesEntry.COLUMN_PHOTO_SUFFIX, SUFFIX, 1);
+
+//                    venueValues.put(FoursquareContract.VenuesEntry.COLUMN_CATERGORY, category);
 
                     cVVector.add(venueValues);
                 }
@@ -222,6 +201,9 @@ public class OneService extends IntentService {
                 if (cVVector.size() > 0) {
                     ContentValues[] cvArray = new ContentValues[cVVector.size()];
                     cVVector.toArray(cvArray);
+                    getContentResolver().delete(FoursquareContract.VenuesEntry.CONTENT_URI,null,null);
+                    getContentResolver().delete(FoursquareContract.PhotoEntry.CONTENT_URI,null,null);
+
                     inserted = this.getContentResolver().bulkInsert(FoursquareContract.VenuesEntry.CONTENT_URI, cvArray);
 
                 }
@@ -234,48 +216,48 @@ public class OneService extends IntentService {
         }
     }
 
-    private void getPhotoDataFromJson(int venue_id, String venueJsonStr) throws JSONException {
-
-        try {
-
-            JSONObject jsonObj = (JSONObject) new JSONTokener(venueJsonStr).nextValue();
-            JSONArray items = jsonObj.getJSONObject("response").getJSONObject("photos")
-                    .getJSONArray("items");
-
-            int length = items.length();
-
-            Vector<ContentValues> cVVector = new Vector<ContentValues>(length);
-
-            if (length > 0) {
-                for (int i = 0; i < length; i++) {
-                    JSONObject item = (JSONObject) items.get(i);
-
-                    ContentValues venueValues = new ContentValues();
-
-                    venueValues.put(FoursquareContract.PhotoEntry.COLUMN_VENUE_ID, venue_id);
-                    putJsonValue(venueValues, item, FoursquareContract.PhotoEntry.COLUMN_PHOTO_ID, PHOTO_ID, 1);
-                    putJsonValue(venueValues, item, FoursquareContract.PhotoEntry.COLUMN_PREFIX, PREFIX, 1);
-                    putJsonValue(venueValues, item, FoursquareContract.PhotoEntry.COLUMN_HEIGHT, HEIGHT, 1);
-                    putJsonValue(venueValues, item, FoursquareContract.PhotoEntry.COLUMN_PREFIX, WIDTH, 1);
-                    putJsonValue(venueValues, item, FoursquareContract.PhotoEntry.COLUMN_PREFIX, SUFFIX, 1);
-
-                    cVVector.add(venueValues);
-                }
-                int inserted = 0;
-                if (cVVector.size() > 0) {
-                    ContentValues[] cvArray = new ContentValues[cVVector.size()];
-                    cVVector.toArray(cvArray);
-                    inserted = this.getContentResolver().bulkInsert(FoursquareContract.PhotoEntry.CONTENT_URI, cvArray);
-
-                }
-
-                Log.d(LOG_TAG, "OneService Complete. " + cVVector.size() + " Inserted photos " + inserted);
-            }
-        } catch (JSONException e) {
-            Log.e(LOG_TAG, e.getMessage(), e);
-            e.printStackTrace();
-        }
-    }
+//    private void getPhotoDataFromJson(int venue_id, String venueJsonStr) throws JSONException {
+//
+//        try {
+//
+//            JSONObject jsonObj = (JSONObject) new JSONTokener(venueJsonStr).nextValue();
+//            JSONArray items = jsonObj.getJSONObject("response").getJSONObject("photos")
+//                    .getJSONArray("items");
+//
+//            int length = items.length();
+//
+//            Vector<ContentValues> cVVector = new Vector<ContentValues>(length);
+//
+//            if (length > 0) {
+//                for (int i = 0; i < length; i++) {
+//                    JSONObject item = (JSONObject) items.get(i);
+//
+//                    ContentValues venueValues = new ContentValues();
+//
+//                    venueValues.put(FoursquareContract.PhotoEntry.COLUMN_VENUE_ID, venue_id);
+//                    putJsonValue(venueValues, item, FoursquareContract.PhotoEntry.COLUMN_PHOTO_ID, PHOTO_ID, 1);
+//                    putJsonValue(venueValues, item, FoursquareContract.PhotoEntry.COLUMN_PREFIX, PREFIX, 1);
+//                    putJsonValue(venueValues, item, FoursquareContract.PhotoEntry.COLUMN_HEIGHT, HEIGHT, 1);
+//                    putJsonValue(venueValues, item, FoursquareContract.PhotoEntry.COLUMN_PREFIX, WIDTH, 1);
+//                    putJsonValue(venueValues, item, FoursquareContract.PhotoEntry.COLUMN_PREFIX, SUFFIX, 1);
+//
+//                    cVVector.add(venueValues);
+//                }
+//                int inserted = 0;
+//                if (cVVector.size() > 0) {
+//                    ContentValues[] cvArray = new ContentValues[cVVector.size()];
+//                    cVVector.toArray(cvArray);
+//                    inserted = this.getContentResolver().bulkInsert(FoursquareContract.PhotoEntry.CONTENT_URI, cvArray);
+//
+//                }
+//
+//                Log.d(LOG_TAG, "OneService Complete. " + cVVector.size() + " Inserted photos " + inserted);
+//            }
+//        } catch (JSONException e) {
+//            Log.e(LOG_TAG, e.getMessage(), e);
+//            e.printStackTrace();
+//        }
+//    }
 
     private void putJsonValue(ContentValues value, JSONObject item, String contractName, String paramName, int mode) {
         if (!item.isNull(paramName)) {

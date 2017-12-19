@@ -32,16 +32,16 @@ public class VenueProvider extends ContentProvider {
 
     static final double radius = 1000;
 
-    private static final SQLiteQueryBuilder sVenuesQueryBuilder;
+//    private static final SQLiteQueryBuilder sVenuesQueryBuilder;
 
-    static {
-        sVenuesQueryBuilder = new SQLiteQueryBuilder();
-
-        sVenuesQueryBuilder.setTables(
-                FoursquareContract.VenuesEntry.TABLE_NAME + " LEFT JOIN " +
-                        FoursquareContract.PhotoEntry.TABLE_NAME +
-                        " ON " + FoursquareContract.VenuesEntry.TABLE_NAME + "." + FoursquareContract.VenuesEntry._ID +
-                        " = " + FoursquareContract.PhotoEntry.TABLE_NAME + "." + FoursquareContract.PhotoEntry.COLUMN_VENUE_ID);
+//    static {
+//        sVenuesQueryBuilder = new SQLiteQueryBuilder();
+//
+//        sVenuesQueryBuilder.setTables(
+//                FoursquareContract.VenuesEntry.TABLE_NAME + " LEFT JOIN " +
+//                        FoursquareContract.PhotoEntry.TABLE_NAME +
+//                        " ON " + FoursquareContract.VenuesEntry.TABLE_NAME + "." + FoursquareContract.VenuesEntry._ID +
+//                        " = " + FoursquareContract.PhotoEntry.TABLE_NAME + "." + FoursquareContract.PhotoEntry.COLUMN_VENUE_ID);
 //                FoursquareContract.VenuesEntry.TABLE_NAME + " LEFT JOIN " +
 //                        "( SELECT " + FoursquareContract.PhotoEntry.TABLE_NAME + "." + FoursquareContract.PhotoEntry.COLUMN_VENUE_ID + " , " +
 //                                    FoursquareContract.PhotoEntry.TABLE_NAME + "." + FoursquareContract.PhotoEntry.COLUMN_PREFIX + " , " +
@@ -50,7 +50,7 @@ public class VenueProvider extends ContentProvider {
 //                        " ON " + FoursquareContract.VenuesEntry.TABLE_NAME + "." + FoursquareContract.VenuesEntry._ID +
 //                        " = " + FoursquareContract.PhotoEntry.TABLE_NAME + "." + FoursquareContract.PhotoEntry.COLUMN_VENUE_ID);
 
-    }
+//    }
 
     private static final String sVenueIDSelection =
             FoursquareContract.VenuesEntry.TABLE_NAME +
@@ -59,9 +59,6 @@ public class VenueProvider extends ContentProvider {
     private static final String sVenueByCitySelection =
             FoursquareContract.VenuesEntry.TABLE_NAME + "." + FoursquareContract.VenuesEntry.COLUMN_CATERGORY + " == ? AND " +
                     FoursquareContract.VenuesEntry.COLUMN_CITY + " == ? ";
-
-    private static final String sVenueByCatSelection =
-            FoursquareContract.VenuesEntry.TABLE_NAME + "." + FoursquareContract.VenuesEntry.COLUMN_CATERGORY + " == ? ";
 
     private static final String sPhotoByVenueIDSelection =
             FoursquareContract.PhotoEntry.TABLE_NAME +
@@ -87,7 +84,7 @@ public class VenueProvider extends ContentProvider {
         selectionArgs = new String[]{venueId};
         selection = sVenueIDSelection;
 
-        return sVenuesQueryBuilder.query(mOpenHelper.getReadableDatabase(),
+        return mOpenHelper.getReadableDatabase().query(FoursquareContract.VenuesEntry.TABLE_NAME,
                 projection,
                 selection,
                 selectionArgs,
@@ -107,26 +104,7 @@ public class VenueProvider extends ContentProvider {
         selectionArgs = new String[]{category, venue_city};
         selection = sVenueByCitySelection;
 
-        return sVenuesQueryBuilder.query(mOpenHelper.getReadableDatabase(),
-                projection,
-                selection,
-                selectionArgs,
-                null,
-                null,
-                sortOrder
-        );
-    }
-
-    private Cursor getVenueByCat(Uri uri, String[] projection, String sortOrder) {
-        String category = uri.getPathSegments().get(1);
-
-        String[] selectionArgs;
-        String selection;
-
-        selectionArgs = new String[]{category};
-        selection = sVenueByCatSelection;
-
-        return sVenuesQueryBuilder.query(mOpenHelper.getReadableDatabase(),
+        return mOpenHelper.getReadableDatabase().query(FoursquareContract.VenuesEntry.TABLE_NAME,
                 projection,
                 selection,
                 selectionArgs,
@@ -156,7 +134,7 @@ public class VenueProvider extends ContentProvider {
     }
 
     private Cursor getVenueNear(Uri uri, String[] projection, String sortOrder) {
-        String category = uri.getPathSegments().get(1);
+//        String category = uri.getPathSegments().get(1);
         double current_lat = Double.parseDouble(uri.getPathSegments().get(3));
         double current_lon = Double.parseDouble(uri.getPathSegments().get(4));
 
@@ -169,19 +147,18 @@ public class VenueProvider extends ContentProvider {
 
         String[] selectionArgs;
         String selection;
-        selectionArgs = new String[]{category, String.valueOf(p3.x), String.valueOf(p1.x), String.valueOf(p2.y), String.valueOf(p4.y)};
+        selectionArgs = new String[]{String.valueOf(p3.x), String.valueOf(p1.x), String.valueOf(p2.y), String.valueOf(p4.y)};
 //        selectionArgs = new String[]{category};
 
         selection = sVenueNearSelection;
 
-        return sVenuesQueryBuilder.query(mOpenHelper.getReadableDatabase(),
+        return mOpenHelper.getReadableDatabase().query(FoursquareContract.VenuesEntry.TABLE_NAME,
                 projection,
                 selection,
                 selectionArgs,
                 null,
                 null,
-                sortOrder,
-                "1"
+                sortOrder
         );
     }
 
@@ -199,7 +176,7 @@ public class VenueProvider extends ContentProvider {
 //                Log.d(getClass().getSimpleName()," Query matches VENUES");
 //                Log.d(getClass().getSimpleName()," Query param: uri-"+uri.toString() + "; projection: "+ projection.toString() + "; selection:" + selection + "; selArgs:" + selectionArgs.toString());
 
-                retCursor = sVenuesQueryBuilder.query(mOpenHelper.getReadableDatabase(),
+                retCursor = mOpenHelper.getReadableDatabase().query(FoursquareContract.VenuesEntry.TABLE_NAME,
                         projection,
                         null,
                         null,

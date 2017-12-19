@@ -2,6 +2,8 @@ package com.a_leonov.onesquare.ui;
 
 import android.content.Context;
 import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.support.v7.graphics.Palette;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -13,6 +15,11 @@ import android.widget.TextView;
 import com.a_leonov.onesquare.R;
 import com.a_leonov.onesquare.data.FoursquareContract;
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
+import com.bumptech.glide.load.resource.bitmap.GlideBitmapDrawable;
+import com.bumptech.glide.load.resource.drawable.GlideDrawable;
+import com.bumptech.glide.request.RequestListener;
+import com.bumptech.glide.request.target.Target;
 
 /**
  * Created by Пользователь on 24.11.2017.
@@ -31,12 +38,8 @@ public class VenueAdapter extends CursorRecyclerViewAdapter<VenueAdapter.ViewHol
     static final int COL_LON = 6;
     static final int COL_HOURS = 7;
     static final int COL_DIST = 8;
-
-    static final String PHOTO_ID   = "id";
-    static final String PREFIX     = "prefix";
-    static final String HEIGHT     = "height";
-    static final String WIDTH      = "width";
-    static final String SUFFIX     = "suffix";
+    static final int COL_PREFIX     = 9;
+    static final int COL_SUFFIX     = 10;
 
     public VenueAdapter(Context context, Cursor cursor) {
         super(cursor);
@@ -62,7 +65,29 @@ public class VenueAdapter extends CursorRecyclerViewAdapter<VenueAdapter.ViewHol
 //        String thumbnailUrl = cursor.getString(VenueListFragment.COL_)
 
         Glide.clear(viewHolder.venueThumbnail);
+        Glide.with(viewHolder.venueThumbnail.getContext())
+                .load(cursor.getString(COL_PREFIX) + "width500" + cursor.getString(COL_SUFFIX))
+                .diskCacheStrategy(DiskCacheStrategy.ALL)
+                .dontAnimate()
+                .listener(new RequestListener<String, GlideDrawable>() {
+                    @Override
+                    public boolean onException(Exception e, String model, Target<GlideDrawable> target, boolean isFirstResource) {
+                        return false;
+                    }
 
+                    @Override
+                    public boolean onResourceReady(GlideDrawable resource, String model,
+                                                   Target<GlideDrawable> target,
+                                                   boolean isFromMemoryCache, boolean isFirstResource) {
+                        Bitmap bitmap = ((GlideBitmapDrawable) resource.getCurrent()).getBitmap();
+                        Palette palette = Palette.generate(bitmap);
+                        int defaultColor = 0xFF333333;
+                        int color = palette.getDarkMutedColor(defaultColor);
+                        viewHolder.itemView.setBackgroundColor(color);
+                        return false;
+                    }
+                })
+                .into(viewHolder.venueThumbnail);
     }
 
     @Override
