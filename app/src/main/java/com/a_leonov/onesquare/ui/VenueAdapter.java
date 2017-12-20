@@ -2,8 +2,6 @@ package com.a_leonov.onesquare.ui;
 
 import android.content.Context;
 import android.database.Cursor;
-import android.graphics.Bitmap;
-import android.support.v7.graphics.Palette;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -13,10 +11,8 @@ import android.widget.RatingBar;
 import android.widget.TextView;
 
 import com.a_leonov.onesquare.R;
-import com.a_leonov.onesquare.data.FoursquareContract;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
-import com.bumptech.glide.load.resource.bitmap.GlideBitmapDrawable;
 import com.bumptech.glide.load.resource.drawable.GlideDrawable;
 import com.bumptech.glide.request.RequestListener;
 import com.bumptech.glide.request.target.Target;
@@ -53,7 +49,7 @@ public class VenueAdapter extends CursorRecyclerViewAdapter<VenueAdapter.ViewHol
 
         String venueName = cursor.getString(COL_NAME);
         String venueAddress = cursor.getString(COL_ADDRESS);
-        float venueRating = cursor.getFloat(COL_RATING);
+        int venueRating = Math.round(cursor.getFloat(COL_RATING));
         String venueWorkhours = cursor.getString(COL_HOURS);
         double venueDistance = cursor.getDouble(COL_DIST);
         viewHolder.venueName.setText(venueName);
@@ -66,7 +62,7 @@ public class VenueAdapter extends CursorRecyclerViewAdapter<VenueAdapter.ViewHol
 
         Glide.clear(viewHolder.venueThumbnail);
         Glide.with(viewHolder.venueThumbnail.getContext())
-                .load(cursor.getString(COL_PREFIX) + "width500" + cursor.getString(COL_SUFFIX))
+                .load(cursor.getString(COL_PREFIX) + mContext.getString(R.string.venue_thumbnail_size) + cursor.getString(COL_SUFFIX))
                 .diskCacheStrategy(DiskCacheStrategy.ALL)
                 .dontAnimate()
                 .listener(new RequestListener<String, GlideDrawable>() {
@@ -79,11 +75,11 @@ public class VenueAdapter extends CursorRecyclerViewAdapter<VenueAdapter.ViewHol
                     public boolean onResourceReady(GlideDrawable resource, String model,
                                                    Target<GlideDrawable> target,
                                                    boolean isFromMemoryCache, boolean isFirstResource) {
-                        Bitmap bitmap = ((GlideBitmapDrawable) resource.getCurrent()).getBitmap();
-                        Palette palette = Palette.generate(bitmap);
-                        int defaultColor = 0xFF333333;
-                        int color = palette.getDarkMutedColor(defaultColor);
-                        viewHolder.itemView.setBackgroundColor(color);
+//                        Bitmap bitmap = ((GlideBitmapDrawable) resource.getCurrent()).getBitmap();
+//                        Palette palette = Palette.generate(bitmap);
+//                        int defaultColor = 0xFF333333;
+//                        int color = palette.getDarkMutedColor(defaultColor);
+//                        viewHolder.itemView.setBackgroundColor(color);
                         return false;
                     }
                 })

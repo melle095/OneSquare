@@ -138,4 +138,6 @@
     <dimen name="material_component_floating_action_button_elevation">4dp</dimen>
     <!-- Toolbars -->
     <!-- Tooltips -->
+
+    <dimen name="material_phone_list_image_height">300dp</dimen>
 </resources>

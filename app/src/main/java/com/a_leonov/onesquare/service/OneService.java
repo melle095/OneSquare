@@ -3,7 +3,6 @@ package com.a_leonov.onesquare.service;
 import android.app.IntentService;
 import android.content.ContentValues;
 import android.content.Intent;
-import android.database.Cursor;
 import android.net.Uri;
 import android.support.annotation.Nullable;
 import android.util.Log;
@@ -52,7 +51,7 @@ public class OneService extends IntentService {
     private final String FACEBOOKNAME = "facebookName";
     private final String VERIFIED = "verified";
     private final String URL = "url";
-    private final String STATUS = "hours";
+    private final String STATUS = "status";
     private final String ISOPEN = "isOpen";
     private final String ISLOCALHOLIDAY = "isLocalHoliday";
     private final String POPULAR = "popular";
@@ -98,7 +97,7 @@ public class OneService extends IntentService {
 
         category = intent.getStringExtra(CATEGORY);
 
-        Log.i(LOG_TAG, " Start OneService. By category " + category);
+//        Log.i(LOG_TAG, " Start OneService. By category " + category);
 
         current_lat = intent.getDoubleExtra(lat, 0);
         current_lon = intent.getDoubleExtra(lon, 0);
@@ -146,13 +145,19 @@ public class OneService extends IntentService {
                     putJsonValue(venueValues, item, FoursquareContract.VenuesEntry.COLUMN_NAME, NAME, 1);
                     putJsonValue(venueValues, item, FoursquareContract.VenuesEntry.COLUMN_VERIFIED, VERIFIED, 1);
                     putJsonValue(venueValues, item, FoursquareContract.VenuesEntry.COLUMN_URL, URL, 1);
-                    putJsonValue(venueValues, item, FoursquareContract.VenuesEntry.COLUMN_STATUS, STATUS, 1);
-                    putJsonValue(venueValues, item, FoursquareContract.VenuesEntry.COLUMN_ISOPEN, ISOPEN, 1);
-                    putJsonValue(venueValues, item, FoursquareContract.VenuesEntry.COLUMN_ISLOCALHOLIDAY, ISLOCALHOLIDAY, 1);
-                    putJsonValue(venueValues, item, FoursquareContract.VenuesEntry.COLUMN_POPULAR, POPULAR, 1);
+//                    putJsonValue(venueValues, item, FoursquareContract.VenuesEntry.COLUMN_ISOPEN, ISOPEN, 1);
+//                    putJsonValue(venueValues, item, FoursquareContract.VenuesEntry.COLUMN_ISLOCALHOLIDAY, ISLOCALHOLIDAY, 1);
+//                    putJsonValue(venueValues, item, FoursquareContract.VenuesEntry.COLUMN_POPULAR, POPULAR, 1);
                     putJsonValue(venueValues, item, FoursquareContract.VenuesEntry.COLUMN_RATING, RATING, 1);
                     putJsonValue(venueValues, item, FoursquareContract.VenuesEntry.COLUMN_SHORTURL, SHORTURL, 1);
                     putJsonValue(venueValues, item, FoursquareContract.VenuesEntry.COLUMN_CANONICALURL, CANONICALURL, 1);
+
+                    JSONObject hours = (JSONObject) item.getJSONObject("hours");
+//                    putJsonValue(venueValues, item.getJSONObject("hours"), FoursquareContract.VenuesEntry.COLUMN_STATUS, STATUS, 1);
+
+                    String status = hours.getString("status");
+                    venueValues.put(FoursquareContract.VenuesEntry.COLUMN_STATUS, status);
+
 
                     JSONObject location = (JSONObject) item.getJSONObject("location");
 
@@ -208,7 +213,7 @@ public class OneService extends IntentService {
 
                 }
 
-                Log.d(LOG_TAG, "OneService Complete. " + cVVector.size() + " Inserted of category " + inserted);
+//                Log.d(LOG_TAG, "OneService Complete. " + cVVector.size() + " Inserted of category " + inserted);
             }
         } catch (JSONException e) {
             Log.e(LOG_TAG, e.getMessage(), e);
