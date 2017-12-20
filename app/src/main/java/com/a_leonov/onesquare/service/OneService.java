@@ -39,7 +39,7 @@ public class OneService extends IntentService {
 
     public static final String CATEGORY = "cat";
 
-//**********venue fields*****************************************
+    //**********venue fields*****************************************
     private final String VENUE_ID = "id";
     private final String NAME = "name";
     private final String PHONE = "phone";
@@ -67,9 +67,9 @@ public class OneService extends IntentService {
     private final String CITY = "city";
     private final String STATE = "state";
     private final String COUNTRY = "country";
-    private final String PREFIX     = "prefix";
-    private final String SUFFIX     = "suffix";
-//*********************************************************
+    private final String PREFIX = "prefix";
+    private final String SUFFIX = "suffix";
+    //*********************************************************
     String category;
     double current_lat;
     double current_lon;
@@ -152,12 +152,13 @@ public class OneService extends IntentService {
                     putJsonValue(venueValues, item, FoursquareContract.VenuesEntry.COLUMN_SHORTURL, SHORTURL, 1);
                     putJsonValue(venueValues, item, FoursquareContract.VenuesEntry.COLUMN_CANONICALURL, CANONICALURL, 1);
 
-                    JSONObject hours = (JSONObject) item.getJSONObject("hours");
-//                    putJsonValue(venueValues, item.getJSONObject("hours"), FoursquareContract.VenuesEntry.COLUMN_STATUS, STATUS, 1);
 
-                    String status = hours.getString("status");
-                    venueValues.put(FoursquareContract.VenuesEntry.COLUMN_STATUS, status);
-
+                    try {
+                        JSONObject hours = (JSONObject) item.getJSONObject("hours");
+                        putJsonValue(venueValues, hours, FoursquareContract.VenuesEntry.COLUMN_STATUS, STATUS, 1);
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
 
                     JSONObject location = (JSONObject) item.getJSONObject("location");
 
@@ -206,8 +207,8 @@ public class OneService extends IntentService {
                 if (cVVector.size() > 0) {
                     ContentValues[] cvArray = new ContentValues[cVVector.size()];
                     cVVector.toArray(cvArray);
-                    getContentResolver().delete(FoursquareContract.VenuesEntry.CONTENT_URI,null,null);
-                    getContentResolver().delete(FoursquareContract.PhotoEntry.CONTENT_URI,null,null);
+                    getContentResolver().delete(FoursquareContract.VenuesEntry.CONTENT_URI, null, null);
+                    getContentResolver().delete(FoursquareContract.PhotoEntry.CONTENT_URI, null, null);
 
                     inserted = this.getContentResolver().bulkInsert(FoursquareContract.VenuesEntry.CONTENT_URI, cvArray);
 
@@ -287,7 +288,7 @@ public class OneService extends IntentService {
         }
     }
 
-    private String parseJSONVenue(String venue_id){
+    private String parseJSONVenue(String venue_id) {
 
         HttpURLConnection urlConnection = null;
         BufferedReader reader = null;

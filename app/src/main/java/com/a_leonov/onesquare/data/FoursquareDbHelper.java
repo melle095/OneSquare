@@ -6,7 +6,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 
 public class FoursquareDbHelper extends SQLiteOpenHelper {
 
-    private static final int DATABASE_VERSION = 20;
+    private static final int DATABASE_VERSION = 21;
 
     static final String DATABASE_NAME = "venues.db";
 
