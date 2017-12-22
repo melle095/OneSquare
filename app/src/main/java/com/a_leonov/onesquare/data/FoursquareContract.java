@@ -76,12 +76,6 @@ public class FoursquareContract {
                     .build();
         }
 
-        public static Uri buildVenuesCatUri(String cat) {
-            return CONTENT_URI.buildUpon()
-                    .appendPath(cat)
-                    .build();
-        }
-
         public static Uri buildVenueCityUri(String cat, String city) {
             return CONTENT_URI.buildUpon()
                     .appendPath(cat)

@@ -1,6 +1,7 @@
 package com.a_leonov.onesquare.ui;
 
 import android.content.Context;
+import android.content.Intent;
 import android.database.Cursor;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -11,6 +12,7 @@ import android.widget.RatingBar;
 import android.widget.TextView;
 
 import com.a_leonov.onesquare.R;
+import com.a_leonov.onesquare.data.FoursquareContract;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.load.resource.drawable.GlideDrawable;
@@ -36,6 +38,8 @@ public class VenueAdapter extends CursorRecyclerViewAdapter<VenueAdapter.ViewHol
     static final int COL_DIST = 8;
     static final int COL_PREFIX     = 9;
     static final int COL_SUFFIX     = 10;
+
+    private final String DETAIL_TAG = "itemID";
 
     public VenueAdapter(Context context, Cursor cursor) {
         super(cursor);
@@ -87,15 +91,16 @@ public class VenueAdapter extends CursorRecyclerViewAdapter<VenueAdapter.ViewHol
     }
 
     @Override
-    public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+    public ViewHolder onCreateViewHolder(final ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.list_item_article, parent, false);
         final ViewHolder vh = new ViewHolder(view);
         view.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-//                parent.getContext().startActivity(new Intent(Intent.ACTION_VIEW,
-//                        ItemsContract.Items.buildItemUri(getItemId(vh.getAdapterPosition()))));
+                Intent intent = new Intent(parent.getContext(),DetailActivity.class)
+                        .putExtra(DETAIL_TAG, FoursquareContract.VenuesEntry.buildVenuesUri(getItemId(vh.getAdapterPosition())));
+                parent.getContext().startActivity(intent);
             }
         });
         return vh;
