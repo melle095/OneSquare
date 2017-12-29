@@ -7,7 +7,6 @@ import android.content.UriMatcher;
 import android.database.Cursor;
 import android.database.DatabaseUtils;
 import android.database.sqlite.SQLiteDatabase;
-import android.database.sqlite.SQLiteQueryBuilder;
 import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -26,35 +25,24 @@ public class VenueProvider extends ContentProvider {
     static final int VENUES = 105;
     static final int VENUES_BY_GPS = 110;
     static final int VENUES_BY_CITY = 115;
+
     static final int PHOTO = 120;
     static final int PHOTOS = 121;
     static final int PHOTOS_BY_VENUE = 125;
 
+    static final int TIP = 140;
+    static final int TIPS = 145;
+    static final int TIPS_BY_VENUE = 160;
+
     static final double radius = 1000;
-
-//    private static final SQLiteQueryBuilder sVenuesQueryBuilder;
-
-//    static {
-//        sVenuesQueryBuilder = new SQLiteQueryBuilder();
-//
-//        sVenuesQueryBuilder.setTables(
-//                FoursquareContract.VenuesEntry.TABLE_NAME + " LEFT JOIN " +
-//                        FoursquareContract.PhotoEntry.TABLE_NAME +
-//                        " ON " + FoursquareContract.VenuesEntry.TABLE_NAME + "." + FoursquareContract.VenuesEntry._ID +
-//                        " = " + FoursquareContract.PhotoEntry.TABLE_NAME + "." + FoursquareContract.PhotoEntry.COLUMN_VENUE_ID);
-//                FoursquareContract.VenuesEntry.TABLE_NAME + " LEFT JOIN " +
-//                        "( SELECT " + FoursquareContract.PhotoEntry.TABLE_NAME + "." + FoursquareContract.PhotoEntry.COLUMN_VENUE_ID + " , " +
-//                                    FoursquareContract.PhotoEntry.TABLE_NAME + "." + FoursquareContract.PhotoEntry.COLUMN_PREFIX + " , " +
-//                                    FoursquareContract.PhotoEntry.TABLE_NAME + "." + FoursquareContract.PhotoEntry.COLUMN_SUFFIX +
-//                        " FROM " + FoursquareContract.PhotoEntry.TABLE_NAME + " LIMIT 1 ) AS " + FoursquareContract.PhotoEntry.TABLE_NAME +
-//                        " ON " + FoursquareContract.VenuesEntry.TABLE_NAME + "." + FoursquareContract.VenuesEntry._ID +
-//                        " = " + FoursquareContract.PhotoEntry.TABLE_NAME + "." + FoursquareContract.PhotoEntry.COLUMN_VENUE_ID);
-
-//    }
 
     private static final String sVenueIDSelection =
             FoursquareContract.VenuesEntry.TABLE_NAME +
                     "." + FoursquareContract.VenuesEntry._ID + " == ? ";
+
+    private static final String sTipIDSelection =
+            FoursquareContract.TipEntry.TABLE_NAME +
+                    "." + FoursquareContract.TipEntry._ID + " == ? ";
 
     private static final String sVenueByCitySelection =
             FoursquareContract.VenuesEntry.TABLE_NAME + "." + FoursquareContract.VenuesEntry.COLUMN_CATERGORY + " == ? AND " +
@@ -63,6 +51,10 @@ public class VenueProvider extends ContentProvider {
     private static final String sPhotoByVenueIDSelection =
             FoursquareContract.PhotoEntry.TABLE_NAME +
                     "." + FoursquareContract.PhotoEntry.COLUMN_VENUE_ID + " == ? ";
+
+    private static final String sTipByVenueIDSelection =
+            FoursquareContract.TipEntry.TABLE_NAME +
+                    "." + FoursquareContract.TipEntry.COLUMN_VENUE_ID + " == ? ";
 
     private static final String sVenueNearSelection =
             FoursquareContract.VenuesEntry.TABLE_NAME + "." +
@@ -76,6 +68,25 @@ public class VenueProvider extends ContentProvider {
 //                    FoursquareContract.VenuesEntry.COLUMN_COORD_LONG + " BETWEEN ? AND ? ";
 
     private Cursor getVenueById(Uri uri, String[] projection, String sortOrder) {
+        String venueId = uri.getPathSegments().get(1);
+
+        String[] selectionArgs;
+        String selection;
+
+        selectionArgs = new String[]{venueId};
+        selection = sVenueIDSelection;
+
+        return mOpenHelper.getReadableDatabase().query(FoursquareContract.VenuesEntry.TABLE_NAME,
+                projection,
+                selection,
+                selectionArgs,
+                null,
+                null,
+                sortOrder
+        );
+    }
+
+    private Cursor getTipByID(Uri uri, String[] projection, String sortOrder) {
         String venueId = uri.getPathSegments().get(1);
 
         String[] selectionArgs;
@@ -133,6 +144,25 @@ public class VenueProvider extends ContentProvider {
                 sortOrder);
     }
 
+    private Cursor getTipByVenue(Uri uri, String[] projection, String sortOrder) {
+        String venue_id = uri.getPathSegments().get(2);
+
+        String[] selectionArgs;
+        String selection;
+
+        selectionArgs = new String[]{venue_id};
+        selection = sTipByVenueIDSelection;
+
+        return mOpenHelper.getReadableDatabase().query(
+                FoursquareContract.TipEntry.TABLE_NAME,
+                projection,
+                selection,
+                selectionArgs,
+                null,
+                null,
+                sortOrder);
+    }
+
     private Cursor getVenueNear(Uri uri, String[] projection, String sortOrder) {
 //        String category = uri.getPathSegments().get(1);
         double current_lat = Double.parseDouble(uri.getPathSegments().get(3));
@@ -170,12 +200,9 @@ public class VenueProvider extends ContentProvider {
 
     @Override
     public Cursor query(@NonNull Uri uri, String[] projection, String selection, String[] selectionArgs, String sortOrder) {
-        Cursor retCursor;
+        Cursor retCursor = null;
         switch (sUriMatcher.match(uri)) {
             case VENUES: {
-//                Log.d(getClass().getSimpleName()," Query matches VENUES");
-//                Log.d(getClass().getSimpleName()," Query param: uri-"+uri.toString() + "; projection: "+ projection.toString() + "; selection:" + selection + "; selArgs:" + selectionArgs.toString());
-
                 retCursor = mOpenHelper.getReadableDatabase().query(FoursquareContract.VenuesEntry.TABLE_NAME,
                         projection,
                         null,
@@ -184,18 +211,15 @@ public class VenueProvider extends ContentProvider {
                         null,
                         sortOrder
                 );
-//                Log.d(getClass().getSimpleName(), "VenueProvider: " + DatabaseUtils.dumpCursorToString(retCursor));
                 break;
             }
             case VENUE: {
-//                Log.d(getClass().getSimpleName()," Query matches VENUE");
                 retCursor = getVenueById(uri, projection, sortOrder);
                 break;
             }
             case VENUES_BY_GPS: {
                 retCursor = getVenueNear(uri, projection, sortOrder);
                 break;
-//
             }
             case VENUES_BY_CITY: {
                 retCursor = getVenueByCity(uri, projection, sortOrder);
@@ -217,9 +241,32 @@ public class VenueProvider extends ContentProvider {
                 );
                 break;
             }
+            case TIPS_BY_VENUE: {
+                retCursor = getTipByVenue(uri, projection, sortOrder);
+                break;
+            }
+            case TIPS: {
+                retCursor = mOpenHelper.getReadableDatabase().query(
+                        FoursquareContract.TipEntry.TABLE_NAME,
+                        projection,
+                        selection,
+                        selectionArgs,
+                        null,
+                        null,
+                        sortOrder
+                );
+                break;
+            }
+            case TIP: {
+
+                retCursor = getTipByID(FoursquareContract.TipEntry.CONTENT_URI,projection, selection);
+                break;
+            }
+
             default:
                 throw new UnsupportedOperationException("Unknown uri: " + uri);
         }
+
         retCursor.setNotificationUri(getContext().getContentResolver(), uri);
         Log.d(getClass().getSimpleName(), DatabaseUtils.dumpCursorToString(retCursor));
         return retCursor;
@@ -244,6 +291,12 @@ public class VenueProvider extends ContentProvider {
             case PHOTOS:
                 return FoursquareContract.PhotoEntry.CONTENT_TYPE;
             case PHOTOS_BY_VENUE:
+                return FoursquareContract.PhotoEntry.CONTENT_TYPE;
+            case TIP:
+                return FoursquareContract.PhotoEntry.CONTENT_ITEM_TYPE;
+            case TIPS:
+                return FoursquareContract.PhotoEntry.CONTENT_TYPE;
+            case TIPS_BY_VENUE:
                 return FoursquareContract.PhotoEntry.CONTENT_TYPE;
             default:
                 throw new UnsupportedOperationException("Unknown uri: " + uri);
@@ -275,6 +328,15 @@ public class VenueProvider extends ContentProvider {
                     throw new android.database.SQLException("Failed to insert row into " + uri);
                 break;
             }
+
+            case TIPS: {
+                long _id = db.insert(FoursquareContract.TipEntry.TABLE_NAME, null, contentValues);
+                if (_id > 0)
+                    returnUri = FoursquareContract.TipEntry.buildTipUri(_id);
+                else
+                    throw new android.database.SQLException("Failed to insert row into " + uri);
+                break;
+            }
             default:
                 throw new UnsupportedOperationException("Unknown uri: " + uri);
         }
@@ -299,6 +361,10 @@ public class VenueProvider extends ContentProvider {
                 rowsDeleted = db.delete(
                         FoursquareContract.PhotoEntry.TABLE_NAME, selection, selectionArgs);
                 break;
+            case TIPS:
+                rowsDeleted = db.delete(
+                        FoursquareContract.TipEntry.TABLE_NAME, selection, selectionArgs);
+                break;
             default:
                 throw new UnsupportedOperationException("Unknown uri: " + uri);
         }
@@ -322,6 +388,10 @@ public class VenueProvider extends ContentProvider {
                 break;
             case PHOTOS:
                 rowsUpdated = db.update(FoursquareContract.PhotoEntry.TABLE_NAME, values, selection,
+                        selectionArgs);
+                break;
+            case TIPS:
+                rowsUpdated = db.update(FoursquareContract.TipEntry.TABLE_NAME, values, selection,
                         selectionArgs);
                 break;
             default:
@@ -374,6 +444,25 @@ public class VenueProvider extends ContentProvider {
                 return returnPhotoCount;
 
             }
+            case TIPS: {
+                db.beginTransaction();
+                int returnTipCount = 0;
+                try {
+                    for (ContentValues value : values) {
+                        long _id = db.insert(FoursquareContract.TipEntry.TABLE_NAME, null, value);
+                        if (_id != -1) {
+                            returnTipCount++;
+                        }
+                    }
+                    db.setTransactionSuccessful();
+                } finally {
+                    db.endTransaction();
+                }
+                getContext().getContentResolver().notifyChange(uri, null);
+
+                return returnTipCount;
+
+            }
             default:
                 return super.bulkInsert(uri, values);
         }
@@ -391,6 +480,9 @@ public class VenueProvider extends ContentProvider {
         matcher.addURI(authority, FoursquareContract.PATH_PHOTO, PHOTOS);
         matcher.addURI(authority, FoursquareContract.PATH_PHOTO + "/#", PHOTO);
         matcher.addURI(authority, FoursquareContract.PATH_PHOTO + "/venue_id/*", PHOTOS_BY_VENUE);
+        matcher.addURI(authority, FoursquareContract.PATH_TIP, TIPS);
+        matcher.addURI(authority, FoursquareContract.PATH_TIP + "/#", TIP);
+        matcher.addURI(authority, FoursquareContract.PATH_TIP + "/tips_by_venue_id/*", TIPS_BY_VENUE);
 
         return matcher;
     }

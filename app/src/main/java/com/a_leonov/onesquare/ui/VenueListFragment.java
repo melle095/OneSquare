@@ -44,7 +44,8 @@ public class VenueListFragment extends Fragment implements LoaderManager.LoaderC
             FoursquareContract.VenuesEntry.COLUMN_STATUS,
             FoursquareContract.VenuesEntry.COLUMN_DISTANCE,
             FoursquareContract.VenuesEntry.COLUMN_PHOTO_PREFIX,
-            FoursquareContract.VenuesEntry.COLUMN_PHOTO_SUFFIX
+            FoursquareContract.VenuesEntry.COLUMN_PHOTO_SUFFIX,
+            FoursquareContract.VenuesEntry.COLUMN_VEN_KEY
     };
 //
 //    static final int COL_VENUE_ID = 0;

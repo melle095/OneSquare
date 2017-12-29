@@ -6,7 +6,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 
 public class FoursquareDbHelper extends SQLiteOpenHelper {
 
-    private static final int DATABASE_VERSION = 21;
+    private static final int DATABASE_VERSION = 23;
 
     static final String DATABASE_NAME = "venues.db";
 
@@ -16,6 +16,22 @@ public class FoursquareDbHelper extends SQLiteOpenHelper {
 
     @Override
     public void onCreate(SQLiteDatabase sqLiteDatabase) {
+
+        final String SQL_CREATE_TIP_TABLE = "CREATE TABLE " + FoursquareContract.TipEntry.TABLE_NAME + " (" +
+                FoursquareContract.TipEntry._ID + " INTEGER PRIMARY KEY AUTOINCREMENT," +
+                FoursquareContract.TipEntry.COLUMN_TEXT + " TEXT NOT NULL, " +
+                FoursquareContract.TipEntry.COLUMN_FIRSTNAME + " TEXT, " +
+                FoursquareContract.TipEntry.COLUMN_LASTNAME + " TEXT, " +
+                FoursquareContract.TipEntry.COLUMN_USER_PHOTO_PREFIX + " TEXT, " +
+                FoursquareContract.TipEntry.COLUMN_USER_PHOTO_SUFFIX + " TEXT, " +
+                FoursquareContract.TipEntry.COLUMN_VENUE_ID + " TEXT, " +
+                FoursquareContract.TipEntry.COLUMN_TIP_ID + " TEXT NOT NULL, " +
+
+                " FOREIGN KEY (" + FoursquareContract.TipEntry.COLUMN_VENUE_ID + ") REFERENCES " +
+                FoursquareContract.VenuesEntry.TABLE_NAME + " (" + FoursquareContract.VenuesEntry._ID + ")" +
+
+                " UNIQUE (" + FoursquareContract.TipEntry.COLUMN_TIP_ID + ") ON CONFLICT REPLACE);";
+
 
         final String SQL_CREATE_PHOTO_TABLE = "CREATE TABLE " + FoursquareContract.PhotoEntry.TABLE_NAME + " (" +
                 FoursquareContract.PhotoEntry._ID + " INTEGER PRIMARY KEY AUTOINCREMENT," +
@@ -68,12 +84,14 @@ public class FoursquareDbHelper extends SQLiteOpenHelper {
 
         sqLiteDatabase.execSQL(SQL_CREATE_VENUES_TABLE);
         sqLiteDatabase.execSQL(SQL_CREATE_PHOTO_TABLE);
+        sqLiteDatabase.execSQL(SQL_CREATE_TIP_TABLE);
     }
 
     @Override
     public void onUpgrade(SQLiteDatabase sqLiteDatabase, int i, int i1) {
         sqLiteDatabase.execSQL("DROP TABLE IF EXISTS " + FoursquareContract.VenuesEntry.TABLE_NAME);
         sqLiteDatabase.execSQL("DROP TABLE IF EXISTS " + FoursquareContract.PhotoEntry.TABLE_NAME);
+        sqLiteDatabase.execSQL("DROP TABLE IF EXISTS " + FoursquareContract.TipEntry.TABLE_NAME);
         onCreate(sqLiteDatabase);
     }
 }

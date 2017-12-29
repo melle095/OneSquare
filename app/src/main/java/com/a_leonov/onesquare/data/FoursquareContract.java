@@ -13,6 +13,8 @@ public class FoursquareContract {
 
     public static final String PATH_VENUES = "venues";
     public static final String PATH_PHOTO = "photo";
+    public static final String PATH_TIP = "tip";
+
 
     public static final String CATEGORY_FOOD          = "4d4b7105d754a06374d81259";
     public static final String CATEGORY_OUTDOOR       = "4d4b7105d754a06377d81259";
@@ -110,6 +112,38 @@ public class FoursquareContract {
         }
 
         public static Uri buildPhotoByVenueUri(String venue_id) {
+            return CONTENT_URI.buildUpon()
+                    .appendPath("venue_id")
+                    .appendPath(venue_id)
+                    .build();
+        }
+    }
+
+    public static final class TipEntry implements BaseColumns {
+
+        public static final Uri CONTENT_URI =
+                BASE_CONTENT_URI.buildUpon().appendPath(PATH_TIP).build();
+
+        public static final String CONTENT_TYPE =
+                ContentResolver.CURSOR_DIR_BASE_TYPE + "/" + CONTENT_AUTHORITY + "/" + PATH_TIP;
+        public static final String CONTENT_ITEM_TYPE =
+                ContentResolver.CURSOR_ITEM_BASE_TYPE + "/" + CONTENT_AUTHORITY + "/" + PATH_TIP;
+
+        // Table name
+        public static final String TABLE_NAME = "tip";
+        public static final String COLUMN_VENUE_ID = "venue_id";
+        public static final String COLUMN_TIP_ID = "tip_id";
+        public static final String COLUMN_TEXT = "text";
+        public static final String COLUMN_FIRSTNAME = "tip_firstname";
+        public static final String COLUMN_LASTNAME = "tip_lastname";
+        public static final String COLUMN_USER_PHOTO_PREFIX = "tip_user_prefix";
+        public static final String COLUMN_USER_PHOTO_SUFFIX = "tip_user_suffix";
+
+        public static Uri buildTipUri(long id) {
+            return ContentUris.withAppendedId(CONTENT_URI, id);
+        }
+
+        public static Uri buildTipByVenueUri(String venue_id) {
             return CONTENT_URI.buildUpon()
                     .appendPath("venue_id")
                     .appendPath(venue_id)

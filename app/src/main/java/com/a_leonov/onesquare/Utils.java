@@ -1,10 +1,22 @@
 package com.a_leonov.onesquare;
 
+import android.content.Context;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
+import android.util.Log;
+
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+
+import static android.content.Context.CONNECTIVITY_SERVICE;
+
 /**
  * Created by a_leonov on 15.12.2017.
  */
 
 public class Utils {
+
+    private static final String LOG_TAG = "Utils";
 
     public Utils() {
         return;
@@ -53,5 +65,27 @@ public class Utils {
         return newPoint;
 
     }
+
+    public static String timeMilisToString(long milis) {
+        SimpleDateFormat sd = new SimpleDateFormat("yyyyMMdd");
+        Calendar calendar = Calendar.getInstance();
+
+        calendar.setTimeInMillis(milis);
+
+        return sd.format(calendar.getTime());
+    }
+
+    public static boolean hasInternetConnection(Context context){
+        ConnectivityManager cm = (ConnectivityManager) context.getSystemService(CONNECTIVITY_SERVICE);
+        NetworkInfo ni = cm.getActiveNetworkInfo();
+        if (ni == null || !ni.isConnected()) {
+            Log.w(LOG_TAG, "Not online, not refreshing.");
+            return false;
+        }
+
+        return true;
+    }
+
+
 
 }

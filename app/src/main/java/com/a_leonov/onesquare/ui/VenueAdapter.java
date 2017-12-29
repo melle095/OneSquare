@@ -12,7 +12,7 @@ import android.widget.RatingBar;
 import android.widget.TextView;
 
 import com.a_leonov.onesquare.R;
-import com.a_leonov.onesquare.data.FoursquareContract;
+import com.a_leonov.onesquare.service.VenueDetailsService;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.load.resource.drawable.GlideDrawable;
@@ -26,6 +26,7 @@ import com.bumptech.glide.request.target.Target;
 public class VenueAdapter extends CursorRecyclerViewAdapter<VenueAdapter.ViewHolder> {
 
     private Context mContext;
+    private Cursor mCursor;
 
     static final int COL_VENUE_ID = 0;
     static final int COL_NAME = 1;
@@ -38,8 +39,10 @@ public class VenueAdapter extends CursorRecyclerViewAdapter<VenueAdapter.ViewHol
     static final int COL_DIST = 8;
     static final int COL_PREFIX     = 9;
     static final int COL_SUFFIX     = 10;
+    static final int COL_VEN_ID     = 11;
 
-    private final String DETAIL_TAG = "itemID";
+    private final String VEN_ID = "ven_id";
+    private final String VENDB_ID = "vendb_id";
 
     public VenueAdapter(Context context, Cursor cursor) {
         super(cursor);
@@ -61,6 +64,7 @@ public class VenueAdapter extends CursorRecyclerViewAdapter<VenueAdapter.ViewHol
         viewHolder.venueRating.setRating(venueRating);
         viewHolder.workHours.setText(venueWorkhours);
         viewHolder.venueDistance.setText(mContext.getString(R.string.venue_distance, Math.round(venueDistance)));
+        viewHolder.venue_id = cursor.getString(COL_VEN_ID);
 
 //        String thumbnailUrl = cursor.getString(VenueListFragment.COL_)
 
@@ -98,9 +102,13 @@ public class VenueAdapter extends CursorRecyclerViewAdapter<VenueAdapter.ViewHol
         view.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent intent = new Intent(parent.getContext(),DetailActivity.class)
-                        .putExtra(DETAIL_TAG, FoursquareContract.VenuesEntry.buildVenuesUri(getItemId(vh.getAdapterPosition())));
-                parent.getContext().startActivity(intent);
+
+
+                Intent intent = new Intent(parent.getContext(),VenueDetailsService.class)
+                        .putExtra(VEN_ID, vh.venue_id)
+                        .putExtra(VENDB_ID, String.valueOf(getItemId(vh.getAdapterPosition())));
+
+                parent.getContext().startService(intent);
             }
         });
         return vh;
@@ -113,6 +121,7 @@ public class VenueAdapter extends CursorRecyclerViewAdapter<VenueAdapter.ViewHol
         public final RatingBar venueRating;
         public final TextView venueDistance;
         public final TextView workHours;
+        public String venue_id = "";
 
 
         public ViewHolder(View view) {
