@@ -120,7 +120,8 @@ public class VenueListFragment extends Fragment implements LoaderManager.LoaderC
 
         if (currentLocation != null) {
             String category = FoursquareContract.CATEGORY_FOOD;
-            Uri venuesUri = FoursquareContract.VenuesEntry.buildVenuesGPSUri(category, currentLocation.getLatitude(), currentLocation.getLongitude());
+            Uri venuesUri = FoursquareContract.VenuesEntry
+                    .buildVenuesGPSUri(category, currentLocation.getLatitude(), currentLocation.getLongitude());
 
             return new CursorLoader(getActivity(),
                     venuesUri,

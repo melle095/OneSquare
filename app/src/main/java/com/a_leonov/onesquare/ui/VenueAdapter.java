@@ -47,6 +47,7 @@ public class VenueAdapter extends CursorRecyclerViewAdapter<VenueAdapter.ViewHol
     public VenueAdapter(Context context, Cursor cursor) {
         super(cursor);
         mContext = context;
+        mCursor = cursor;
     }
 
 
@@ -102,13 +103,11 @@ public class VenueAdapter extends CursorRecyclerViewAdapter<VenueAdapter.ViewHol
         view.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-
-
-                Intent intent = new Intent(parent.getContext(),VenueDetailsService.class)
-                        .putExtra(VEN_ID, vh.venue_id)
-                        .putExtra(VENDB_ID, String.valueOf(getItemId(vh.getAdapterPosition())));
-
-                parent.getContext().startService(intent);
+                Intent intent = new Intent(parent.getContext(),DetailActivity.class)
+//                        .putExtra(VEN_ID, vh.venue_id)
+                        .putExtra(VENDB_ID, getItemId(vh.getAdapterPosition()));
+//
+                parent.getContext().startActivity(intent);
             }
         });
         return vh;
@@ -126,12 +125,12 @@ public class VenueAdapter extends CursorRecyclerViewAdapter<VenueAdapter.ViewHol
 
         public ViewHolder(View view) {
             super(view);
-            venueThumbnail = (ImageView) view.findViewById(R.id.thumbnail);
-            venueName = (TextView) view.findViewById(R.id.venue_name);
-            venueAddress = (TextView) view.findViewById(R.id.venue_address);
-            venueRating = (RatingBar) view.findViewById(R.id.venue_rating);
-            venueDistance = (TextView) view.findViewById(R.id.venue_distance);
-            workHours = (TextView) view.findViewById(R.id.venue_workhours);
+            venueThumbnail   = (ImageView) view.findViewById(R.id.thumbnail);
+            venueName        = (TextView) view.findViewById(R.id.venue_name);
+            venueAddress     = (TextView) view.findViewById(R.id.venue_address);
+            venueRating      = (RatingBar) view.findViewById(R.id.venue_rating);
+            venueDistance    = (TextView) view.findViewById(R.id.venue_distance);
+            workHours        = (TextView) view.findViewById(R.id.venue_workhours);
 
         }
     }

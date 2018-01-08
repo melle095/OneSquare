@@ -99,22 +99,22 @@ public class FoursquareContract {
                 ContentResolver.CURSOR_ITEM_BASE_TYPE + "/" + CONTENT_AUTHORITY + "/" + PATH_PHOTO;
 
         // Table name
-        public static final String TABLE_NAME = "photo";
-        public static final String COLUMN_VENUE_ID = "venue_id";
-        public static final String COLUMN_PHOTO_ID = "photo_id";
-        public static final String COLUMN_PREFIX = "prefix";
-        public static final String COLUMN_HEIGHT = "height";
-        public static final String COLUMN_WIDTH = "width";
-        public static final String COLUMN_SUFFIX = "suffix";
+        public static final String TABLE_NAME       = "photo";
+        public static final String COLUMN_VENUE_ID  = "venue_id";
+        public static final String COLUMN_PHOTO_ID  = "photo_id";
+        public static final String COLUMN_PREFIX    = "prefix";
+        public static final String COLUMN_HEIGHT    = "height";
+        public static final String COLUMN_WIDTH     = "width";
+        public static final String COLUMN_SUFFIX    = "suffix";
 
         public static Uri buildPhotoUri(long id) {
             return ContentUris.withAppendedId(CONTENT_URI, id);
         }
 
-        public static Uri buildPhotoByVenueUri(String venue_id) {
+        public static Uri buildPhotoByVenueUri(long venue_id) {
             return CONTENT_URI.buildUpon()
                     .appendPath("venue_id")
-                    .appendPath(venue_id)
+                    .appendPath(String.valueOf(venue_id))
                     .build();
         }
     }

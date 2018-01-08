@@ -50,7 +50,7 @@ public class VenueProvider extends ContentProvider {
 
     private static final String sPhotoByVenueIDSelection =
             FoursquareContract.PhotoEntry.TABLE_NAME +
-                    "." + FoursquareContract.PhotoEntry.COLUMN_VENUE_ID + " == ? ";
+                    "." + FoursquareContract.PhotoEntry.COLUMN_VENUE_ID+ " == ? ";
 
     private static final String sTipByVenueIDSelection =
             FoursquareContract.TipEntry.TABLE_NAME +
@@ -132,6 +132,25 @@ public class VenueProvider extends ContentProvider {
         String selection;
 
         selectionArgs = new String[]{venue_id};
+        selection = sPhotoByVenueIDSelection;
+
+        return mOpenHelper.getReadableDatabase().query(
+                FoursquareContract.PhotoEntry.TABLE_NAME,
+                projection,
+                selection,
+                selectionArgs,
+                null,
+                null,
+                sortOrder);
+    }
+
+    private Cursor getPhotoByNum(Uri uri, String[] projection, String sortOrder) {
+        String num = uri.getPathSegments().get(2);
+
+        String[] selectionArgs;
+        String selection;
+
+        selectionArgs = new String[]{num};
         selection = sPhotoByVenueIDSelection;
 
         return mOpenHelper.getReadableDatabase().query(
@@ -227,6 +246,10 @@ public class VenueProvider extends ContentProvider {
             }
             case PHOTOS_BY_VENUE: {
                 retCursor = getPhotoByVenue(uri, projection, sortOrder);
+                break;
+            }
+            case PHOTO: {
+                retCursor = getPhotoByNum(uri, projection, sortOrder);
                 break;
             }
             case PHOTOS: {

@@ -5,6 +5,7 @@ import android.content.ContentValues;
 import android.content.Intent;
 import android.net.Uri;
 import android.support.annotation.Nullable;
+import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
 import com.a_leonov.onesquare.BuildConfig;
@@ -32,6 +33,11 @@ public class VenueDetailsService extends IntentService {
     public static final String VEN_ID = "ven_id";
     public static final String VENDB_ID = "vendb_id";
 
+    public static final String BROADCAST_ACTION =
+            "com.a_leonov.onesquare.BROADCAST";
+
+    public static final String EXTENDED_DATA_STATUS =
+            "com.a_leonov.onesquare.STATUS";
 
     //**********venue fields*****************************************
     private final String PHOTO_ID = "id";
@@ -44,6 +50,7 @@ public class VenueDetailsService extends IntentService {
     //*********************************************************
     String venue_id;
     String venuedb_id;
+    boolean isSuccessful;
 
     double current_lat;
     double current_lon;
@@ -62,6 +69,7 @@ public class VenueDetailsService extends IntentService {
     @Override
     protected void onHandleIntent(@Nullable Intent intent) {
 
+        isSuccessful = false;
         venue_id = intent.getStringExtra(VEN_ID);
         venuedb_id = intent.getStringExtra(VENDB_ID);
 
@@ -73,6 +81,14 @@ public class VenueDetailsService extends IntentService {
         } catch (JSONException e) {
             e.printStackTrace();
         }
+
+        Intent localIntent =
+                new Intent(BROADCAST_ACTION)
+                        // Puts the status into the Intent
+                        .putExtra(EXTENDED_DATA_STATUS, isSuccessful)
+                        .addCategory(Intent.CATEGORY_DEFAULT);
+        // Broadcasts the Intent to receivers in this app.
+        LocalBroadcastManager.getInstance(this).sendBroadcast(localIntent);
     }
 
     String parseJSONVenue(String venue_id) {
@@ -225,11 +241,13 @@ public class VenueDetailsService extends IntentService {
                 }
 
                 Log.d(LOG_TAG, "VenueDetailService Complete. " + cVVector.size() + " Inserted of tips " + inserted_tips);
+                isSuccessful = true;
             }
 
         } catch (JSONException e) {
             Log.e(LOG_TAG, e.getMessage(), e);
             e.printStackTrace();
+            isSuccessful = false;
         }
     }
 

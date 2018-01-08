@@ -1,9 +1,13 @@
 package com.a_leonov.onesquare;
 
+import android.content.ContentValues;
 import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.util.Log;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -84,6 +88,29 @@ public class Utils {
         }
 
         return true;
+    }
+
+    public static void putJsonValue(ContentValues value, JSONObject item, String contractName, String paramName, int mode) {
+        if (!item.isNull(paramName)) {
+            try {
+                switch (mode) {
+                    case 1: {
+                        value.put(contractName, item.getString(paramName));
+                        break;
+                    }
+                    case 2: {
+                        value.put(contractName, item.getInt(paramName));
+                        break;
+                    }
+                    case 3: {
+                        value.put(contractName, String.valueOf(item.getDouble(paramName)));
+                        break;
+                    }
+                }
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
 
