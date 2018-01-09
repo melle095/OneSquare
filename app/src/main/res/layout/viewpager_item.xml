@@ -4,7 +4,10 @@
     <ImageView
         android:id="@+id/image_pager"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:src="@drawable/blank_img"/>
+        android:background="@color/material_grey_300"
+        android:layout_height="@dimen/material_phone_list_image_height"
+        android:scaleType="centerCrop"
+        android:adjustViewBounds="true"
+        android:contentDescription="@string/description_venueImage"/>
 
 </FrameLayout>
