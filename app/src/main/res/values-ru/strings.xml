@@ -3,4 +3,5 @@
     <string name="app_name">OneSquare</string>
     <string name="venue_distance" translatable="false">Расстояние: %1$2d метров</string>
     <string name="venue_address" translatable="false">Адрес: %1$2s</string>
+    <string name="venue_phone">Тел.: %1$2s</string>
 </resources>

@@ -11,8 +11,12 @@
     <string name="settings">Settings</string>
     <string name="venue_distance">Distance: %1$2d meters</string>
     <string name="venue_address">Address: %1$2s</string>
+    <string name="venue_facebook">Facebook: %1$2s</string>
+    <string name="venue_twitter">Twitter: %1$2s</string>
+    <string name="venue_phone">Tel.: %1$2s</string>
+    <string name="venue_instagramm">Instagramm: %1$2s</string>
     <string name="venue_thumbnail_size">width500</string>
-
+    <string name="venue_detail_size">width800</string>
 
 
     <!--*********************Descriptions******************************-->

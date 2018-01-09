@@ -8,6 +8,7 @@ import android.database.Cursor;
 import android.database.DatabaseUtils;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
@@ -67,6 +68,7 @@ public class DetailActivity extends AppCompatActivity implements SwipeRefreshLay
     private TextView venue_twitter;
     private TextView venue_instagramm;
     private TextView venue_facebook;
+    private CollapsingToolbarLayout toolbarLayout;
     private final String DETAIL_TAG = "vendb_id";
     private final String VEN_ID = "ven_id";
 
@@ -86,9 +88,9 @@ public class DetailActivity extends AppCompatActivity implements SwipeRefreshLay
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_article_detail);
 
-//      venue_Photo      = findViewById(R.id.photo);
+        toolbarLayout = findViewById(R.id.toolbar_layout);
         viewPager = findViewById(R.id.viewPager);
-//        venue_title         = findViewById(R.id.venue_title);
+        venue_title = findViewById(R.id.venue_title);
         venue_distance = findViewById(R.id.venue_distance);
         venue_address = findViewById(R.id.venue_address);
         venue_phone = findViewById(R.id.venue_phone);
@@ -116,30 +118,7 @@ public class DetailActivity extends AppCompatActivity implements SwipeRefreshLay
             getSupportLoaderManager().initLoader(DETAIL_PHOTO_LOADER, null, this);
         }
 
-        IntentFilter statusIntentFilter = new IntentFilter(
-                BROADCAST_ACTION);
-
-        statusIntentFilter.addCategory(Intent.CATEGORY_DEFAULT);
-
-        DownloadStateReceiver mDownloadStateReceiver =
-                new DownloadStateReceiver();
-        // Registers the DownloadStateReceiver and its intent filters
-        LocalBroadcastManager.getInstance(this).registerReceiver(
-                mDownloadStateReceiver,
-                statusIntentFilter);
     }
-
-//    @Override
-//    public void onBackPressed() {
-//        if (viewPager.getCurrentItem() == 0) {
-//            // If the user is currently looking at the first step, allow the system to handle the
-//            // Back button. This calls finish() on this activity and pops the back stack.
-//            super.onBackPressed();
-//        } else {
-//            // Otherwise, select the previous step.
-//            viewPager.setCurrentItem(viewPager.getCurrentItem() - 1);
-//        }
-//    }
 
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
@@ -184,13 +163,14 @@ public class DetailActivity extends AppCompatActivity implements SwipeRefreshLay
 //                venue_instagramm.setText(data.isNull(COL_INSTAGRAMM) ? "no data" : data.getString(COL_INSTAGRAMM));
 //                venue_facebook.setText(data.isNull(COL_FACEBOOK) ? "no data" : data.getString(COL_FACEBOOK));
 
-
-                venue_distance.setText(data.getString(COL_DISTANCE));
-                venue_address.setText(data.getString(COL_ADDRESS));
-                venue_phone.setText(data.getString(COL_PHONE));
-                venue_twitter.setText(data.getString(COL_TWITTER));
-                venue_instagramm.setText(data.getString(COL_INSTAGRAMM));
-                venue_facebook.setText(data.getString(COL_FACEBOOK));
+                toolbarLayout.setTitle(data.getString(COL_NAME));
+//                venue_title.setText(data.getString(COL_NAME));
+                venue_distance.setText(getString(R.string.venue_distance, Math.round(data.getLong(COL_DISTANCE))));
+                venue_address.setText(getString(R.string.venue_address, data.getString(COL_ADDRESS)));
+                venue_phone.setText(getString(R.string.venue_phone, data.isNull(COL_PHONE)?"":data.getString(COL_PHONE)));
+                venue_twitter.setText(getString(R.string.venue_twitter, data.isNull(COL_TWITTER)?"":data.getString(COL_TWITTER)));
+                venue_instagramm.setText(getString(R.string.venue_instagramm, data.isNull(COL_INSTAGRAMM)?"":data.getString(COL_INSTAGRAMM)));
+                venue_facebook.setText(getString(R.string.venue_facebook, data.isNull(COL_FACEBOOK)?"":data.getString(COL_FACEBOOK)));
 
 
                 Intent intentPhotos = new Intent(this, VenueDetailsService.class)
@@ -207,7 +187,7 @@ public class DetailActivity extends AppCompatActivity implements SwipeRefreshLay
 
                     ArrayList<String> photosList = new ArrayList<>();
                     while (data.moveToNext()) {
-                        photosList.add(data.getString(COL_PHOTO_PREFIX) + "width500" + data.getString(COL_PHOTO_SUFFIX));
+                        photosList.add(data.getString(COL_PHOTO_PREFIX) + getString(R.string.venue_detail_size) + data.getString(COL_PHOTO_SUFFIX));
                     }
                     myFragmentPagerAdapter.setData(photosList);
                     myFragmentPagerAdapter.notifyDataSetChanged();
@@ -219,6 +199,7 @@ public class DetailActivity extends AppCompatActivity implements SwipeRefreshLay
 
     @Override
     public void onLoaderReset(Loader<Cursor> loader) {
+        venue_title.setText(null);
         venue_distance.setText(null);
         venue_address.setText(null);
         venue_phone.setText(null);
@@ -230,22 +211,5 @@ public class DetailActivity extends AppCompatActivity implements SwipeRefreshLay
     @Override
     public void onRefresh() {
 
-    }
-
-    private class DownloadStateReceiver extends BroadcastReceiver {
-        // Prevents instantiation
-        private DownloadStateReceiver() {
-        }
-
-        // Called when the BroadcastReceiver gets an Intent it's registered to receive
-        @Override
-        public void onReceive(Context context, Intent intent) {
-
-            if (intent.getBooleanExtra(EXTENDED_DATA_STATUS, false)) {
-                Log.i(getLocalClassName(), "Venue detail service broadcast!");
-//                Log.i(getLocalClassName(), DatabaseUtils.dumpCursorToString(photoCur));
-            }
-
-        }
     }
 }

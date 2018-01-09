@@ -47,6 +47,8 @@ public class FragmentPager extends Fragment{
             this.mPageNumber = getArguments().getInt(ARG_PAGE);
             this.imageUrl = getArguments().getString(ARG_URL);
         }
+
+        setHasOptionsMenu(true);
     }
 
     @Override
