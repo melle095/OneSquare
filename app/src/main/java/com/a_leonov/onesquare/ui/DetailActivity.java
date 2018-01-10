@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.database.DatabaseUtils;
+import android.media.MediaScannerConnection;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.design.widget.CollapsingToolbarLayout;
@@ -28,7 +29,7 @@ import java.io.File;
 import java.util.ArrayList;
 
 public class DetailActivity extends AppCompatActivity implements SwipeRefreshLayout.OnRefreshListener,
-        LoaderManager.LoaderCallbacks<Cursor> {
+        LoaderManager.LoaderCallbacks<Cursor>, MediaScannerConnection.OnScanCompletedListener  {
 
     private static final String[] VENUE_COLUMNS = {
             FoursquareContract.VenuesEntry.TABLE_NAME + "." + FoursquareContract.VenuesEntry._ID,
@@ -70,6 +71,7 @@ public class DetailActivity extends AppCompatActivity implements SwipeRefreshLay
     private TextView venue_instagramm;
     private TextView venue_facebook;
     FloatingActionButton mShareFab;
+    private Uri shareUri;
     private CollapsingToolbarLayout toolbarLayout;
     private final String DETAIL_TAG = "vendb_id";
     private final String VEN_ID = "ven_id";
@@ -83,7 +85,6 @@ public class DetailActivity extends AppCompatActivity implements SwipeRefreshLay
     private final int DETAIL_PHOTO_LOADER = 4;
 
     private long venueDbID;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -112,7 +113,6 @@ public class DetailActivity extends AppCompatActivity implements SwipeRefreshLay
             @Override
             public void onPageSelected(int position) {
                 super.onPageSelected(position);
-//                FragmentPager.init(position);
             }
         });
 
@@ -194,7 +194,11 @@ public class DetailActivity extends AppCompatActivity implements SwipeRefreshLay
         mShareFab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                share(getBaseContext(), toolbarLayout.getTitle().toString());
+                Intent shareIntent = new Intent();
+                shareIntent.setAction(Intent.ACTION_SEND);
+                shareIntent.putExtra(Intent.EXTRA_STREAM, shareUri);
+                shareIntent.setType("image/*");
+                startActivity(Intent.createChooser(shareIntent, getResources().getText(R.string.send_to)));
             }
         });
     }
@@ -215,20 +219,8 @@ public class DetailActivity extends AppCompatActivity implements SwipeRefreshLay
 
     }
 
-    public void share(Context theCtx, String theText) {
-        File myImageFile = Utils.getOutputMediaFile(this);//new File(theImagePath);
-        String shareBody = theText;  //"Here is the share content body " ;
-        Intent sharingIntent = new Intent(Intent.ACTION_SEND);
-        if (myImageFile.exists()) {
-            sharingIntent.setType("image/jpeg");
-            sharingIntent.putExtra(Intent.EXTRA_STREAM, Uri.parse("file://" + myImageFile.getAbsolutePath()));
-        } else if (!theText.isEmpty()) {
-            sharingIntent.setType("text/*");
-        }
-        sharingIntent.putExtra(Intent.EXTRA_SUBJECT, ""); //"Subject here"
-        sharingIntent.putExtra(Intent.EXTRA_TEXT, shareBody);
-        sharingIntent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
-        theCtx.startActivity(Intent.createChooser(sharingIntent, "Share via"));
+    @Override
+    public void onScanCompleted(String s, Uri uri) {
+        shareUri = uri;
     }
-
 }

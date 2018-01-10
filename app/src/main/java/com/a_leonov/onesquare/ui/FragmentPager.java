@@ -1,6 +1,10 @@
 package com.a_leonov.onesquare.ui;
 
+import android.content.Context;
+import android.content.Intent;
 import android.graphics.Bitmap;
+import android.media.MediaScannerConnection;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -21,8 +25,9 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.Random;
 
-public class FragmentPager extends Fragment{
+public class FragmentPager extends Fragment {
 
     private ImageView imageView;
     public static final String ARG_URL = "url";
@@ -40,14 +45,14 @@ public class FragmentPager extends Fragment{
         return fragment;
     }
 
-    public FragmentPager(){
+    public FragmentPager() {
 
     }
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if (getArguments().containsKey(ARG_PAGE)&& getArguments().containsKey(ARG_URL)) {
+        if (getArguments().containsKey(ARG_PAGE) && getArguments().containsKey(ARG_URL)) {
             this.mPageNumber = getArguments().getInt(ARG_PAGE);
             this.imageUrl = getArguments().getString(ARG_URL);
         }
@@ -67,29 +72,12 @@ public class FragmentPager extends Fragment{
         Glide.with(this)
                 .load(imageUrl)
                 .asBitmap()
-                .diskCacheStrategy(DiskCacheStrategy.SOURCE)
-//                .listener(new RequestListener<String, GlideDrawable>() {
-//                    @Override
-//                    public boolean onException(Exception e, String model, Target<GlideDrawable> target, boolean isFirstResource) {
-//                        return false;
-//                    }
-//
-//                    @Override
-//                    public boolean onResourceReady(GlideDrawable resource, String model,
-//                                                   Target<GlideDrawable> target,
-//                                                   boolean isFromMemoryCache, boolean isFirstResource) {
-//                        Bitmap bitmap = ((GlideBitmapDrawable) resource.getCurrent()).getBitmap();
-//                        Palette palette = Palette.generate(bitmap);
-//                        int defaultColor = 0xFF333333;
-//                        int color = palette.getDarkMutedColor(defaultColor);
-//                        imageView.setBackgroundColor(color);
-//                        return false;
-//                    }
-//                })
+                .diskCacheStrategy(DiskCacheStrategy.ALL)
                 .into(new SimpleTarget<Bitmap>() {
                     @Override
                     public void onResourceReady(Bitmap resource, GlideAnimation<? super Bitmap> glideAnimation) {
                         imageView.setImageBitmap(resource);
+//                        shareImage = resource;
                         storeImage(resource);
                     }
                 });
@@ -108,25 +96,40 @@ public class FragmentPager extends Fragment{
     }
 
     private void storeImage(Bitmap image) {
-        File pictureFile = Utils.getOutputMediaFile(getActivity());
+
+        File mediaStorageDir = Utils.getAlbumStorageDir(getContext(),"oneSquare_images");
+        Random generator = new Random();
+        int n = 1000;
+        n = generator.nextInt(n);
+        String mImageName = "Image-" + n + ".jpg";
+        File pictureFile = new File(mediaStorageDir.getPath() + File.separator + mImageName);
+
+        try {
+            FileOutputStream fos = getActivity().openFileOutput(pictureFile);
+            boolean result = image.compress(Bitmap.CompressFormat.PNG, 90, fos);
+            fos.close();
+            Log.d(getClass().getSimpleName(), "img dir: " + pictureFile);
+
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         if (pictureFile == null) {
             Log.d(getClass().getSimpleName(),
                     "Error creating media file, check storage permissions: ");// e.getMessage());
             return;
         }
-        try {
-            FileOutputStream fos = new FileOutputStream(pictureFile);
-            image.compress(Bitmap.CompressFormat.PNG, 90, fos);
-            fos.close();
-            Log.d(getClass().getSimpleName(), "img dir: " + pictureFile);
-        } catch (FileNotFoundException e) {
-            Log.d(getClass().getSimpleName(), "File not found: " + e.getMessage());
-        } catch (IOException e) {
-            Log.d(getClass().getSimpleName(), "Error accessing file: " + e.getMessage());
-        }
+        MediaScannerConnection.scanFile(getContext(), new String[]{pictureFile.toString()}, new String[] {"image/*"}, (MediaScannerConnection.OnScanCompletedListener)getActivity());
     }
 
-
-
+//    @Override
+//    public void onSharePush() {
+//        Intent shareIntent = new Intent();
+//        shareIntent.setAction(Intent.ACTION_SEND);
+//        shareIntent.putExtra(Intent.EXTRA_STREAM, shareUri);
+//        shareIntent.setType("image/jpeg");
+//        startActivity(Intent.createChooser(shareIntent, getResources().getText(R.string.send_to)));
+//    }
 
 }

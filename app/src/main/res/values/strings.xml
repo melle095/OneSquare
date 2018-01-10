@@ -26,4 +26,5 @@
     <string name="description_workhours">work hours</string>
     <string name="action_share">Share</string>
     <string name="description_address">Address</string>
+    <string name="send_to">Send to..</string>
 </resources>
