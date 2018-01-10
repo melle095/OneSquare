@@ -1,29 +1,30 @@
 package com.a_leonov.onesquare.ui;
 
-import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.database.Cursor;
 import android.database.DatabaseUtils;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.design.widget.CollapsingToolbarLayout;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
-import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.view.ViewPager;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.a_leonov.onesquare.R;
+import com.a_leonov.onesquare.Utils;
 import com.a_leonov.onesquare.data.FoursquareContract;
 import com.a_leonov.onesquare.service.VenueDetailsService;
 
+import java.io.File;
 import java.util.ArrayList;
 
 public class DetailActivity extends AppCompatActivity implements SwipeRefreshLayout.OnRefreshListener,
@@ -68,6 +69,7 @@ public class DetailActivity extends AppCompatActivity implements SwipeRefreshLay
     private TextView venue_twitter;
     private TextView venue_instagramm;
     private TextView venue_facebook;
+    FloatingActionButton mShareFab;
     private CollapsingToolbarLayout toolbarLayout;
     private final String DETAIL_TAG = "vendb_id";
     private final String VEN_ID = "ven_id";
@@ -97,6 +99,8 @@ public class DetailActivity extends AppCompatActivity implements SwipeRefreshLay
         venue_twitter = findViewById(R.id.venue_twitter);
         venue_instagramm = findViewById(R.id.venue_instagramm);
         venue_facebook = findViewById(R.id.venue_facebook);
+
+        mShareFab = findViewById(R.id.share_fab);
 
         getSupportLoaderManager().initLoader(DETAIL_LOADER, null, this);
 
@@ -153,15 +157,6 @@ public class DetailActivity extends AppCompatActivity implements SwipeRefreshLay
         switch (loader.getId()) {
             case DETAIL_LOADER: {
                 data.moveToFirst();
-//        Log.d("DetailActivity", DatabaseUtils.dumpCursorToString(data));
-                //venue_Photo = null;
-
-//                venue_distance.setText(data.isNull(COL_DISTANCE) ? "no data" : data.getString(COL_DISTANCE));
-//                venue_address.setText(data.isNull(COL_ADDRESS) ? "no data" : data.getString(COL_ADDRESS));
-//                venue_phone.setText(data.isNull(COL_PHONE) ? "no data" : data.getString(COL_PHONE));
-//                venue_twitter.setText(data.isNull(COL_TWITTER) ? "no data" : data.getString(COL_TWITTER));
-//                venue_instagramm.setText(data.isNull(COL_INSTAGRAMM) ? "no data" : data.getString(COL_INSTAGRAMM));
-//                venue_facebook.setText(data.isNull(COL_FACEBOOK) ? "no data" : data.getString(COL_FACEBOOK));
 
                 toolbarLayout.setTitle(data.getString(COL_NAME));
 //                venue_title.setText(data.getString(COL_NAME));
@@ -195,6 +190,13 @@ public class DetailActivity extends AppCompatActivity implements SwipeRefreshLay
                 }
             }
         }
+
+        mShareFab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                share(getBaseContext(), toolbarLayout.getTitle().toString());
+            }
+        });
     }
 
     @Override
@@ -212,4 +214,21 @@ public class DetailActivity extends AppCompatActivity implements SwipeRefreshLay
     public void onRefresh() {
 
     }
+
+    public void share(Context theCtx, String theText) {
+        File myImageFile = Utils.getOutputMediaFile(this);//new File(theImagePath);
+        String shareBody = theText;  //"Here is the share content body " ;
+        Intent sharingIntent = new Intent(Intent.ACTION_SEND);
+        if (myImageFile.exists()) {
+            sharingIntent.setType("image/jpeg");
+            sharingIntent.putExtra(Intent.EXTRA_STREAM, Uri.parse("file://" + myImageFile.getAbsolutePath()));
+        } else if (!theText.isEmpty()) {
+            sharingIntent.setType("text/*");
+        }
+        sharingIntent.putExtra(Intent.EXTRA_SUBJECT, ""); //"Subject here"
+        sharingIntent.putExtra(Intent.EXTRA_TEXT, shareBody);
+        sharingIntent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
+        theCtx.startActivity(Intent.createChooser(sharingIntent, "Share via"));
+    }
+
 }

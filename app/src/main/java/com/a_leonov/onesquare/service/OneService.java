@@ -72,6 +72,7 @@ public class OneService extends IntentService {
     private final String PREFIX = "prefix";
     private final String SUFFIX = "suffix";
     //*********************************************************
+
     String category;
     double current_lat;
     double current_lon;
@@ -90,28 +91,20 @@ public class OneService extends IntentService {
     @Override
     protected void onHandleIntent(@Nullable Intent intent) {
 
-//        ConnectivityManager cm = (ConnectivityManager) getSystemService(CONNECTIVITY_SERVICE);
-//        NetworkInfo ni = cm.getActiveNetworkInfo();
-//        if (ni == null || !ni.isConnected()) {
-//            Log.w(LOG_TAG, "Not online, not refreshing.");
-//            return;
-//        }
-
         category = intent.getStringExtra(CATEGORY);
-
-//        Log.i(LOG_TAG, " Start OneService. By category " + category);
 
         current_lat = intent.getDoubleExtra(lat, 0);
         current_lon = intent.getDoubleExtra(lon, 0);
 
-        //fill venue table
-        try {
-            getVenueDataFromJson(parseJSONVenue(null));
-        } catch (JSONException e) {
-            e.printStackTrace();
+        if (Utils.hasInternetConnection(this)) {
+            try {
+                getVenueDataFromJson(parseJSONVenue(null));
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
         }
-    }
 
+    }
 
     private String timeMilisToString(long milis) {
         SimpleDateFormat sd = new SimpleDateFormat("yyyyMMdd");
@@ -209,65 +202,14 @@ public class OneService extends IntentService {
                 if (cVVector.size() > 0) {
                     ContentValues[] cvArray = new ContentValues[cVVector.size()];
                     cVVector.toArray(cvArray);
-                    getContentResolver().delete(FoursquareContract.VenuesEntry.CONTENT_URI, null, null);
-                    getContentResolver().delete(FoursquareContract.PhotoEntry.CONTENT_URI, null, null);
-
                     inserted = this.getContentResolver().bulkInsert(FoursquareContract.VenuesEntry.CONTENT_URI, cvArray);
-
                 }
-
-//                Log.d(LOG_TAG, "OneService Complete. " + cVVector.size() + " Inserted of category " + inserted);
             }
         } catch (JSONException e) {
             Log.e(LOG_TAG, e.getMessage(), e);
             e.printStackTrace();
         }
     }
-
-//    private void getPhotoDataFromJson(int venue_id, String venueJsonStr) throws JSONException {
-//
-//        try {
-//
-//            JSONObject jsonObj = (JSONObject) new JSONTokener(venueJsonStr).nextValue();
-//            JSONArray items = jsonObj.getJSONObject("response").getJSONObject("photos")
-//                    .getJSONArray("items");
-//
-//            int length = items.length();
-//
-//            Vector<ContentValues> cVVector = new Vector<ContentValues>(length);
-//
-//            if (length > 0) {
-//                for (int i = 0; i < length; i++) {
-//                    JSONObject item = (JSONObject) items.get(i);
-//
-//                    ContentValues venueValues = new ContentValues();
-//
-//                    venueValues.put(FoursquareContract.PhotoEntry.COLUMN_VENUE_ID, venue_id);
-//                    putJsonValue(venueValues, item, FoursquareContract.PhotoEntry.COLUMN_PHOTO_ID, PHOTO_ID, 1);
-//                    putJsonValue(venueValues, item, FoursquareContract.PhotoEntry.COLUMN_PREFIX, PREFIX, 1);
-//                    putJsonValue(venueValues, item, FoursquareContract.PhotoEntry.COLUMN_HEIGHT, HEIGHT, 1);
-//                    putJsonValue(venueValues, item, FoursquareContract.PhotoEntry.COLUMN_PREFIX, WIDTH, 1);
-//                    putJsonValue(venueValues, item, FoursquareContract.PhotoEntry.COLUMN_PREFIX, SUFFIX, 1);
-//
-//                    cVVector.add(venueValues);
-//                }
-//                int inserted = 0;
-//                if (cVVector.size() > 0) {
-//                    ContentValues[] cvArray = new ContentValues[cVVector.size()];
-//                    cVVector.toArray(cvArray);
-//                    inserted = this.getContentResolver().bulkInsert(FoursquareContract.PhotoEntry.CONTENT_URI, cvArray);
-//
-//                }
-//
-//                Log.d(LOG_TAG, "OneService Complete. " + cVVector.size() + " Inserted photos " + inserted);
-//            }
-//        } catch (JSONException e) {
-//            Log.e(LOG_TAG, e.getMessage(), e);
-//            e.printStackTrace();
-//        }
-//    }
-
-
 
     private String parseJSONVenue(String venue_id) {
 

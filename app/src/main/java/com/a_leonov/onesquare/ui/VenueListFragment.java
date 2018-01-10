@@ -32,6 +32,7 @@ public class VenueListFragment extends Fragment implements LoaderManager.LoaderC
     private Location currentLocation = null;
     private int mPosition;
     SwipeRefreshLayout mSwipeRefreshLayout;
+    LoaderManager loaderManager;
 
     private static final String[] VENUE_COLUMNS = {
             FoursquareContract.VenuesEntry.TABLE_NAME + "." + FoursquareContract.VenuesEntry._ID,
@@ -47,16 +48,6 @@ public class VenueListFragment extends Fragment implements LoaderManager.LoaderC
             FoursquareContract.VenuesEntry.COLUMN_PHOTO_SUFFIX,
             FoursquareContract.VenuesEntry.COLUMN_VEN_KEY
     };
-//
-//    static final int COL_VENUE_ID = 0;
-//    static final int COL_NAME = 1;
-//    static final int COL_ADDRESS = 2;
-//    static final int COL_RATING = 3;
-//    static final int COL_CAT = 4;
-//    static final int COL_LAT = 5;
-//    static final int COL_LON = 6;
-//    static final int COL_HOURS = 7;
-//    static final int COL_DIST = 8;
 
     OnListUpdateListener onListUpdateListener;
 
@@ -88,8 +79,6 @@ public class VenueListFragment extends Fragment implements LoaderManager.LoaderC
 
         mRecyclerView = (RecyclerView) rootView.findViewById(R.id.recycler_view);
         mSwipeRefreshLayout = (SwipeRefreshLayout) rootView.findViewById(R.id.swipe_refresh_layout);
-        mVenueAdapter.setHasStableIds(true);
-        mRecyclerView.setAdapter(mVenueAdapter);
 
         mSwipeRefreshLayout.setOnRefreshListener(this);
 
@@ -103,13 +92,19 @@ public class VenueListFragment extends Fragment implements LoaderManager.LoaderC
             mPosition = savedInstanceState.getInt(SELECTED_KEY);
         }
 
+        mVenueAdapter.setHasStableIds(true);
+        mRecyclerView.setAdapter(mVenueAdapter);
+
         return rootView;
     }
 
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
-        LoaderManager loaderManager = getLoaderManager();
-        loaderManager.initLoader(VENUE_LOADER,null, this);
+        loaderManager = getLoaderManager();
+        if (loaderManager.getLoader(VENUE_LOADER) == null)
+            loaderManager.initLoader(VENUE_LOADER, null, this);
+        else
+            loaderManager.restartLoader(VENUE_LOADER, null, this);
         super.onActivityCreated(savedInstanceState);
     }
 
@@ -118,22 +113,16 @@ public class VenueListFragment extends Fragment implements LoaderManager.LoaderC
 
         String sortOrder = FoursquareContract.VenuesEntry.COLUMN_DISTANCE + " ASC";
 
+        Uri contentUri = FoursquareContract.VenuesEntry.CONTENT_URI;
+
         if (currentLocation != null) {
             String category = FoursquareContract.CATEGORY_FOOD;
-            Uri venuesUri = FoursquareContract.VenuesEntry
+            contentUri = FoursquareContract.VenuesEntry
                     .buildVenuesGPSUri(category, currentLocation.getLatitude(), currentLocation.getLongitude());
-
-            return new CursorLoader(getActivity(),
-                    venuesUri,
-                    VENUE_COLUMNS,
-                    null,
-                    null,
-                    sortOrder);
-
         }
 
         return new CursorLoader(getActivity(),
-                FoursquareContract.VenuesEntry.CONTENT_URI,
+                contentUri,
                 VENUE_COLUMNS,
                 null,
                 null,

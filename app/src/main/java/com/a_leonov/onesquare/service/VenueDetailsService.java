@@ -5,7 +5,6 @@ import android.content.ContentValues;
 import android.content.Intent;
 import android.net.Uri;
 import android.support.annotation.Nullable;
-import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
 import com.a_leonov.onesquare.BuildConfig;
@@ -55,7 +54,6 @@ public class VenueDetailsService extends IntentService {
     double current_lat;
     double current_lon;
 
-
     public VenueDetailsService() {
         super("onesquare");
     }
@@ -75,20 +73,13 @@ public class VenueDetailsService extends IntentService {
 
         Log.i(LOG_TAG, " Start VenueDetailsService. By ID: " + venue_id);
 
-        //fill venue table
-        try {
-            getVenueDataFromJson(parseJSONVenue(venue_id));
-        } catch (JSONException e) {
-            e.printStackTrace();
+        if (Utils.hasInternetConnection(this)) {
+            try {
+                getVenueDataFromJson(parseJSONVenue(venue_id));
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
         }
-
-        Intent localIntent =
-                new Intent(BROADCAST_ACTION)
-                        // Puts the status into the Intent
-                        .putExtra(EXTENDED_DATA_STATUS, isSuccessful)
-                        .addCategory(Intent.CATEGORY_DEFAULT);
-        // Broadcasts the Intent to receivers in this app.
-        LocalBroadcastManager.getInstance(this).sendBroadcast(localIntent);
     }
 
     String parseJSONVenue(String venue_id) {

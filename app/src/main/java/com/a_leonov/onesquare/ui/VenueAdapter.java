@@ -12,7 +12,6 @@ import android.widget.RatingBar;
 import android.widget.TextView;
 
 import com.a_leonov.onesquare.R;
-import com.a_leonov.onesquare.service.VenueDetailsService;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.load.resource.drawable.GlideDrawable;
@@ -26,7 +25,6 @@ import com.bumptech.glide.request.target.Target;
 public class VenueAdapter extends CursorRecyclerViewAdapter<VenueAdapter.ViewHolder> {
 
     private Context mContext;
-    private Cursor mCursor;
 
     static final int COL_VENUE_ID = 0;
     static final int COL_NAME = 1;
@@ -47,7 +45,6 @@ public class VenueAdapter extends CursorRecyclerViewAdapter<VenueAdapter.ViewHol
     public VenueAdapter(Context context, Cursor cursor) {
         super(cursor);
         mContext = context;
-        mCursor = cursor;
     }
 
 
@@ -67,8 +64,6 @@ public class VenueAdapter extends CursorRecyclerViewAdapter<VenueAdapter.ViewHol
         viewHolder.venueDistance.setText(mContext.getString(R.string.venue_distance, Math.round(venueDistance)));
         viewHolder.venue_id = cursor.getString(COL_VEN_ID);
 
-//        String thumbnailUrl = cursor.getString(VenueListFragment.COL_)
-
         Glide.clear(viewHolder.venueThumbnail);
         Glide.with(viewHolder.venueThumbnail.getContext())
                 .load(cursor.getString(COL_PREFIX) + mContext.getString(R.string.venue_thumbnail_size) + cursor.getString(COL_SUFFIX))
@@ -84,11 +79,7 @@ public class VenueAdapter extends CursorRecyclerViewAdapter<VenueAdapter.ViewHol
                     public boolean onResourceReady(GlideDrawable resource, String model,
                                                    Target<GlideDrawable> target,
                                                    boolean isFromMemoryCache, boolean isFirstResource) {
-//                        Bitmap bitmap = ((GlideBitmapDrawable) resource.getCurrent()).getBitmap();
-//                        Palette palette = Palette.generate(bitmap);
-//                        int defaultColor = 0xFF333333;
-//                        int color = palette.getDarkMutedColor(defaultColor);
-//                        viewHolder.itemView.setBackgroundColor(color);
+
                         return false;
                     }
                 })
@@ -131,13 +122,7 @@ public class VenueAdapter extends CursorRecyclerViewAdapter<VenueAdapter.ViewHol
             venueRating      = (RatingBar) view.findViewById(R.id.venue_rating);
             venueDistance    = (TextView) view.findViewById(R.id.venue_distance);
             workHours        = (TextView) view.findViewById(R.id.venue_workhours);
-
         }
-    }
-
-    @Override
-    public long getItemId(int position) {
-        return super.getItemId(position);
     }
 
 }

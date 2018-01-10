@@ -4,13 +4,16 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.os.Environment;
 import android.util.Log;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Random;
 
 import static android.content.Context.CONNECTIVITY_SERVICE;
 
@@ -113,6 +116,29 @@ public class Utils {
         }
     }
 
+    public static File getOutputMediaFile(Context context){
+        // To be safe, you should check that the SDCard is mounted
+        // using Environment.getExternalStorageState() before doing this.
+        File mediaStorageDir = new File(Environment.getExternalStorageDirectory()
+                + "/Android/data/"
+                + context.getApplicationContext().getPackageName()
+                + "/Files");
+
+        if (! mediaStorageDir.exists()){
+            if (! mediaStorageDir.mkdirs()){
+                return null;
+            }
+        }
+
+        File mediaFile;
+        Random generator = new Random();
+        int n = 1000;
+        n = generator.nextInt(n);
+        String mImageName = "Image-"+ n +".jpg";
+
+        mediaFile = new File(mediaStorageDir.getPath() + File.separator + mImageName);
+        return mediaFile;
+    }
 
 
 }
