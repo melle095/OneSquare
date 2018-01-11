@@ -1,5 +1,6 @@
 package com.a_leonov.onesquare.ui;
 
+import android.Manifest;
 import android.content.Intent;
 import android.database.Cursor;
 import android.database.DatabaseUtils;
@@ -75,7 +76,7 @@ public class DetailActivity extends AppCompatActivity implements SwipeRefreshLay
     private TextView venue_instagramm;
     private TextView venue_facebook;
     FloatingActionButton mShareFab;
-    private Uri shareUri;
+    private int position;
     private CollapsingToolbarLayout toolbarLayout;
     private final String DETAIL_TAG = "vendb_id";
     private final String VEN_ID = "ven_id";
@@ -186,6 +187,7 @@ public class DetailActivity extends AppCompatActivity implements SwipeRefreshLay
                         @Override
                         public void onPageSelected(int position) {
                             super.onPageSelected(position);
+                            DetailActivity.this.position = position;
                         }
                     });
 
@@ -197,9 +199,13 @@ public class DetailActivity extends AppCompatActivity implements SwipeRefreshLay
         mShareFab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Bitmap shareBitmap = myImagePagerAdapter.getImageBitmap();
-                if (shareBitmap != null)
-                    storeImage(shareBitmap);
+                if (Utils.checkPermissions(DetailActivity.this, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+                    Bitmap shareBitmap = DetailActivity.this.myImagePagerAdapter.getImageBitmap();
+                    if (shareBitmap != null)
+                        storeImage(shareBitmap);
+                } else if (!Utils.checkPermissions(DetailActivity.this,Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+                    Utils.requestPermissions(DetailActivity.this, Manifest.permission.WRITE_EXTERNAL_STORAGE);
+                }
             }
         });
     }
@@ -250,8 +256,12 @@ public class DetailActivity extends AppCompatActivity implements SwipeRefreshLay
             public void onScanCompleted(String s, Uri uri) {
                 Intent shareIntent = new Intent();
                 shareIntent.setAction(Intent.ACTION_SEND);
-                shareIntent.putExtra(Intent.EXTRA_STREAM, uri);
                 shareIntent.setType("image/jpeg");
+                shareIntent.putExtra(Intent.EXTRA_STREAM, uri);
+                shareIntent.setType("text/plain");
+                shareIntent.putExtra(android.content.Intent.EXTRA_SUBJECT, venue_title.getText());
+                shareIntent.putExtra(Intent.EXTRA_TEXT, venue_distance.getText());
+
                 startActivity(Intent.createChooser(shareIntent, getResources().getText(R.string.send_to)));
             }
         });

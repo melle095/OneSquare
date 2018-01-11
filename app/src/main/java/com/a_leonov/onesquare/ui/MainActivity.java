@@ -22,6 +22,7 @@ import android.widget.Toast;
 
 import com.a_leonov.onesquare.BuildConfig;
 import com.a_leonov.onesquare.R;
+import com.a_leonov.onesquare.Utils;
 import com.a_leonov.onesquare.data.FoursquareContract;
 import com.a_leonov.onesquare.service.OneService;
 import com.google.android.gms.common.api.ApiException;
@@ -42,6 +43,8 @@ import com.google.android.gms.tasks.Task;
 
 import java.text.DateFormat;
 import java.util.Date;
+
+import static com.a_leonov.onesquare.Utils.checkPermissions;
 
 
 public class MainActivity extends AppCompatActivity implements VenueListFragment.OnListUpdateListener {
@@ -262,10 +265,10 @@ public class MainActivity extends AppCompatActivity implements VenueListFragment
         mRequestingLocationUpdates = true;
         // Within {@code onPause()}, we remove location updates. Here, we resume receiving
         // location updates if the user has requested them.
-        if (mRequestingLocationUpdates && checkPermissions()) {
+        if (mRequestingLocationUpdates && Utils.checkPermissions(MainActivity.this,Manifest.permission.ACCESS_FINE_LOCATION)) {
             startLocationUpdates();
-        } else if (!checkPermissions()) {
-            requestPermissions();
+        } else if (!Utils.checkPermissions(MainActivity.this,Manifest.permission.ACCESS_FINE_LOCATION)) {
+            Utils.requestPermissions(MainActivity.this, Manifest.permission.ACCESS_FINE_LOCATION);
         }
     }
 
@@ -284,53 +287,9 @@ public class MainActivity extends AppCompatActivity implements VenueListFragment
         super.onSaveInstanceState(savedInstanceState);
     }
 
-    private void showSnackbar(final int mainTextStringId, final int actionStringId,
-                              View.OnClickListener listener) {
-        Snackbar.make(
-                findViewById(android.R.id.content),
-                getString(mainTextStringId),
-                Snackbar.LENGTH_INDEFINITE)
-                .setAction(getString(actionStringId), listener).show();
-    }
 
-    /**
-     * Return the current state of the permissions needed.
-     */
-    private boolean checkPermissions() {
-        int permissionState = ActivityCompat.checkSelfPermission(this,
-                Manifest.permission.ACCESS_FINE_LOCATION);
-        return permissionState == PackageManager.PERMISSION_GRANTED;
-    }
 
-    private void requestPermissions() {
-        boolean shouldProvideRationale =
-                ActivityCompat.shouldShowRequestPermissionRationale(this,
-                        Manifest.permission.ACCESS_FINE_LOCATION);
 
-        // Provide an additional rationale to the user. This would happen if the user denied the
-        // request previously, but didn't check the "Don't ask again" checkbox.
-        if (shouldProvideRationale) {
-            Log.i(TAG, "Displaying permission rationale to provide additional context.");
-            showSnackbar(R.string.permission_rationale,
-                    android.R.string.ok, new View.OnClickListener() {
-                        @Override
-                        public void onClick(View view) {
-                            // Request permission
-                            ActivityCompat.requestPermissions(MainActivity.this,
-                                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
-                                    REQUEST_PERMISSIONS_REQUEST_CODE);
-                        }
-                    });
-        } else {
-            Log.i(TAG, "Requesting permission");
-            // Request permission. It's possible this can be auto answered if device policy
-            // sets the permission in a given state or the user denied the permission
-            // previously and checked "Never ask again".
-            ActivityCompat.requestPermissions(MainActivity.this,
-                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
-                    REQUEST_PERMISSIONS_REQUEST_CODE);
-        }
-    }
 
     /**
      * Callback received when a permissions request has been completed.
@@ -350,18 +309,8 @@ public class MainActivity extends AppCompatActivity implements VenueListFragment
                     startLocationUpdates();
                 }
             } else {
-                // Permission denied.
 
-                // Notify the user via a SnackBar that they have rejected a core permission for the
-                // app, which makes the Activity useless. In a real app, core permissions would
-                // typically be best requested during a welcome-screen flow.
-
-                // Additionally, it is important to remember that a permission might have been
-                // rejected without asking the user for permission (device policy or "Never ask
-                // again" prompts). Therefore, a user interface affordance is typically implemented
-                // when permissions are denied. Otherwise, your app could appear unresponsive to
-                // touches or interactions which have required permissions.
-                showSnackbar(R.string.permission_denied_explanation,
+                Utils.showSnackbar(this,R.string.permission_denied_explanation,
                         R.string.settings, new View.OnClickListener() {
                             @Override
                             public void onClick(View view) {

@@ -1,11 +1,17 @@
 package com.a_leonov.onesquare;
 
+import android.app.Activity;
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.pm.PackageManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Environment;
+import android.support.design.widget.Snackbar;
+import android.support.v4.app.ActivityCompat;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.View;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -15,6 +21,7 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Random;
 
+import static android.content.ContentValues.TAG;
 import static android.content.Context.CONNECTIVITY_SERVICE;
 
 /**
@@ -24,6 +31,7 @@ import static android.content.Context.CONNECTIVITY_SERVICE;
 public class Utils {
 
     private static final String LOG_TAG = "Utils";
+    private static final int REQUEST_PERMISSIONS_REQUEST_CODE = 34;
 
     public Utils() {
         return;
@@ -169,6 +177,50 @@ public class Utils {
         return file;
     }
 
+    /**
+     * Return the current state of the permissions needed.
+     */
+    public static boolean checkPermissions(Activity activity, String manifestPermission) {
+        int permissionState = ActivityCompat.checkSelfPermission(activity,
+                manifestPermission);
+        return permissionState == PackageManager.PERMISSION_GRANTED;
+    }
 
+    public static void requestPermissions(final Activity activity, final String manifestPermission) {
+        boolean shouldProvideRationale =
+                ActivityCompat.shouldShowRequestPermissionRationale(activity,
+                        manifestPermission);
 
+        // Provide an additional rationale to the user. This would happen if the user denied the
+        // request previously, but didn't check the "Don't ask again" checkbox.
+        if (shouldProvideRationale) {
+            Log.i(TAG, "Displaying permission rationale to provide additional context.");
+            showSnackbar(activity, R.string.permission_rationale,
+                    android.R.string.ok, new View.OnClickListener() {
+                        @Override
+                        public void onClick(View view) {
+                            // Request permission
+                            ActivityCompat.requestPermissions(activity,
+                                    new String[]{manifestPermission},
+                                    REQUEST_PERMISSIONS_REQUEST_CODE);
+                        }
+                    });
+        } else {
+            Log.i(TAG, "Requesting permission");
+            // Request permission. It's possible this can be auto answered if device policy
+            // sets the permission in a given state or the user denied the permission
+            // previously and checked "Never ask again".
+            ActivityCompat.requestPermissions(activity,
+                    new String[]{manifestPermission},
+                    REQUEST_PERMISSIONS_REQUEST_CODE);
+        }
+    }
+    public static void showSnackbar(Activity activity, final int mainTextStringId, final int actionStringId,
+                              View.OnClickListener listener) {
+        Snackbar.make(
+                activity.findViewById(android.R.id.content),
+                activity.getString(mainTextStringId),
+                Snackbar.LENGTH_INDEFINITE)
+                .setAction(activity.getString(actionStringId), listener).show();
+    }
 }
