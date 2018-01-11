@@ -25,6 +25,10 @@ import com.a_leonov.onesquare.R;
 import com.a_leonov.onesquare.Utils;
 import com.a_leonov.onesquare.data.FoursquareContract;
 import com.a_leonov.onesquare.service.VenueDetailsService;
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
+import com.bumptech.glide.request.animation.GlideAnimation;
+import com.bumptech.glide.request.target.SimpleTarget;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -80,6 +84,8 @@ public class DetailActivity extends AppCompatActivity implements SwipeRefreshLay
     private CollapsingToolbarLayout toolbarLayout;
     private final String DETAIL_TAG = "vendb_id";
     private final String VEN_ID = "ven_id";
+    private String photo_id;
+    private ArrayList<String> photosList;
 
     public static final String EXTENDED_DATA_STATUS =
             "com.a_leonov.onesquare.STATUS";
@@ -152,6 +158,7 @@ public class DetailActivity extends AppCompatActivity implements SwipeRefreshLay
             case DETAIL_LOADER: {
                 data.moveToFirst();
 
+
                 toolbarLayout.setTitle(data.getString(COL_NAME));
 //                venue_title.setText(data.getString(COL_NAME));
                 venue_distance.setText(getString(R.string.venue_distance, Math.round(data.getLong(COL_DISTANCE))));
@@ -174,7 +181,7 @@ public class DetailActivity extends AppCompatActivity implements SwipeRefreshLay
                 if (data != null) {
                     Log.i(getLocalClassName(), DatabaseUtils.dumpCursorToString(data));
 
-                    ArrayList<String> photosList = new ArrayList<>();
+                    photosList = new ArrayList<>();
                     while (data.moveToNext()) {
                         photosList.add(data.getString(COL_PHOTO_PREFIX) + getString(R.string.venue_detail_size) + data.getString(COL_PHOTO_SUFFIX));
                     }
@@ -200,10 +207,19 @@ public class DetailActivity extends AppCompatActivity implements SwipeRefreshLay
             @Override
             public void onClick(View v) {
                 if (Utils.checkPermissions(DetailActivity.this, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
-                    Bitmap shareBitmap = DetailActivity.this.myImagePagerAdapter.getImageBitmap();
-                    if (shareBitmap != null)
-                        storeImage(shareBitmap);
-                } else if (!Utils.checkPermissions(DetailActivity.this,Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+                    Glide.with(DetailActivity.this)
+                            .load(photosList.get(position))
+                            .asBitmap()
+                            .diskCacheStrategy(DiskCacheStrategy.ALL)
+                            .dontAnimate()
+                            .into(new SimpleTarget<Bitmap>() {
+                                @Override
+                                public void onResourceReady(Bitmap resource, GlideAnimation<? super Bitmap> glideAnimation) {
+                                    storeImage(resource);
+                                }
+                            });
+
+                } else if (!Utils.checkPermissions(DetailActivity.this, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
                     Utils.requestPermissions(DetailActivity.this, Manifest.permission.WRITE_EXTERNAL_STORAGE);
                 }
             }
@@ -229,10 +245,7 @@ public class DetailActivity extends AppCompatActivity implements SwipeRefreshLay
     private void storeImage(Bitmap image) {
 
         File mediaStorageDir = Utils.getAlbumStorageDir(this, "oneSquare_images");
-        Random generator = new Random();
-        int n = 1000;
-        n = generator.nextInt(n);
-        String mImageName = "Image-" + n + ".jpg";
+        String mImageName = "Image-" + photo_id + ".jpg";
         File pictureFile = new File(mediaStorageDir.getPath() + File.separator + mImageName);
 
         try {

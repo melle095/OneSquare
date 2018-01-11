@@ -23,6 +23,7 @@ public class ImagePagerAdapter extends PagerAdapter {
     LayoutInflater layoutInflater;
     private ImageView imageView = null;
     ArrayList<String> arrayList;
+    private static Bitmap image;
 
     public ImagePagerAdapter(Context context, ArrayList<String> arrayList) {
         this.context = context;
@@ -54,11 +55,12 @@ public class ImagePagerAdapter extends PagerAdapter {
                 .load(arrayList.get(position))
                 .asBitmap()
                 .diskCacheStrategy(DiskCacheStrategy.ALL)
+                .dontAnimate()
                 .into(new SimpleTarget<Bitmap>() {
                     @Override
                     public void onResourceReady(Bitmap resource, GlideAnimation<? super Bitmap> glideAnimation) {
                         imageView.setImageBitmap(resource);
-////                        shareImage = resource;
+                        image = resource;
 //                        if (Utils.isExternalStorageWritable())
 //                            storeImage(resource);
 //                        else
@@ -76,11 +78,5 @@ public class ImagePagerAdapter extends PagerAdapter {
         container.removeView((FrameLayout) object);
     }
 
-    public Bitmap getImageBitmap(){
-        if (imageView!=null) {
-            return ((BitmapDrawable) imageView.getDrawable()).getBitmap();
-        }
-        return null;
-    }
 }
 
