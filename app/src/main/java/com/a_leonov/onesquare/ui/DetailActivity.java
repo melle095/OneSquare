@@ -1,9 +1,9 @@
 package com.a_leonov.onesquare.ui;
 
-import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.database.DatabaseUtils;
+import android.graphics.Bitmap;
 import android.media.MediaScannerConnection;
 import android.net.Uri;
 import android.os.Bundle;
@@ -26,10 +26,14 @@ import com.a_leonov.onesquare.data.FoursquareContract;
 import com.a_leonov.onesquare.service.VenueDetailsService;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Random;
 
 public class DetailActivity extends AppCompatActivity implements SwipeRefreshLayout.OnRefreshListener,
-        LoaderManager.LoaderCallbacks<Cursor>, MediaScannerConnection.OnScanCompletedListener  {
+        LoaderManager.LoaderCallbacks<Cursor> {
 
     private static final String[] VENUE_COLUMNS = {
             FoursquareContract.VenuesEntry.TABLE_NAME + "." + FoursquareContract.VenuesEntry._ID,
@@ -61,7 +65,7 @@ public class DetailActivity extends AppCompatActivity implements SwipeRefreshLay
     private int COL_PHOTO_PHOTO_ID = 5;
 
     private ViewPager viewPager;
-    private MyFragmentPagerAdapter myFragmentPagerAdapter;
+    private ImagePagerAdapter myImagePagerAdapter;
     private ImageView venue_Photo;
     private TextView venue_title;
     private TextView venue_distance;
@@ -104,17 +108,6 @@ public class DetailActivity extends AppCompatActivity implements SwipeRefreshLay
         mShareFab = findViewById(R.id.share_fab);
 
         getSupportLoaderManager().initLoader(DETAIL_LOADER, null, this);
-
-        myFragmentPagerAdapter =
-                new MyFragmentPagerAdapter(getSupportFragmentManager());
-
-        viewPager.setAdapter(myFragmentPagerAdapter);
-        viewPager.setOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener() {
-            @Override
-            public void onPageSelected(int position) {
-                super.onPageSelected(position);
-            }
-        });
 
         Intent intent = getIntent();
         if (intent != null) {
@@ -162,10 +155,10 @@ public class DetailActivity extends AppCompatActivity implements SwipeRefreshLay
 //                venue_title.setText(data.getString(COL_NAME));
                 venue_distance.setText(getString(R.string.venue_distance, Math.round(data.getLong(COL_DISTANCE))));
                 venue_address.setText(getString(R.string.venue_address, data.getString(COL_ADDRESS)));
-                venue_phone.setText(getString(R.string.venue_phone, data.isNull(COL_PHONE)?"":data.getString(COL_PHONE)));
-                venue_twitter.setText(getString(R.string.venue_twitter, data.isNull(COL_TWITTER)?"":data.getString(COL_TWITTER)));
-                venue_instagramm.setText(getString(R.string.venue_instagramm, data.isNull(COL_INSTAGRAMM)?"":data.getString(COL_INSTAGRAMM)));
-                venue_facebook.setText(getString(R.string.venue_facebook, data.isNull(COL_FACEBOOK)?"":data.getString(COL_FACEBOOK)));
+                venue_phone.setText(getString(R.string.venue_phone, data.isNull(COL_PHONE) ? "" : data.getString(COL_PHONE)));
+                venue_twitter.setText(getString(R.string.venue_twitter, data.isNull(COL_TWITTER) ? "" : data.getString(COL_TWITTER)));
+                venue_instagramm.setText(getString(R.string.venue_instagramm, data.isNull(COL_INSTAGRAMM) ? "" : data.getString(COL_INSTAGRAMM)));
+                venue_facebook.setText(getString(R.string.venue_facebook, data.isNull(COL_FACEBOOK) ? "" : data.getString(COL_FACEBOOK)));
 
 
                 Intent intentPhotos = new Intent(this, VenueDetailsService.class)
@@ -184,8 +177,18 @@ public class DetailActivity extends AppCompatActivity implements SwipeRefreshLay
                     while (data.moveToNext()) {
                         photosList.add(data.getString(COL_PHOTO_PREFIX) + getString(R.string.venue_detail_size) + data.getString(COL_PHOTO_SUFFIX));
                     }
-                    myFragmentPagerAdapter.setData(photosList);
-                    myFragmentPagerAdapter.notifyDataSetChanged();
+
+                    myImagePagerAdapter =
+                            new ImagePagerAdapter(this, photosList);
+
+                    viewPager.setAdapter(myImagePagerAdapter);
+                    viewPager.setOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener() {
+                        @Override
+                        public void onPageSelected(int position) {
+                            super.onPageSelected(position);
+                        }
+                    });
+
                     break;
                 }
             }
@@ -194,11 +197,9 @@ public class DetailActivity extends AppCompatActivity implements SwipeRefreshLay
         mShareFab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent shareIntent = new Intent();
-                shareIntent.setAction(Intent.ACTION_SEND);
-                shareIntent.putExtra(Intent.EXTRA_STREAM, shareUri);
-                shareIntent.setType("image/*");
-                startActivity(Intent.createChooser(shareIntent, getResources().getText(R.string.send_to)));
+                Bitmap shareBitmap = myImagePagerAdapter.getImageBitmap();
+                if (shareBitmap != null)
+                    storeImage(shareBitmap);
             }
         });
     }
@@ -219,8 +220,41 @@ public class DetailActivity extends AppCompatActivity implements SwipeRefreshLay
 
     }
 
-    @Override
-    public void onScanCompleted(String s, Uri uri) {
-        shareUri = uri;
+    private void storeImage(Bitmap image) {
+
+        File mediaStorageDir = Utils.getAlbumStorageDir(this, "oneSquare_images");
+        Random generator = new Random();
+        int n = 1000;
+        n = generator.nextInt(n);
+        String mImageName = "Image-" + n + ".jpg";
+        File pictureFile = new File(mediaStorageDir.getPath() + File.separator + mImageName);
+
+        try {
+            FileOutputStream fos = new FileOutputStream(pictureFile);
+            boolean result = image.compress(Bitmap.CompressFormat.PNG, 90, fos);
+            fos.close();
+            Log.d(getClass().getSimpleName(), "img dir: " + pictureFile);
+
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        if (pictureFile == null) {
+            Log.d(getClass().getSimpleName(),
+                    "Error creating media file, check storage permissions: ");// e.getMessage());
+            return;
+        }
+        MediaScannerConnection.scanFile(this, new String[]{pictureFile.toString()}, new String[]{"image/*"}, new MediaScannerConnection.OnScanCompletedListener() {
+            @Override
+            public void onScanCompleted(String s, Uri uri) {
+                Intent shareIntent = new Intent();
+                shareIntent.setAction(Intent.ACTION_SEND);
+                shareIntent.putExtra(Intent.EXTRA_STREAM, uri);
+                shareIntent.setType("image/jpeg");
+                startActivity(Intent.createChooser(shareIntent, getResources().getText(R.string.send_to)));
+            }
+        });
     }
+
 }
