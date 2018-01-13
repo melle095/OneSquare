@@ -13,6 +13,8 @@ import android.widget.ImageView;
 import com.a_leonov.onesquare.R;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
+import com.bumptech.glide.load.resource.drawable.GlideDrawable;
+import com.bumptech.glide.request.RequestListener;
 import com.bumptech.glide.request.animation.GlideAnimation;
 import com.bumptech.glide.request.target.SimpleTarget;
 
@@ -53,20 +55,9 @@ public class ImagePagerAdapter extends PagerAdapter {
         Glide.clear(imageView);
         Glide.with(context)
                 .load(arrayList.get(position))
-                .asBitmap()
                 .diskCacheStrategy(DiskCacheStrategy.ALL)
                 .dontAnimate()
-                .into(new SimpleTarget<Bitmap>() {
-                    @Override
-                    public void onResourceReady(Bitmap resource, GlideAnimation<? super Bitmap> glideAnimation) {
-                        imageView.setImageBitmap(resource);
-                        image = resource;
-//                        if (Utils.isExternalStorageWritable())
-//                            storeImage(resource);
-//                        else
-//                            Log.d(getClass().getSimpleName(),"Write to extarnal not accessible");
-                    }
-                });
+                .into(imageView);
 
         container.addView(itemView);
 

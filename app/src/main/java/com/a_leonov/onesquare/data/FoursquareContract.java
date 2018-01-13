@@ -143,10 +143,10 @@ public class FoursquareContract {
             return ContentUris.withAppendedId(CONTENT_URI, id);
         }
 
-        public static Uri buildTipByVenueUri(String venue_id) {
+        public static Uri buildTipByVenueId(long venue_id) {
             return CONTENT_URI.buildUpon()
-                    .appendPath("venue_id")
-                    .appendPath(venue_id)
+                    .appendPath("tips_by_venue_id")
+                    .appendPath(String.valueOf(venue_id))
                     .build();
         }
     }

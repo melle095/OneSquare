@@ -95,7 +95,7 @@ public class VenueProvider extends ContentProvider {
         selectionArgs = new String[]{venueId};
         selection = sVenueIDSelection;
 
-        return mOpenHelper.getReadableDatabase().query(FoursquareContract.VenuesEntry.TABLE_NAME,
+        return mOpenHelper.getReadableDatabase().query(FoursquareContract.TipEntry.TABLE_NAME,
                 projection,
                 selection,
                 selectionArgs,

@@ -5,9 +5,12 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.database.DatabaseUtils;
 import android.graphics.Bitmap;
+import android.graphics.Color;
+import android.graphics.PorterDuff;
 import android.media.MediaScannerConnection;
 import android.net.Uri;
 import android.os.Bundle;
+import android.provider.ContactsContract;
 import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.LoaderManager;
@@ -16,9 +19,15 @@ import android.support.v4.content.Loader;
 import android.support.v4.view.ViewPager;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.View;
+import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.ListView;
+import android.widget.RatingBar;
 import android.widget.TextView;
 
 import com.a_leonov.onesquare.R;
@@ -49,7 +58,10 @@ public class DetailActivity extends AppCompatActivity implements SwipeRefreshLay
             FoursquareContract.VenuesEntry.COLUMN_TWITTER,
             FoursquareContract.VenuesEntry.COLUMN_INSTAGRAMM,
             FoursquareContract.VenuesEntry.COLUMN_FACEBOOK,
-            FoursquareContract.VenuesEntry.COLUMN_VEN_KEY
+            FoursquareContract.VenuesEntry.COLUMN_VEN_KEY,
+            FoursquareContract.VenuesEntry.COLUMN_COORD_LONG,
+            FoursquareContract.VenuesEntry.COLUMN_COORD_LAT,
+            FoursquareContract.VenuesEntry.COLUMN_RATING
     };
 
     static final int COL_ID = 0;
@@ -61,6 +73,9 @@ public class DetailActivity extends AppCompatActivity implements SwipeRefreshLay
     static final int COL_INSTAGRAMM = 6;
     static final int COL_FACEBOOK = 7;
     static final int COL_VENKEY = 8;
+    static final int COL_LONG = 9;
+    static final int COL_LAT = 10;
+    static final int COL_RATING = 11;
 
     private int COL_PHOTO_VENUE_ID = 0;
     private int COL_PHOTO_HEIGHT = 1;
@@ -71,21 +86,29 @@ public class DetailActivity extends AppCompatActivity implements SwipeRefreshLay
 
     private ViewPager viewPager;
     private ImagePagerAdapter myImagePagerAdapter;
-    private ImageView venue_Photo;
-    private TextView venue_title;
-    private TextView venue_distance;
+    private RatingBar venue_ratingbar;
+    private String ven_lat;
+    private String ven_long;
+    private String target_name;
     private TextView venue_address;
     private TextView venue_phone;
-    private TextView venue_twitter;
-    private TextView venue_instagramm;
-    private TextView venue_facebook;
-    FloatingActionButton mShareFab;
+    private String distance;
+    private String twitter_id;
+    private String instagramm_id;
+    private String facebook_id;
+    private ImageButton btn_distance;
+    private ImageButton btn_twitter;
+    private ImageButton btn_instagramm;
+    private ImageButton btn_facebook;
+    private FloatingActionButton mShareFab;
+    private RecyclerView listFeedbacks;
     private int position;
     private CollapsingToolbarLayout toolbarLayout;
     private final String DETAIL_TAG = "vendb_id";
     private final String VEN_ID = "ven_id";
     private String photo_id;
     private ArrayList<String> photosList;
+    private FeedbackAdapter feedbackAdapter;
 
     public static final String EXTENDED_DATA_STATUS =
             "com.a_leonov.onesquare.STATUS";
@@ -94,6 +117,7 @@ public class DetailActivity extends AppCompatActivity implements SwipeRefreshLay
 
     private final int DETAIL_LOADER = 3;
     private final int DETAIL_PHOTO_LOADER = 4;
+    private final int DETAIL_FEED_LOADER = 5;
 
     private long venueDbID;
 
@@ -104,13 +128,14 @@ public class DetailActivity extends AppCompatActivity implements SwipeRefreshLay
 
         toolbarLayout = findViewById(R.id.toolbar_layout);
         viewPager = findViewById(R.id.viewPager);
-        venue_title = findViewById(R.id.venue_title);
-        venue_distance = findViewById(R.id.venue_distance);
+        venue_ratingbar = findViewById(R.id.venue_rating);
+        btn_distance = findViewById(R.id.bnt_distance);
         venue_address = findViewById(R.id.venue_address);
         venue_phone = findViewById(R.id.venue_phone);
-        venue_twitter = findViewById(R.id.venue_twitter);
-        venue_instagramm = findViewById(R.id.venue_instagramm);
-        venue_facebook = findViewById(R.id.venue_facebook);
+        btn_twitter = findViewById(R.id.bnt_twitter);
+        btn_instagramm = findViewById(R.id.bnt_instagramm);
+        btn_facebook = findViewById(R.id.bnt_facebook);
+        listFeedbacks = findViewById(R.id.venue_feedbacks);
 
         mShareFab = findViewById(R.id.share_fab);
 
@@ -120,8 +145,67 @@ public class DetailActivity extends AppCompatActivity implements SwipeRefreshLay
         if (intent != null) {
             venueDbID = intent.getLongExtra(DETAIL_TAG, 0);
             getSupportLoaderManager().initLoader(DETAIL_PHOTO_LOADER, null, this);
+            getSupportLoaderManager().initLoader(DETAIL_FEED_LOADER, null, this);
+
         }
 
+        btn_distance.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(android.content.Intent.ACTION_VIEW,
+                        Uri.parse("geo:0,0?q=" + ven_lat + "," + ven_long + "(" + target_name + ")"));
+                startActivity(intent);
+            }
+        });
+
+        btn_facebook.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                try {
+                    getPackageManager().getPackageInfo("com.facebook.katana", 0);
+                    startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("fb://page/" + facebook_id)));
+                } catch (Exception e) {
+                    startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://www.facebook.com/" + facebook_id)));
+                }
+            }
+        });
+
+        btn_instagramm.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                try {
+                    getPackageManager().getPackageInfo("com.instagram.android", 0);
+                    startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("http://instagram.com/_u/" + instagramm_id))
+                            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
+                } catch (Exception e) {
+                    startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("http://instagram.com/" + instagramm_id)));
+                }
+            }
+        });
+
+        btn_twitter.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                try {
+                    // get the Twitter app if possible
+                    getPackageManager().getPackageInfo("com.twitter.android", 0);
+                    startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("twitter://user?user_id=" + twitter_id))
+                            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
+                } catch (Exception e) {
+                    // no Twitter app, revert to browser
+                    startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://twitter.com/" + twitter_id)));
+                }
+            }
+        });
+
+
+        feedbackAdapter = new FeedbackAdapter(this, null);
+
+        feedbackAdapter.setHasStableIds(true);
+        LinearLayoutManager linearLayoutManager =
+                new LinearLayoutManager(null, LinearLayoutManager.VERTICAL, false);
+        listFeedbacks.setLayoutManager(linearLayoutManager);
+        listFeedbacks.setAdapter(feedbackAdapter);
     }
 
     @Override
@@ -148,6 +232,15 @@ public class DetailActivity extends AppCompatActivity implements SwipeRefreshLay
                         null,
                         null);
             }
+            case  DETAIL_FEED_LOADER: {
+                Uri feedUri = FoursquareContract.TipEntry.buildTipByVenueId(venueDbID);
+                return new CursorLoader(this,
+                        feedUri,
+                        null,
+                        null,
+                        null,
+                        null);
+            }
         }
         return null;
     }
@@ -158,16 +251,42 @@ public class DetailActivity extends AppCompatActivity implements SwipeRefreshLay
             case DETAIL_LOADER: {
                 data.moveToFirst();
 
-
                 toolbarLayout.setTitle(data.getString(COL_NAME));
-//                venue_title.setText(data.getString(COL_NAME));
-                venue_distance.setText(getString(R.string.venue_distance, Math.round(data.getLong(COL_DISTANCE))));
-                venue_address.setText(getString(R.string.venue_address, data.getString(COL_ADDRESS)));
-                venue_phone.setText(getString(R.string.venue_phone, data.isNull(COL_PHONE) ? "" : data.getString(COL_PHONE)));
-                venue_twitter.setText(getString(R.string.venue_twitter, data.isNull(COL_TWITTER) ? "" : data.getString(COL_TWITTER)));
-                venue_instagramm.setText(getString(R.string.venue_instagramm, data.isNull(COL_INSTAGRAMM) ? "" : data.getString(COL_INSTAGRAMM)));
-                venue_facebook.setText(getString(R.string.venue_facebook, data.isNull(COL_FACEBOOK) ? "" : data.getString(COL_FACEBOOK)));
+                target_name = data.getString(COL_NAME);
+                venue_ratingbar.setRating(Math.round(data.getFloat(COL_RATING)));
+                ven_long = data.getString(COL_LONG);
+                ven_lat = data.getString(COL_LAT);
 
+                if (data.isNull(COL_FACEBOOK)) {
+                    btn_facebook.setEnabled(false);
+                    btn_facebook.getDrawable().setColorFilter(Color.LTGRAY, PorterDuff.Mode.SRC_IN);
+                } else {
+                    btn_facebook.setEnabled(true);
+                    btn_facebook.getDrawable().setColorFilter(null);
+                    facebook_id = data.getString(COL_FACEBOOK);
+                }
+
+                if (data.isNull(COL_TWITTER)) {
+                    btn_twitter.setEnabled(false);
+                    btn_twitter.getDrawable().setColorFilter(Color.LTGRAY, PorterDuff.Mode.SRC_IN);
+                }else {
+                    btn_twitter.setEnabled(true);
+                    btn_twitter.getDrawable().setColorFilter(null);
+                    twitter_id = data.getString(COL_TWITTER);
+                }
+
+                if (data.isNull(COL_INSTAGRAMM)) {
+                    btn_instagramm.setEnabled(false);
+                    btn_instagramm.getDrawable().setColorFilter(Color.LTGRAY, PorterDuff.Mode.SRC_IN);
+                }else {
+                    btn_instagramm.setEnabled(true);
+                    btn_instagramm.getDrawable().setColorFilter(null);
+                    instagramm_id = data.getString(COL_INSTAGRAMM);
+                }
+
+                venue_address.setText(getString(R.string.venue_address, data.getString(COL_ADDRESS)) + ". " +
+                        getString(R.string.venue_distance, data.getLong(COL_DISTANCE)));
+                venue_phone.setText(getString(R.string.venue_phone, data.isNull(COL_PHONE) ? "" : data.getString(COL_PHONE)));
 
                 Intent intentPhotos = new Intent(this, VenueDetailsService.class)
                         .putExtra(VEN_ID, data.getString(COL_VENKEY))
@@ -179,7 +298,6 @@ public class DetailActivity extends AppCompatActivity implements SwipeRefreshLay
             case DETAIL_PHOTO_LOADER: {
 
                 if (data != null) {
-                    Log.i(getLocalClassName(), DatabaseUtils.dumpCursorToString(data));
 
                     photosList = new ArrayList<>();
                     while (data.moveToNext()) {
@@ -201,9 +319,18 @@ public class DetailActivity extends AppCompatActivity implements SwipeRefreshLay
                     break;
                 }
             }
+            case DETAIL_FEED_LOADER: {
+                if (data != null) {
+                    Log.i(getLocalClassName(), DatabaseUtils.dumpCursorToString(data));
+
+                    feedbackAdapter.swapCursor(data);
+                }
+            }
         }
 
-        mShareFab.setOnClickListener(new View.OnClickListener() {
+        mShareFab.setOnClickListener(new View.OnClickListener()
+
+        {
             @Override
             public void onClick(View v) {
                 if (Utils.checkPermissions(DetailActivity.this, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
@@ -228,13 +355,13 @@ public class DetailActivity extends AppCompatActivity implements SwipeRefreshLay
 
     @Override
     public void onLoaderReset(Loader<Cursor> loader) {
-        venue_title.setText(null);
-        venue_distance.setText(null);
+//        venue_title.setText(null);
+//        venue_distance.setText(null);
         venue_address.setText(null);
         venue_phone.setText(null);
-        venue_twitter.setText(null);
-        venue_instagramm.setText(null);
-        venue_facebook.setText(null);
+//        venue_twitter.setText(null);
+//        venue_instagramm.setText(null);
+//        venue_facebook.setText(null);
     }
 
     @Override
@@ -271,10 +398,6 @@ public class DetailActivity extends AppCompatActivity implements SwipeRefreshLay
                 shareIntent.setAction(Intent.ACTION_SEND);
                 shareIntent.setType("image/jpeg");
                 shareIntent.putExtra(Intent.EXTRA_STREAM, uri);
-                shareIntent.setType("text/plain");
-                shareIntent.putExtra(android.content.Intent.EXTRA_SUBJECT, venue_title.getText());
-                shareIntent.putExtra(Intent.EXTRA_TEXT, venue_distance.getText());
-
                 startActivity(Intent.createChooser(shareIntent, getResources().getText(R.string.send_to)));
             }
         });

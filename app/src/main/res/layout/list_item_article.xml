@@ -32,15 +32,17 @@
             android:text="Starbuks"/>
 
         <RatingBar
-            android:layout_width="match_parent"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            style="?android:attr/ratingBarStyleSmall"
+            android:numStars="10"
+            android:stepSize="0.1"
             android:id="@+id/venue_rating"
             android:paddingLeft="@dimen/material_component_cards_left_and_right_padding"
             android:paddingRight="@dimen/material_component_cards_left_and_right_padding"
             android:paddingTop="@dimen/material_component_cards_primary_title_bottom_padding"
             android:mirrorForRtl="true"
-            android:contentDescription="@string/discription_ratingbar"
-            style = "?android:attr/ratingBarStyleSmall"/>
+            android:contentDescription="@string/discription_ratingbar"/>
 
         <TextView
             android:id="@+id/venue_distance"

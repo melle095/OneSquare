@@ -212,13 +212,18 @@ public class VenueDetailsService extends IntentService {
                     ContentValues tipValues = new ContentValues();
 
                     putJsonValue(tipValues, tip, FoursquareContract.TipEntry.COLUMN_TIP_ID, TIP_ID, 1);
-                    putJsonValue(tipValues, tip, FoursquareContract.TipEntry.COLUMN_FIRSTNAME, FIRSTSNAME, 1);
-                    putJsonValue(tipValues, tip, FoursquareContract.TipEntry.COLUMN_LASTNAME, LASTNAME, 1);
                     putJsonValue(tipValues, tip, FoursquareContract.TipEntry.COLUMN_TEXT, TIP_TEXT, 1);
-                    putJsonValue(tipValues, tip, FoursquareContract.TipEntry.COLUMN_USER_PHOTO_PREFIX, PREFIX, 1);
-                    putJsonValue(tipValues, tip, FoursquareContract.TipEntry.COLUMN_USER_PHOTO_SUFFIX, SUFFIX, 1);
-
                     tipValues.put(FoursquareContract.TipEntry.COLUMN_VENUE_ID, venuedb_id);
+
+                    JSONObject user = tip.getJSONObject("user");
+
+                    putJsonValue(tipValues, user, FoursquareContract.TipEntry.COLUMN_FIRSTNAME, FIRSTSNAME, 1);
+                    putJsonValue(tipValues, user, FoursquareContract.TipEntry.COLUMN_LASTNAME, LASTNAME, 1);
+
+                    JSONObject user_photo = user.getJSONObject("photo");
+
+                    putJsonValue(tipValues, user_photo, FoursquareContract.TipEntry.COLUMN_USER_PHOTO_PREFIX, PREFIX, 1);
+                    putJsonValue(tipValues, user_photo, FoursquareContract.TipEntry.COLUMN_USER_PHOTO_SUFFIX, SUFFIX, 1);
 
                     cVVector_tips.add(tipValues);
                 }
