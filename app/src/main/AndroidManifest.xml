@@ -47,7 +47,9 @@
 
         <service android:name="com.a_leonov.onesquare.service.OneService" />
         <service android:name="com.a_leonov.onesquare.service.VenueDetailsService" />
-
+        <service android:name="com.a_leonov.onesquare.service.LocationUpdatesService"
+            android:enabled="true"
+            android:exported="true" />
     </application>
     <uses-permission android:name="android.permission.INTERNET"/>
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />

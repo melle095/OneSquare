@@ -160,6 +160,7 @@ public class VenueListFragment extends Fragment implements LoaderManager.LoaderC
 
     @Override
     public void onRefresh() {
-        onListUpdateListener.onListUpdate();
+        loaderManager.restartLoader(VENUE_LOADER, null, this);
+//        onListUpdateListener.onListUpdate();
     }
 }
