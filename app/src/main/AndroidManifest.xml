@@ -29,17 +29,18 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".ui.DetailActivity" />
         </activity>
+
         <provider
-            android:authorities="@string/content_authority"
             android:name=".data.VenueProvider"
+            android:authorities="@string/content_authority"
             android:exported="false"
             android:syncable="true" />
 
         <provider
             android:name="android.support.v4.content.FileProvider"
             android:authorities="com.a_leonov.onesquare.fileprovider"
-            android:grantUriPermissions="true"
-            android:exported="false">
+            android:exported="false"
+            android:grantUriPermissions="true">
             <meta-data
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/filepaths" />
@@ -47,12 +48,30 @@
 
         <service android:name="com.a_leonov.onesquare.service.OneService" />
         <service android:name="com.a_leonov.onesquare.service.VenueDetailsService" />
+        <service
+            android:name="com.a_leonov.onesquare.widget.WidgetService"
+            android:permission="android.permission.BIND_REMOTEVIEWS" />
+
+        <receiver android:name="com.a_leonov.onesquare.widget.WidgetProvider">
+            <intent-filter>
+
+                <!-- This widget provider receives broadcast with following action
+    name or simply onUpdate of AppWidgetProvider is called -->
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <!-- linking up xml file of appwidget-provider to AppWidgetProvider -->
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_info" />
+        </receiver>
 
     </application>
-    <uses-permission android:name="android.permission.INTERNET"/>
+
+    <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+
     <uses-feature android:name="android.hardware.location.gps" />
 
 

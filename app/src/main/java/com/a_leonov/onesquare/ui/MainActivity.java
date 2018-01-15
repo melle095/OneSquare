@@ -21,6 +21,7 @@ import android.view.View;
 import android.widget.Toast;
 
 import com.a_leonov.onesquare.BuildConfig;
+import com.a_leonov.onesquare.Location.OneLocation;
 import com.a_leonov.onesquare.R;
 import com.a_leonov.onesquare.Utils;
 import com.a_leonov.onesquare.data.FoursquareContract;
@@ -44,6 +45,11 @@ import com.google.android.gms.tasks.Task;
 import java.text.DateFormat;
 import java.util.Date;
 
+import static com.a_leonov.onesquare.Location.OneLocation.KEY_LAST_UPDATED_TIME_STRING;
+import static com.a_leonov.onesquare.Location.OneLocation.KEY_LOCATION;
+import static com.a_leonov.onesquare.Location.OneLocation.KEY_REQUESTING_LOCATION_UPDATES;
+import static com.a_leonov.onesquare.Location.OneLocation.REQUEST_CHECK_SETTINGS;
+import static com.a_leonov.onesquare.Location.OneLocation.REQUEST_PERMISSIONS_REQUEST_CODE;
 import static com.a_leonov.onesquare.Utils.checkPermissions;
 
 
@@ -57,21 +63,22 @@ public class MainActivity extends AppCompatActivity implements VenueListFragment
 
     private static final String TAG = MainActivity.class.getSimpleName();
 
-    private static final int REQUEST_PERMISSIONS_REQUEST_CODE = 34;
-    private static final int REQUEST_CHECK_SETTINGS = 0x1;
-    private static final long UPDATE_INTERVAL_IN_MILLISECONDS = 1000 * 10;
-    private static final long FASTEST_UPDATE_INTERVAL_IN_MILLISECONDS = UPDATE_INTERVAL_IN_MILLISECONDS / 2;
-    private final static String KEY_REQUESTING_LOCATION_UPDATES = "requesting-location-updates";
-    private final static String KEY_LOCATION = "location";
-    private final static String KEY_LAST_UPDATED_TIME_STRING = "last-updated-time-string";
-    private FusedLocationProviderClient mFusedLocationClient;
-    private SettingsClient mSettingsClient;
-    private LocationRequest mLocationRequest;
-    private LocationSettingsRequest mLocationSettingsRequest;
-    private LocationCallback mLocationCallback;
+    OneLocation oneLocation;
+//    private static final int REQUEST_PERMISSIONS_REQUEST_CODE = 34;
+//    private static final int REQUEST_CHECK_SETTINGS = 0x1;
+//    private static final long UPDATE_INTERVAL_IN_MILLISECONDS = 1000 * 10;
+//    private static final long FASTEST_UPDATE_INTERVAL_IN_MILLISECONDS = UPDATE_INTERVAL_IN_MILLISECONDS / 2;
+//    private final static String KEY_REQUESTING_LOCATION_UPDATES = "requesting-location-updates";
+//    private final static String KEY_LOCATION = "location";
+//    private final static String KEY_LAST_UPDATED_TIME_STRING = "last-updated-time-string";
+//    private FusedLocationProviderClient mFusedLocationClient;
+//    private SettingsClient mSettingsClient;
+//    private LocationRequest mLocationRequest;
+//    private LocationSettingsRequest mLocationSettingsRequest;
+//    private LocationCallback mLocationCallback;
     private Location mCurrentLocation;
-    private Boolean mRequestingLocationUpdates;
-    private String mLastUpdateTime;
+//    private Boolean mRequestingLocationUpdates;
+//    private String mLastUpdateTime;
     VenueListFragment listFragment;
     private Toolbar mToolbar;
 
@@ -94,16 +101,17 @@ public class MainActivity extends AppCompatActivity implements VenueListFragment
                 .add(R.id.frameLayout, listFragment, FRAGMENT_LIST_TAG)
                 .commit();
 
-        mRequestingLocationUpdates = true;
-        mLastUpdateTime = "";
+//        mRequestingLocationUpdates = true;
+//        mLastUpdateTime = "";
+//
+//        mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
+//        mSettingsClient = LocationServices.getSettingsClient(this);
+//        createGetLastLocationCallback();
+//        createLocationCallback();
+//        createLocationRequest();
+//        buildLocationSettingsRequest();
 
-        mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
-        mSettingsClient = LocationServices.getSettingsClient(this);
-        createGetLastLocationCallback();
-        createLocationCallback();
-        createLocationRequest();
-        buildLocationSettingsRequest();
-
+        oneLocation = new OneLocation(this);
     }
 
     private void updateValuesFromBundle(Bundle savedInstanceState) {
@@ -111,8 +119,7 @@ public class MainActivity extends AppCompatActivity implements VenueListFragment
             // Update the value of mRequestingLocationUpdates from the Bundle, and make sure that
             // the Start Updates and Stop Updates buttons are correctly enabled or disabled.
             if (savedInstanceState.keySet().contains(KEY_REQUESTING_LOCATION_UPDATES)) {
-                mRequestingLocationUpdates = savedInstanceState.getBoolean(
-                        KEY_REQUESTING_LOCATION_UPDATES);
+                oneLocation.setmRequestingLocationUpdates(savedInstanceState.getBoolean(KEY_REQUESTING_LOCATION_UPDATES));
             }
 
             // Update the value of mCurrentLocation from the Bundle and update the UI to show the
@@ -130,40 +137,40 @@ public class MainActivity extends AppCompatActivity implements VenueListFragment
         }
     }
 
-    private void createLocationRequest() {
-        mLocationRequest = new LocationRequest();
-        mLocationRequest.setInterval(UPDATE_INTERVAL_IN_MILLISECONDS);
-        mLocationRequest.setFastestInterval(FASTEST_UPDATE_INTERVAL_IN_MILLISECONDS);
-        mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
-    }
+//    private void createLocationRequest() {
+//        mLocationRequest = new LocationRequest();
+//        mLocationRequest.setInterval(UPDATE_INTERVAL_IN_MILLISECONDS);
+//        mLocationRequest.setFastestInterval(FASTEST_UPDATE_INTERVAL_IN_MILLISECONDS);
+//        mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+//    }
+//
+//    private void createLocationCallback() {
+//        mLocationCallback = new LocationCallback() {
+//            @Override
+//            public void onLocationResult(LocationResult locationResult) {
+//                super.onLocationResult(locationResult);
+//                mCurrentLocation = locationResult.getLastLocation();
+//                mLastUpdateTime = DateFormat.getTimeInstance().format(new Date());
+//            }
+//        };
+//    }
 
-    private void createLocationCallback() {
-        mLocationCallback = new LocationCallback() {
-            @Override
-            public void onLocationResult(LocationResult locationResult) {
-                super.onLocationResult(locationResult);
-                mCurrentLocation = locationResult.getLastLocation();
-                mLastUpdateTime = DateFormat.getTimeInstance().format(new Date());
-            }
-        };
-    }
-
-    private void createGetLastLocationCallback() {
-        mFusedLocationClient.getLastLocation()
-                .addOnSuccessListener(this, new OnSuccessListener<Location>() {
-                    @Override
-                    public void onSuccess(Location location) {
-                        mCurrentLocation = location;
-                    }
-                });
-
-    }
-
-    private void buildLocationSettingsRequest() {
-        LocationSettingsRequest.Builder builder = new LocationSettingsRequest.Builder();
-        builder.addLocationRequest(mLocationRequest);
-        mLocationSettingsRequest = builder.build();
-    }
+//    private void createGetLastLocationCallback() {
+//        mFusedLocationClient.getLastLocation()
+//                .addOnSuccessListener(this, new OnSuccessListener<Location>() {
+//                    @Override
+//                    public void onSuccess(Location location) {
+//                        mCurrentLocation = location;
+//                    }
+//                });
+//
+//    }
+//
+//    private void buildLocationSettingsRequest() {
+//        LocationSettingsRequest.Builder builder = new LocationSettingsRequest.Builder();
+//        builder.addLocationRequest(mLocationRequest);
+//        mLocationSettingsRequest = builder.build();
+//    }
 
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         switch (requestCode) {
@@ -176,7 +183,7 @@ public class MainActivity extends AppCompatActivity implements VenueListFragment
                         break;
                     case Activity.RESULT_CANCELED:
                         Log.i(TAG, "User chose not to make required location settings changes.");
-                        mRequestingLocationUpdates = false;
+                        oneLocation.setmRequestingLocationUpdates(false);
 
                         break;
                 }
@@ -184,49 +191,49 @@ public class MainActivity extends AppCompatActivity implements VenueListFragment
         }
     }
 
-    private void startLocationUpdates() {
-        // Begin by checking if the device has the necessary location settings.
-        if (mLocationSettingsRequest != null) {
-            mSettingsClient.checkLocationSettings(mLocationSettingsRequest)
-                    .addOnSuccessListener(this, new OnSuccessListener<LocationSettingsResponse>() {
-                        @Override
-                        public void onSuccess(LocationSettingsResponse locationSettingsResponse) {
-                            Log.i(TAG, "All location settings are satisfied.");
-
-                            //noinspection MissingPermission
-                            mFusedLocationClient.requestLocationUpdates(mLocationRequest,
-                                    mLocationCallback, Looper.myLooper());
-
-                        }
-                    })
-                    .addOnFailureListener(this, new OnFailureListener() {
-                        @Override
-                        public void onFailure(@NonNull Exception e) {
-                            int statusCode = ((ApiException) e).getStatusCode();
-                            switch (statusCode) {
-                                case LocationSettingsStatusCodes.RESOLUTION_REQUIRED:
-                                    Log.i(TAG, "Location settings are not satisfied. Attempting to upgrade " +
-                                            "location settings ");
-                                    try {
-                                        // Show the dialog by calling startResolutionForResult(), and check the
-                                        // result in onActivityResult().
-                                        ResolvableApiException rae = (ResolvableApiException) e;
-                                        rae.startResolutionForResult(MainActivity.this, REQUEST_CHECK_SETTINGS);
-                                    } catch (IntentSender.SendIntentException sie) {
-                                        Log.i(TAG, "PendingIntent unable to execute request.");
-                                    }
-                                    break;
-                                case LocationSettingsStatusCodes.SETTINGS_CHANGE_UNAVAILABLE:
-                                    String errorMessage = "Location settings are inadequate, and cannot be " +
-                                            "fixed here. Fix in Settings.";
-                                    Log.e(TAG, errorMessage);
-                                    Toast.makeText(MainActivity.this, errorMessage, Toast.LENGTH_LONG).show();
-                                    mRequestingLocationUpdates = false;
-                            }
-                        }
-                    });
-        }
-    }
+//    private void startLocationUpdates() {
+//        // Begin by checking if the device has the necessary location settings.
+//        if (mLocationSettingsRequest != null) {
+//            mSettingsClient.checkLocationSettings(mLocationSettingsRequest)
+//                    .addOnSuccessListener(this, new OnSuccessListener<LocationSettingsResponse>() {
+//                        @Override
+//                        public void onSuccess(LocationSettingsResponse locationSettingsResponse) {
+//                            Log.i(TAG, "All location settings are satisfied.");
+//
+//                            //noinspection MissingPermission
+//                            mFusedLocationClient.requestLocationUpdates(mLocationRequest,
+//                                    mLocationCallback, Looper.myLooper());
+//
+//                        }
+//                    })
+//                    .addOnFailureListener(this, new OnFailureListener() {
+//                        @Override
+//                        public void onFailure(@NonNull Exception e) {
+//                            int statusCode = ((ApiException) e).getStatusCode();
+//                            switch (statusCode) {
+//                                case LocationSettingsStatusCodes.RESOLUTION_REQUIRED:
+//                                    Log.i(TAG, "Location settings are not satisfied. Attempting to upgrade " +
+//                                            "location settings ");
+//                                    try {
+//                                        // Show the dialog by calling startResolutionForResult(), and check the
+//                                        // result in onActivityResult().
+//                                        ResolvableApiException rae = (ResolvableApiException) e;
+//                                        rae.startResolutionForResult(MainActivity.this, REQUEST_CHECK_SETTINGS);
+//                                    } catch (IntentSender.SendIntentException sie) {
+//                                        Log.i(TAG, "PendingIntent unable to execute request.");
+//                                    }
+//                                    break;
+//                                case LocationSettingsStatusCodes.SETTINGS_CHANGE_UNAVAILABLE:
+//                                    String errorMessage = "Location settings are inadequate, and cannot be " +
+//                                            "fixed here. Fix in Settings.";
+//                                    Log.e(TAG, errorMessage);
+//                                    Toast.makeText(MainActivity.this, errorMessage, Toast.LENGTH_LONG).show();
+//                                    mRequestingLocationUpdates = false;
+//                            }
+//                        }
+//                    });
+//        }
+//    }
 
     private void updateLocationUI() {
         if (mCurrentLocation != null) {
@@ -240,33 +247,33 @@ public class MainActivity extends AppCompatActivity implements VenueListFragment
         }
     }
 
-    private void stopLocationUpdates() {
-        if (!mRequestingLocationUpdates) {
-            Log.d(TAG, "stopLocationUpdates: updates never requested, no-op.");
-            return;
-        }
-
-        // It is a good practice to remove location requests when the activity is in a paused or
-        // stopped state. Doing so helps battery performance and is especially
-        // recommended in applications that request frequent location updates.
-        mFusedLocationClient.removeLocationUpdates(mLocationCallback)
-                .addOnCompleteListener(this, new OnCompleteListener<Void>() {
-                    @Override
-                    public void onComplete(@NonNull Task<Void> task) {
-                        mRequestingLocationUpdates = false;
-//                        setButtonsEnabledState();
-                    }
-                });
-    }
+//    private void stopLocationUpdates() {
+//        if (!oneLocation.getmRequestingLocationUpdates()) {
+//            Log.d(TAG, "stopLocationUpdates: updates never requested, no-op.");
+//            return;
+//        }
+//
+//        // It is a good practice to remove location requests when the activity is in a paused or
+//        // stopped state. Doing so helps battery performance and is especially
+//        // recommended in applications that request frequent location updates.
+//        mFusedLocationClient.removeLocationUpdates(mLocationCallback)
+//                .addOnCompleteListener(this, new OnCompleteListener<Void>() {
+//                    @Override
+//                    public void onComplete(@NonNull Task<Void> task) {
+//                        mRequestingLocationUpdates = false;
+////                        setButtonsEnabledState();
+//                    }
+//                });
+//    }
 
     @Override
     public void onResume() {
         super.onResume();
-        mRequestingLocationUpdates = true;
+        oneLocation.setmRequestingLocationUpdates(true);
         // Within {@code onPause()}, we remove location updates. Here, we resume receiving
         // location updates if the user has requested them.
-        if (mRequestingLocationUpdates && Utils.checkPermissions(MainActivity.this,Manifest.permission.ACCESS_FINE_LOCATION)) {
-            startLocationUpdates();
+        if (oneLocation.getmRequestingLocationUpdates() && Utils.checkPermissions(MainActivity.this,Manifest.permission.ACCESS_FINE_LOCATION)) {
+            oneLocation.startLocationUpdates();
         } else if (!Utils.checkPermissions(MainActivity.this,Manifest.permission.ACCESS_FINE_LOCATION)) {
             Utils.requestPermissions(MainActivity.this, Manifest.permission.ACCESS_FINE_LOCATION);
         }
@@ -277,19 +284,15 @@ public class MainActivity extends AppCompatActivity implements VenueListFragment
         super.onPause();
 
         // Remove location updates to save battery.
-        stopLocationUpdates();
+        oneLocation.stopLocationUpdates();
     }
 
     public void onSaveInstanceState(Bundle savedInstanceState) {
-        savedInstanceState.putBoolean(KEY_REQUESTING_LOCATION_UPDATES, mRequestingLocationUpdates);
+        savedInstanceState.putBoolean(KEY_REQUESTING_LOCATION_UPDATES, oneLocation.getmRequestingLocationUpdates());
         savedInstanceState.putParcelable(KEY_LOCATION, mCurrentLocation);
-        savedInstanceState.putString(KEY_LAST_UPDATED_TIME_STRING, mLastUpdateTime);
+        savedInstanceState.putString(KEY_LAST_UPDATED_TIME_STRING, oneLocation.getmLastUpdateTime());
         super.onSaveInstanceState(savedInstanceState);
     }
-
-
-
-
 
     /**
      * Callback received when a permissions request has been completed.
@@ -304,9 +307,9 @@ public class MainActivity extends AppCompatActivity implements VenueListFragment
                 // receive empty arrays.
                 Log.i(TAG, "User interaction was cancelled.");
             } else if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                if (mRequestingLocationUpdates) {
+                if (oneLocation.getmRequestingLocationUpdates()) {
                     Log.i(TAG, "Permission granted, updates requested, starting location updates");
-                    startLocationUpdates();
+                    oneLocation.startLocationUpdates();
                 }
             } else {
 
