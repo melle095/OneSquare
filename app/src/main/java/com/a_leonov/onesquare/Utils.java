@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.pm.PackageManager;
+import android.location.Location;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Environment;
@@ -17,8 +18,10 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.File;
+import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.Random;
 
 import static android.content.ContentValues.TAG;
@@ -32,6 +35,9 @@ public class Utils {
 
     private static final String LOG_TAG = "Utils";
     private static final int REQUEST_PERMISSIONS_REQUEST_CODE = 34;
+    static final String KEY_REQUESTING_LOCATION_UPDATES = "requesting_locaction_updates";
+
+
 
     public Utils() {
         return;
@@ -223,4 +229,28 @@ public class Utils {
                 Snackbar.LENGTH_INDEFINITE)
                 .setAction(activity.getString(actionStringId), listener).show();
     }
+
+//    static boolean requestingLocationUpdates(Context context) {
+//        return PreferenceManager.getDefaultSharedPreferences(context)
+//                .getBoolean(KEY_REQUESTING_LOCATION_UPDATES, false);
+//    }
+//
+//
+//    static void setRequestingLocationUpdates(Context context, boolean requestingLocationUpdates) {
+//        PreferenceManager.getDefaultSharedPreferences(context)
+//                .edit()
+//                .putBoolean(KEY_REQUESTING_LOCATION_UPDATES, requestingLocationUpdates)
+//                .apply();
+//    }
+
+    public static String getLocationText(Location location) {
+        return location == null ? "Unknown location" :
+                "(" + location.getLatitude() + ", " + location.getLongitude() + ")";
+    }
+
+    public static String getLocationTitle(Context context) {
+        return context.getString(R.string.location_updated,
+                DateFormat.getDateTimeInstance().format(new Date()));
+    }
+
 }

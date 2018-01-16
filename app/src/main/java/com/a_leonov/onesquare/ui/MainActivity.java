@@ -1,19 +1,22 @@
 package com.a_leonov.onesquare.ui;
 
 import android.Manifest;
-
-import android.app.Activity;
+import android.content.BroadcastReceiver;
+import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
-import android.content.IntentSender;
+import android.content.IntentFilter;
+import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Looper;
+import android.os.IBinder;
 import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
@@ -25,35 +28,11 @@ import com.a_leonov.onesquare.Location.OneLocation;
 import com.a_leonov.onesquare.R;
 import com.a_leonov.onesquare.Utils;
 import com.a_leonov.onesquare.data.FoursquareContract;
+import com.a_leonov.onesquare.service.LocationUpdatesService;
 import com.a_leonov.onesquare.service.OneService;
-import com.google.android.gms.common.api.ApiException;
-import com.google.android.gms.common.api.ResolvableApiException;
-import com.google.android.gms.location.FusedLocationProviderClient;
-import com.google.android.gms.location.LocationCallback;
-import com.google.android.gms.location.LocationRequest;
-import com.google.android.gms.location.LocationResult;
-import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.location.LocationSettingsRequest;
-import com.google.android.gms.location.LocationSettingsResponse;
-import com.google.android.gms.location.LocationSettingsStatusCodes;
-import com.google.android.gms.location.SettingsClient;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.android.gms.tasks.Task;
-
-import java.text.DateFormat;
-import java.util.Date;
-
-import static com.a_leonov.onesquare.Location.OneLocation.KEY_LAST_UPDATED_TIME_STRING;
-import static com.a_leonov.onesquare.Location.OneLocation.KEY_LOCATION;
-import static com.a_leonov.onesquare.Location.OneLocation.KEY_REQUESTING_LOCATION_UPDATES;
-import static com.a_leonov.onesquare.Location.OneLocation.REQUEST_CHECK_SETTINGS;
-import static com.a_leonov.onesquare.Location.OneLocation.REQUEST_PERMISSIONS_REQUEST_CODE;
-import static com.a_leonov.onesquare.Utils.checkPermissions;
 
 
-public class MainActivity extends AppCompatActivity implements VenueListFragment.OnListUpdateListener {
+public class MainActivity extends AppCompatActivity implements VenueListFragment.OnListUpdateListener, ServiceConnection {
 
     private String selectedCategory;
     private String BUNDLE_CATEGORY = "category";
@@ -61,26 +40,32 @@ public class MainActivity extends AppCompatActivity implements VenueListFragment
     private String BUNDLE_LON = "lon";
     private static final String FRAGMENT_LIST_TAG = "frag_list";
 
-    private static final String TAG = MainActivity.class.getSimpleName();
-
-    OneLocation oneLocation;
-//    private static final int REQUEST_PERMISSIONS_REQUEST_CODE = 34;
-//    private static final int REQUEST_CHECK_SETTINGS = 0x1;
-//    private static final long UPDATE_INTERVAL_IN_MILLISECONDS = 1000 * 10;
-//    private static final long FASTEST_UPDATE_INTERVAL_IN_MILLISECONDS = UPDATE_INTERVAL_IN_MILLISECONDS / 2;
-//    private final static String KEY_REQUESTING_LOCATION_UPDATES = "requesting-location-updates";
-//    private final static String KEY_LOCATION = "location";
-//    private final static String KEY_LAST_UPDATED_TIME_STRING = "last-updated-time-string";
-//    private FusedLocationProviderClient mFusedLocationClient;
-//    private SettingsClient mSettingsClient;
-//    private LocationRequest mLocationRequest;
-//    private LocationSettingsRequest mLocationSettingsRequest;
-//    private LocationCallback mLocationCallback;
-    private Location mCurrentLocation;
-//    private Boolean mRequestingLocationUpdates;
-//    private String mLastUpdateTime;
     VenueListFragment listFragment;
     private Toolbar mToolbar;
+
+    private Location mCurrentlocation;
+    private static final String TAG = MainActivity.class.getSimpleName();
+    private static final int REQUEST_PERMISSIONS_REQUEST_CODE = 34;
+    private MyReceiver myReceiver;
+    private LocationUpdatesService mService = null;
+    private boolean mBound = false;
+
+
+//    private final ServiceConnection mServiceConnection = new ServiceConnection() {
+//
+//        @Override
+//        public void onServiceConnected(ComponentName name, IBinder service) {
+//            LocationUpdatesService.LocalBinder binder = (LocationUpdatesService.LocalBinder) service;
+//            mService = binder.getService();
+//            mBound = true;
+//        }
+//
+//        @Override
+//        public void onServiceDisconnected(ComponentName name) {
+//            mService = null;
+//            mBound = false;
+//        }
+//    };
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -93,213 +78,102 @@ public class MainActivity extends AppCompatActivity implements VenueListFragment
         setSupportActionBar(mToolbar);
         getSupportActionBar().setDisplayShowTitleEnabled(false);
 
-        updateValuesFromBundle(savedInstanceState);
-
         listFragment = new VenueListFragment();
 
         getSupportFragmentManager().beginTransaction()
                 .add(R.id.frameLayout, listFragment, FRAGMENT_LIST_TAG)
                 .commit();
 
-//        mRequestingLocationUpdates = true;
-//        mLastUpdateTime = "";
-//
-//        mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
-//        mSettingsClient = LocationServices.getSettingsClient(this);
-//        createGetLastLocationCallback();
-//        createLocationCallback();
-//        createLocationRequest();
-//        buildLocationSettingsRequest();
+        myReceiver = new MyReceiver();
 
-        oneLocation = new OneLocation(this);
-    }
+        // Check that the user hasn't revoked permissions by going to Settings.
+//        if (Utils.requestingLocationUpdates(this)) {
+        if (!checkPermissions()) {
+            requestPermissions();
 
-    private void updateValuesFromBundle(Bundle savedInstanceState) {
-        if (savedInstanceState != null) {
-            // Update the value of mRequestingLocationUpdates from the Bundle, and make sure that
-            // the Start Updates and Stop Updates buttons are correctly enabled or disabled.
-            if (savedInstanceState.keySet().contains(KEY_REQUESTING_LOCATION_UPDATES)) {
-                oneLocation.setmRequestingLocationUpdates(savedInstanceState.getBoolean(KEY_REQUESTING_LOCATION_UPDATES));
-            }
-
-            // Update the value of mCurrentLocation from the Bundle and update the UI to show the
-            // correct latitude and longitude.
-            if (savedInstanceState.keySet().contains(KEY_LOCATION)) {
-                // Since KEY_LOCATION was found in the Bundle, we can be sure that mCurrentLocation
-                // is not null.
-                mCurrentLocation = savedInstanceState.getParcelable(KEY_LOCATION);
-            }
-
-            // Update the value of mLastUpdateTime from the Bundle and update the UI.
-            if (savedInstanceState.keySet().contains(KEY_LAST_UPDATED_TIME_STRING)) {
-                mLastUpdateTime = savedInstanceState.getString(KEY_LAST_UPDATED_TIME_STRING);
-            }
         }
-    }
-
-//    private void createLocationRequest() {
-//        mLocationRequest = new LocationRequest();
-//        mLocationRequest.setInterval(UPDATE_INTERVAL_IN_MILLISECONDS);
-//        mLocationRequest.setFastestInterval(FASTEST_UPDATE_INTERVAL_IN_MILLISECONDS);
-//        mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
-//    }
-//
-//    private void createLocationCallback() {
-//        mLocationCallback = new LocationCallback() {
-//            @Override
-//            public void onLocationResult(LocationResult locationResult) {
-//                super.onLocationResult(locationResult);
-//                mCurrentLocation = locationResult.getLastLocation();
-//                mLastUpdateTime = DateFormat.getTimeInstance().format(new Date());
-//            }
-//        };
-//    }
-
-//    private void createGetLastLocationCallback() {
-//        mFusedLocationClient.getLastLocation()
-//                .addOnSuccessListener(this, new OnSuccessListener<Location>() {
-//                    @Override
-//                    public void onSuccess(Location location) {
-//                        mCurrentLocation = location;
-//                    }
-//                });
-//
-//    }
-//
-//    private void buildLocationSettingsRequest() {
-//        LocationSettingsRequest.Builder builder = new LocationSettingsRequest.Builder();
-//        builder.addLocationRequest(mLocationRequest);
-//        mLocationSettingsRequest = builder.build();
-//    }
-
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        switch (requestCode) {
-            // Check for the integer request code originally supplied to startResolutionForResult().
-            case REQUEST_CHECK_SETTINGS:
-                switch (resultCode) {
-                    case Activity.RESULT_OK:
-                        Log.i(TAG, "User agreed to make required location settings changes.");
-                        // Nothing to do. startLocationupdates() gets called in onResume again.
-                        break;
-                    case Activity.RESULT_CANCELED:
-                        Log.i(TAG, "User chose not to make required location settings changes.");
-                        oneLocation.setmRequestingLocationUpdates(false);
-
-                        break;
-                }
-                break;
-        }
-    }
-
-//    private void startLocationUpdates() {
-//        // Begin by checking if the device has the necessary location settings.
-//        if (mLocationSettingsRequest != null) {
-//            mSettingsClient.checkLocationSettings(mLocationSettingsRequest)
-//                    .addOnSuccessListener(this, new OnSuccessListener<LocationSettingsResponse>() {
-//                        @Override
-//                        public void onSuccess(LocationSettingsResponse locationSettingsResponse) {
-//                            Log.i(TAG, "All location settings are satisfied.");
-//
-//                            //noinspection MissingPermission
-//                            mFusedLocationClient.requestLocationUpdates(mLocationRequest,
-//                                    mLocationCallback, Looper.myLooper());
-//
-//                        }
-//                    })
-//                    .addOnFailureListener(this, new OnFailureListener() {
-//                        @Override
-//                        public void onFailure(@NonNull Exception e) {
-//                            int statusCode = ((ApiException) e).getStatusCode();
-//                            switch (statusCode) {
-//                                case LocationSettingsStatusCodes.RESOLUTION_REQUIRED:
-//                                    Log.i(TAG, "Location settings are not satisfied. Attempting to upgrade " +
-//                                            "location settings ");
-//                                    try {
-//                                        // Show the dialog by calling startResolutionForResult(), and check the
-//                                        // result in onActivityResult().
-//                                        ResolvableApiException rae = (ResolvableApiException) e;
-//                                        rae.startResolutionForResult(MainActivity.this, REQUEST_CHECK_SETTINGS);
-//                                    } catch (IntentSender.SendIntentException sie) {
-//                                        Log.i(TAG, "PendingIntent unable to execute request.");
-//                                    }
-//                                    break;
-//                                case LocationSettingsStatusCodes.SETTINGS_CHANGE_UNAVAILABLE:
-//                                    String errorMessage = "Location settings are inadequate, and cannot be " +
-//                                            "fixed here. Fix in Settings.";
-//                                    Log.e(TAG, errorMessage);
-//                                    Toast.makeText(MainActivity.this, errorMessage, Toast.LENGTH_LONG).show();
-//                                    mRequestingLocationUpdates = false;
-//                            }
-//                        }
-//                    });
 //        }
-//    }
-
-    private void updateLocationUI() {
-        if (mCurrentLocation != null) {
-            Intent venueIntent = new Intent(this, OneService.class);
-            venueIntent.putExtra(OneService.CATEGORY, FoursquareContract.CATEGORY_FOOD);
-            venueIntent.putExtra(BUNDLE_LAT, mCurrentLocation.getLatitude());
-            venueIntent.putExtra(BUNDLE_LON, mCurrentLocation.getLongitude());
-
-            startService(venueIntent);
-
-        }
     }
-
-//    private void stopLocationUpdates() {
-//        if (!oneLocation.getmRequestingLocationUpdates()) {
-//            Log.d(TAG, "stopLocationUpdates: updates never requested, no-op.");
-//            return;
-//        }
-//
-//        // It is a good practice to remove location requests when the activity is in a paused or
-//        // stopped state. Doing so helps battery performance and is especially
-//        // recommended in applications that request frequent location updates.
-//        mFusedLocationClient.removeLocationUpdates(mLocationCallback)
-//                .addOnCompleteListener(this, new OnCompleteListener<Void>() {
-//                    @Override
-//                    public void onComplete(@NonNull Task<Void> task) {
-//                        mRequestingLocationUpdates = false;
-////                        setButtonsEnabledState();
-//                    }
-//                });
-//    }
 
     @Override
-    public void onResume() {
+    protected void onStart() {
+        super.onStart();
+
+        bindService(new Intent(this, LocationUpdatesService.class), this,
+                Context.BIND_AUTO_CREATE);
+    }
+
+    @Override
+    protected void onResume() {
         super.onResume();
-        oneLocation.setmRequestingLocationUpdates(true);
-        // Within {@code onPause()}, we remove location updates. Here, we resume receiving
-        // location updates if the user has requested them.
-        if (oneLocation.getmRequestingLocationUpdates() && Utils.checkPermissions(MainActivity.this,Manifest.permission.ACCESS_FINE_LOCATION)) {
-            oneLocation.startLocationUpdates();
-        } else if (!Utils.checkPermissions(MainActivity.this,Manifest.permission.ACCESS_FINE_LOCATION)) {
-            Utils.requestPermissions(MainActivity.this, Manifest.permission.ACCESS_FINE_LOCATION);
+        LocalBroadcastManager.getInstance(this).registerReceiver(myReceiver,
+                new IntentFilter(LocationUpdatesService.ACTION_BROADCAST));
+
+        if (!checkPermissions()) {
+            requestPermissions();
+        } else {
+//            mService.requestLocationUpdates();
         }
+
     }
 
     @Override
     protected void onPause() {
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(myReceiver);
+        mService.removeLocationUpdates();
         super.onPause();
-
-        // Remove location updates to save battery.
-        oneLocation.stopLocationUpdates();
     }
 
-    public void onSaveInstanceState(Bundle savedInstanceState) {
-        savedInstanceState.putBoolean(KEY_REQUESTING_LOCATION_UPDATES, oneLocation.getmRequestingLocationUpdates());
-        savedInstanceState.putParcelable(KEY_LOCATION, mCurrentLocation);
-        savedInstanceState.putString(KEY_LAST_UPDATED_TIME_STRING, oneLocation.getmLastUpdateTime());
-        super.onSaveInstanceState(savedInstanceState);
-    }
-
-    /**
-     * Callback received when a permissions request has been completed.
-     */
     @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
-                                           @NonNull int[] grantResults) {
+    protected void onStop() {
+        if (mBound) {
+            unbindService(this);
+            mBound = false;
+        }
+        super.onStop();
+    }
+
+
+    private boolean checkPermissions() {
+        return PackageManager.PERMISSION_GRANTED == ActivityCompat.checkSelfPermission(this,
+                Manifest.permission.ACCESS_FINE_LOCATION);
+    }
+
+    private void requestPermissions() {
+        boolean shouldProvideRationale =
+                ActivityCompat.shouldShowRequestPermissionRationale(this,
+                        Manifest.permission.ACCESS_FINE_LOCATION);
+
+
+        if (shouldProvideRationale) {
+            Log.i(TAG, "Displaying permission rationale to provide additional context.");
+            Snackbar.make(
+                    findViewById(android.R.id.content),
+                    R.string.permission_rationale,
+                    Snackbar.LENGTH_INDEFINITE)
+                    .setAction(R.string.ok, new View.OnClickListener() {
+                        @Override
+                        public void onClick(View view) {
+                            // Request permission
+                            ActivityCompat.requestPermissions(MainActivity.this,
+                                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
+                                    REQUEST_PERMISSIONS_REQUEST_CODE);
+                        }
+                    })
+                    .show();
+        } else {
+            Log.i(TAG, "Requesting permission");
+            // Request permission. It's possible this can be auto answered if device policy
+            // sets the permission in a given state or the user denied the permission
+            // previously and checked "Never ask again".
+            ActivityCompat.requestPermissions(MainActivity.this,
+                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
+                    REQUEST_PERMISSIONS_REQUEST_CODE);
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         Log.i(TAG, "onRequestPermissionResult");
         if (requestCode == REQUEST_PERMISSIONS_REQUEST_CODE) {
             if (grantResults.length <= 0) {
@@ -307,14 +181,16 @@ public class MainActivity extends AppCompatActivity implements VenueListFragment
                 // receive empty arrays.
                 Log.i(TAG, "User interaction was cancelled.");
             } else if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                if (oneLocation.getmRequestingLocationUpdates()) {
-                    Log.i(TAG, "Permission granted, updates requested, starting location updates");
-                    oneLocation.startLocationUpdates();
-                }
+                // Permission was granted.
+                mService.requestLocationUpdates();
             } else {
-
-                Utils.showSnackbar(this,R.string.permission_denied_explanation,
-                        R.string.settings, new View.OnClickListener() {
+                // Permission denied.
+//                setButtonsState(false);
+                Snackbar.make(
+                        findViewById(android.R.id.content),
+                        R.string.permission_denied_explanation,
+                        Snackbar.LENGTH_INDEFINITE)
+                        .setAction(R.string.settings, new View.OnClickListener() {
                             @Override
                             public void onClick(View view) {
                                 // Build intent that displays the App settings screen.
@@ -327,7 +203,8 @@ public class MainActivity extends AppCompatActivity implements VenueListFragment
                                 intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                                 startActivity(intent);
                             }
-                        });
+                        })
+                        .show();
             }
         }
     }
@@ -335,5 +212,43 @@ public class MainActivity extends AppCompatActivity implements VenueListFragment
     @Override
     public void onListUpdate() {
         updateLocationUI();
+    }
+
+    @Override
+    public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
+        LocationUpdatesService.LocalBinder binder = (LocationUpdatesService.LocalBinder) iBinder;
+        mService = binder.getService();
+        mBound = true;
+    }
+
+    @Override
+    public void onServiceDisconnected(ComponentName componentName) {
+        mService = null;
+        mBound = false;
+    }
+
+    private class MyReceiver extends BroadcastReceiver {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            mCurrentlocation = intent.getParcelableExtra(LocationUpdatesService.EXTRA_LOCATION);
+            if (mCurrentlocation != null) {
+
+                updateLocationUI();
+                Toast.makeText(MainActivity.this, Utils.getLocationText(mCurrentlocation),
+                        Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
+
+
+    private void updateLocationUI() {
+        if (mCurrentlocation != null) {
+            Intent venueIntent = new Intent(this, OneService.class);
+            venueIntent.putExtra(OneService.CATEGORY, FoursquareContract.CATEGORY_FOOD);
+            venueIntent.putExtra(BUNDLE_LAT, mCurrentlocation.getLatitude());
+            venueIntent.putExtra(BUNDLE_LON, mCurrentlocation.getLongitude());
+
+            startService(venueIntent);
+        }
     }
 }
