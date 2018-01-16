@@ -24,6 +24,7 @@ import android.view.View;
 import android.widget.Toast;
 
 import com.a_leonov.onesquare.BuildConfig;
+import com.a_leonov.onesquare.Location.OneLocation;
 import com.a_leonov.onesquare.R;
 import com.a_leonov.onesquare.Utils;
 import com.a_leonov.onesquare.data.FoursquareContract;
@@ -89,6 +90,7 @@ public class MainActivity extends AppCompatActivity implements VenueListFragment
 //        if (Utils.requestingLocationUpdates(this)) {
         if (!checkPermissions()) {
             requestPermissions();
+
         }
 //        }
     }
@@ -106,7 +108,6 @@ public class MainActivity extends AppCompatActivity implements VenueListFragment
         super.onResume();
         LocalBroadcastManager.getInstance(this).registerReceiver(myReceiver,
                 new IntentFilter(LocationUpdatesService.ACTION_BROADCAST));
-
 
         if (!checkPermissions()) {
             requestPermissions();
@@ -129,7 +130,6 @@ public class MainActivity extends AppCompatActivity implements VenueListFragment
             unbindService(this);
             mBound = false;
         }
-
         super.onStop();
     }
 
