@@ -144,4 +144,5 @@
     <dimen name="material_phone_list_image_height">300dp</dimen>
     <dimen name="material_phone_detail_image_height">420dp</dimen>
     <dimen name="social_btn_size">24dp</dimen>
+    <dimen name="widget_margin">8dp</dimen>
 </resources>

@@ -1,6 +1,7 @@
 package com.a_leonov.onesquare.widget;
 
 import android.appwidget.AppWidgetManager;
+import android.content.Context;
 import android.content.Intent;
 import android.widget.RemoteViewsService;
 
@@ -15,7 +16,7 @@ public class WidgetService extends RemoteViewsService {
                 AppWidgetManager.EXTRA_APPWIDGET_ID,
                 AppWidgetManager.INVALID_APPWIDGET_ID);
 
-        return (new ListProvider(this.getApplicationContext(), intent));
+        return (new ListProvider(getApplication(), intent));
     }
 
 }

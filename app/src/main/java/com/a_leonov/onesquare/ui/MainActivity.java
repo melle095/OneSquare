@@ -24,7 +24,6 @@ import android.view.View;
 import android.widget.Toast;
 
 import com.a_leonov.onesquare.BuildConfig;
-import com.a_leonov.onesquare.Location.OneLocation;
 import com.a_leonov.onesquare.R;
 import com.a_leonov.onesquare.Utils;
 import com.a_leonov.onesquare.data.FoursquareContract;
@@ -49,23 +48,6 @@ public class MainActivity extends AppCompatActivity implements VenueListFragment
     private MyReceiver myReceiver;
     private LocationUpdatesService mService = null;
     private boolean mBound = false;
-
-
-//    private final ServiceConnection mServiceConnection = new ServiceConnection() {
-//
-//        @Override
-//        public void onServiceConnected(ComponentName name, IBinder service) {
-//            LocationUpdatesService.LocalBinder binder = (LocationUpdatesService.LocalBinder) service;
-//            mService = binder.getService();
-//            mBound = true;
-//        }
-//
-//        @Override
-//        public void onServiceDisconnected(ComponentName name) {
-//            mService = null;
-//            mBound = false;
-//        }
-//    };
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
