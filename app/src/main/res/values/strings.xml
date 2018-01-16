@@ -1,3 +1,38 @@
 <resources>
     <string name="app_name">OneSquare</string>
+    <string name="content_authority">com.a_leonov.onesquare.app</string>
+    <string name="venue_distance">Distance: %1$2d meters</string>
+    <string name="venue_address">Address: %1$2s</string>
+    <string name="venue_facebook">Facebook: %1$2s</string>
+    <string name="venue_twitter">Twitter: %1$2s</string>
+    <string name="venue_phone">Tel.: %1$2s</string>
+    <string name="venue_instagramm">Instagramm: %1$2s</string>
+    <string name="venue_thumbnail_size">width500</string>
+    <string name="venue_detail_size">width800</string>
+
+
+    <!--*********************Descriptions******************************-->
+    <string name="discription_ratingbar">Venue rating</string>
+    <string name="description_venueImage">Venue image</string>
+    <string name="description_venuedist">Distance</string>
+    <string name="description_workhours">work hours</string>
+    <string name="action_share">Share</string>
+    <string name="description_address">Address</string>
+    <string name="send_to">Send to..</string>
+    <string name="tip_thumbnail_size">width64</string>
+
+
+    <string name="location_unknown">Location unknown</string>
+    <string name="location_updates_label">Location Updates</string>
+
+    <string name="permission_rationale">Location permission is needed for core functionality</string>
+    <string name="permission_denied_explanation">Permission was denied, but is needed for core
+        functionality.</string>
+    <string name="settings">Settings</string>
+    <string name="ok">OK</string>
+    <string name="request_location_updates">Request location updates</string>
+    <string name="remove_location_updates">Remove location updates</string>
+
+    <string name="location_updated">Location Updated: %1$s</string>
+
 </resources>

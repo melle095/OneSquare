@@ -1,0 +1,203 @@
+<android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fitsSystemWindows="true"
+
+    tools:ignore="MergeRootFrame">
+
+    <android.support.design.widget.AppBarLayout
+        android:id="@+id/app_bar"
+        android:layout_width="match_parent"
+        android:layout_height="500dp"
+        android:fitsSystemWindows="true"
+        android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar">
+
+        <android.support.design.widget.CollapsingToolbarLayout
+            android:id="@+id/toolbar_layout"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:fitsSystemWindows="true"
+            app:contentScrim="?attr/colorPrimary"
+            app:expandedTitleMargin="@dimen/material_layout_app_bar_horizontal_padding"
+            app:expandedTitleMarginBottom="@dimen/material_component_bottom_sheet_edge_top_bottom_margins"
+            app:expandedTitleTextAppearance="@style/ExpandedTitleTextAppearance"
+            app:layout_scrollFlags="scroll|exitUntilCollapsed"
+            app:toolbarId="@+id/toolbar">
+
+            <FrameLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@color/photo_placeholder">
+
+                <android.support.v4.view.ViewPager
+                    android:id="@+id/viewPager"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:fitsSystemWindows="true"></android.support.v4.view.ViewPager>
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="112dp"
+                    android:layout_gravity="bottom"
+                    android:background="@drawable/photo_background_protection" />
+
+                <LinearLayout
+                    android:id="@+id/meta_bar"
+                    android:layout_width="match_parent"
+                    android:layout_height="@dimen/expanded_toolbar_height"
+                    android:layout_gravity="bottom"
+                    android:elevation="@dimen/app_bar_elevation"
+                    android:orientation="vertical"
+                    android:paddingBottom="@dimen/material_layout_keylines_screen_edge_margin"
+                    android:paddingLeft="@dimen/material_layout_app_bar_horizontal_padding"
+                    android:paddingRight="@dimen/material_layout_app_bar_horizontal_padding"
+                    android:paddingTop="@dimen/material_layout_keylines_screen_edge_margin">
+
+                    <TextView
+                        android:id="@+id/venue_title"
+                        style="?android:attr/textAppearanceLarge"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:fontFamily="sans-serif-condensed"
+                        android:lineSpacingMultiplier="0.9"
+                        android:paddingBottom="@dimen/material_component_text_full_width_single_line_text_field_text_top_and_bottom_padding"
+                        android:textColor="#fff"
+                        android:textSize="@dimen/material_component_text_fields_padding_above_and_below_label"
+                        android:textStyle="bold" />
+
+
+                </LinearLayout>
+            </FrameLayout>
+
+            <android.support.v7.widget.Toolbar
+                android:id="@+id/detail_toolbar"
+                android:layout_width="match_parent"
+                android:layout_height="?attr/actionBarSize"
+                app:contentInsetStart="@dimen/material_layout_app_bar_horizontal_padding"
+                app:layout_collapseMode="pin"
+                app:popupTheme="@style/ThemeOverlay.AppCompat.Light">
+
+            </android.support.v7.widget.Toolbar>
+
+        </android.support.design.widget.CollapsingToolbarLayout>
+
+    </android.support.design.widget.AppBarLayout>
+
+    <android.support.v4.widget.NestedScrollView
+        android:id="@+id/movie_detail_container"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <RatingBar
+                android:id="@+id/venue_rating"
+                style="?android:attr/ratingBarStyleSmall"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:contentDescription="@string/discription_ratingbar"
+                android:mirrorForRtl="true"
+                android:numStars="10"
+                android:paddingLeft="@dimen/material_component_cards_left_and_right_padding"
+                android:paddingRight="@dimen/material_component_cards_left_and_right_padding"
+                android:paddingTop="@dimen/material_component_cards_primary_title_bottom_padding"
+                android:stepSize="0.1" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <ImageButton
+                    android:id="@+id/bnt_facebook"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="@dimen/material_layout_keylines_screen_edge_margin"
+                    android:layout_marginLeft="@dimen/material_component_text_fields_padding_above_and_below_label"
+                    android:layout_marginRight="@dimen/material_component_text_fields_padding_above_and_below_label"
+                    android:layout_marginTop="@dimen/material_layout_keylines_screen_edge_margin"
+                    android:backgroundTint="@android:color/transparent"
+                    android:src="@drawable/facebook" />
+
+                <ImageButton
+                    android:id="@+id/bnt_twitter"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="@dimen/material_layout_keylines_screen_edge_margin"
+                    android:layout_marginLeft="@dimen/material_component_text_fields_padding_above_and_below_label"
+                    android:layout_marginRight="@dimen/material_component_text_fields_padding_above_and_below_label"
+                    android:layout_marginTop="@dimen/material_layout_keylines_screen_edge_margin"
+                    android:backgroundTint="@android:color/transparent"
+                    android:src="@drawable/twitter" />
+
+                <ImageButton
+                    android:id="@+id/bnt_instagramm"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="@dimen/material_layout_keylines_screen_edge_margin"
+                    android:layout_marginLeft="@dimen/material_component_text_fields_padding_above_and_below_label"
+                    android:layout_marginRight="@dimen/material_component_text_fields_padding_above_and_below_label"
+                    android:layout_marginTop="@dimen/material_layout_keylines_screen_edge_margin"
+                    android:backgroundTint="@android:color/transparent"
+                    android:src="@drawable/instagram" />
+
+                <ImageButton
+                    android:id="@+id/bnt_distance"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="@dimen/material_layout_keylines_screen_edge_margin"
+                    android:layout_marginLeft="@dimen/material_component_text_fields_padding_above_and_below_label"
+                    android:layout_marginRight="@dimen/material_component_text_fields_padding_above_and_below_label"
+                    android:layout_marginTop="@dimen/material_layout_keylines_screen_edge_margin"
+                    android:backgroundTint="@android:color/transparent"
+                    android:src="@drawable/google" />
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/venue_address"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="@dimen/material_component_text_fields_padding_above_and_below_label"
+                android:layout_marginRight="@dimen/material_component_text_fields_padding_above_and_below_label"
+                android:layout_marginTop="@dimen/material_layout_keylines_screen_edge_margin"
+                android:textSize="@dimen/material_typography_body1" />
+
+            <TextView
+                android:id="@+id/venue_phone"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/material_layout_keylines_screen_edge_margin"
+                android:layout_marginLeft="@dimen/material_component_text_fields_padding_above_and_below_label"
+                android:layout_marginRight="@dimen/material_component_text_fields_padding_above_and_below_label"
+                android:textSize="@dimen/material_typography_caption" />
+
+            <android.support.v7.widget.RecyclerView
+                android:id="@+id/venue_feedbacks"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+            </android.support.v7.widget.RecyclerView>
+
+        </LinearLayout>
+
+    </android.support.v4.widget.NestedScrollView>
+
+    <android.support.design.widget.FloatingActionButton
+        android:id="@+id/share_fab"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="@dimen/material_component_floating_action_button_margin"
+        android:clickable="true"
+        android:contentDescription="@string/action_share"
+        android:src="@drawable/ic_share_black_24dp"
+        app:elevation="@dimen/material_component_floating_action_button_elevation"
+        app:layout_anchor="@id/app_bar"
+        app:layout_anchorGravity="bottom|end" />
+
+</android.support.design.widget.CoordinatorLayout>
