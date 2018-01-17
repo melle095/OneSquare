@@ -102,7 +102,7 @@ public class MainActivity extends AppCompatActivity implements VenueListFragment
     @Override
     protected void onPause() {
         LocalBroadcastManager.getInstance(this).unregisterReceiver(myReceiver);
-        mService.removeLocationUpdates();
+//        mService.removeLocationUpdates();
         super.onPause();
     }
 

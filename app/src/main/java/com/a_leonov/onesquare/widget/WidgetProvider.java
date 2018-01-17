@@ -16,6 +16,7 @@ import android.widget.RemoteViews;
 
 import com.a_leonov.onesquare.R;
 import com.a_leonov.onesquare.data.FoursquareContract;
+import com.a_leonov.onesquare.service.LocationUpdatesService;
 
 
 /**
@@ -41,10 +42,20 @@ public class WidgetProvider extends AppWidgetProvider {
             RemoteViews rv = new RemoteViews(context.getPackageName(), R.layout.widget_layout);
             rv.setRemoteAdapter(appWidgetIds[i], R.id.widget_list,intent);
             rv.setEmptyView(R.id.widget_list, R.id.empty_view);
+
             appWidgetManager.updateAppWidget(appWidgetIds[i], rv);
         }
         super.onUpdate(context, appWidgetManager, appWidgetIds);
     }
 
+    @Override
+    public void onReceive(Context context, Intent intent) {
+        Location mCurrentlocation = intent.getParcelableExtra(LocationUpdatesService.EXTRA_LOCATION);
+        super.onReceive(context, intent);
+    }
 
+    @Override
+    public void onDeleted(Context context, int[] appWidgetIds) {
+        super.onDeleted(context, appWidgetIds);
+    }
 }

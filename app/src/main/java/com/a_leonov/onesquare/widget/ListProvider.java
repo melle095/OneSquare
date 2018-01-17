@@ -32,7 +32,7 @@ import java.util.ArrayList;
  * Created by a_leonov on 15.01.2018.
  */
 
-class ListProvider implements RemoteViewsService.RemoteViewsFactory, Loader.OnLoadCompleteListener<Cursor>, ServiceConnection {
+class ListProvider implements RemoteViewsService.RemoteViewsFactory {
     private String BUNDLE_LAT = "lat";
     private String BUNDLE_LON = "lon";
 
@@ -47,6 +47,7 @@ class ListProvider implements RemoteViewsService.RemoteViewsFactory, Loader.OnLo
     private LocationUpdatesService mService = null;
     private boolean mBound = false;
     private BroadcastReceiver myReceiver;
+    private Cursor cursor;
 
     private static final String[] VENUE_COLUMNS = {
             FoursquareContract.VenuesEntry.TABLE_NAME + "." + FoursquareContract.VenuesEntry._ID,
@@ -71,6 +72,22 @@ class ListProvider implements RemoteViewsService.RemoteViewsFactory, Loader.OnLo
 //    private TextView widget_rating;
 //    private ImageView widget_imageview;
 
+//    private ServiceConnection mConnection = new ServiceConnection() {
+//
+//        @Override
+//        public void onServiceConnected(ComponentName className,
+//                                       IBinder service) {
+//            // We've bound to LocalService, cast the IBinder and get LocalService instance
+//            LocationUpdatesService.LocalBinder binder = (LocationUpdatesService.LocalBinder) service;
+//            mService = binder.getService();
+//            mBound = true;
+//        }
+//
+//        @Override
+//        public void onServiceDisconnected(ComponentName arg0) {
+//            mBound = false;
+//        }
+//    };
 
     public ListProvider(Context context, Intent intent) {
         this.context = context;
@@ -81,43 +98,40 @@ class ListProvider implements RemoteViewsService.RemoteViewsFactory, Loader.OnLo
 
     @Override
     public void onCreate() {
-        sortOrder = FoursquareContract.VenuesEntry.COLUMN_DISTANCE + " ASC LIMIT 5";
-        contentUri = FoursquareContract.VenuesEntry.CONTENT_URI;
-        myReceiver = new MyReceiver();
+//        sortOrder = FoursquareContract.VenuesEntry.COLUMN_DISTANCE + " ASC LIMIT 5";
+//        contentUri = FoursquareContract.VenuesEntry.CONTENT_URI;
+////        myReceiver = new MyReceiver();
+//
+//        mCursorLoader = new CursorLoader(context, contentUri, VENUE_COLUMNS, null, null, sortOrder);
+//        mCursorLoader.registerListener(LOADER_ID_NETWORK, this);
+//        mCursorLoader.startLoading();
 
-        mCursorLoader = new CursorLoader(context, contentUri, null, null, null, sortOrder);
-        mCursorLoader.registerListener(LOADER_ID_NETWORK, this);
-        mCursorLoader.startLoading();
-
-        context.bindService(new Intent(context, LocationUpdatesService.class), this,
-                Context.BIND_AUTO_CREATE);
-
-        LocalBroadcastManager.getInstance(context).registerReceiver(myReceiver,
-                new IntentFilter(LocationUpdatesService.ACTION_BROADCAST));
+//        context.getApplicationContext().bindService(new Intent(context, LocationUpdatesService.class), mConnection,
+//                Context.BIND_AUTO_CREATE);
+//
+//        LocalBroadcastManager.getInstance(context).registerReceiver(myReceiver,
+//                new IntentFilter(LocationUpdatesService.ACTION_BROADCAST));
     }
 
     @Override
     public void onDataSetChanged() {
 
+        sortOrder = FoursquareContract.VenuesEntry.COLUMN_DISTANCE + " ASC LIMIT 5";
+        contentUri = FoursquareContract.VenuesEntry.CONTENT_URI;
+
+        if (cursor != null) cursor.close();
+        this.cursor = context.getApplicationContext().getContentResolver().query(contentUri, VENUE_COLUMNS, null, null, sortOrder);
     }
 
     @Override
     public void onDestroy() {
-        LocalBroadcastManager.getInstance(context).unregisterReceiver(myReceiver);
-        mService.removeLocationUpdates();
-
-        if (mBound) {
-            context.unbindService(this);
-            mBound = false;
-        }
+        cursor.close();
     }
 
     @Override
     public int getCount() {
-        if (listItemList != null)
-            return listItemList.size();
-
-        return 0;
+        if (cursor == null) return 0;
+        return cursor.getCount();
     }
 
     @Override
@@ -137,11 +151,15 @@ class ListProvider implements RemoteViewsService.RemoteViewsFactory, Loader.OnLo
     */
     @Override
     public RemoteViews getViewAt(int position) {
+        cursor.moveToPosition(position);
+
+        String itemName = cursor.getString(COL_NAME);
+        String itemAddress = cursor.getString(COL_ADDRESS);
         final RemoteViews remoteView = new RemoteViews(context.getPackageName(), R.layout.widget_listitem);
-        ListItem listItem = listItemList.get(position);
-        remoteView.setTextViewText(R.id.widget_ratingbar, listItem.getItem_rating());
-        remoteView.setTextViewText(R.id.widget_title, listItem.getItem_name());
-        remoteView.setImageViewBitmap(R.id.widget_imageView, listItem.getItem_image());
+
+        remoteView.setTextViewText(R.id.widget_ratingbar, itemName);
+        remoteView.setTextViewText(R.id.widget_title, itemAddress);
+//        remoteView.setImageViewBitmap(R.id.widget_imageView, listItem.getItem_image());
 
         return remoteView;
     }
@@ -153,50 +171,20 @@ class ListProvider implements RemoteViewsService.RemoteViewsFactory, Loader.OnLo
 
     @Override
     public int getViewTypeCount() {
-        return 0;
+        return 1;
     }
 
-    @Override
-    public void onLoadComplete(@NonNull Loader<Cursor> loader, @Nullable Cursor data) {
-        if (data != null) {
-
-            listItemList = new ArrayList<>();
-            while (data.moveToNext()) {
-                listItemList.add(new ListItem(data.getString(COL_NAME),
-                        data.getString(COL_ADDRESS), null));
-            }
-
-        }
-    }
-
-    @Override
-    public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
-        LocationUpdatesService.LocalBinder binder = (LocationUpdatesService.LocalBinder) iBinder;
-        mService = binder.getService();
-        mBound = true;
-    }
-
-    @Override
-    public void onServiceDisconnected(ComponentName componentName) {
-        mService = null;
-        mBound = false;
-    }
-
-    private class MyReceiver extends BroadcastReceiver {
-
-        public void onReceive(Context context, Intent intent) {
-            currentLocation = intent.getParcelableExtra(LocationUpdatesService.EXTRA_LOCATION);
-
-            if (currentLocation != null) {
-                Intent venueIntent = new Intent(context, OneService.class);
-                venueIntent.putExtra(OneService.CATEGORY, FoursquareContract.CATEGORY_FOOD);
-                venueIntent.putExtra(BUNDLE_LAT, currentLocation.getLatitude());
-                venueIntent.putExtra(BUNDLE_LON, currentLocation.getLongitude());
-                context.startService(venueIntent);
-                contentUri = FoursquareContract.VenuesEntry
-                        .buildVenuesGPSUri(FoursquareContract.CATEGORY_FOOD, currentLocation.getLatitude(), currentLocation.getLongitude());
-            }
-        }
-    }
+//    @Override
+//    public void onLoadComplete(@NonNull Loader<Cursor> loader, @Nullable Cursor data) {
+//        if (data != null) {
+//
+//            listItemList = new ArrayList<>();
+//            while (data.moveToNext()) {
+//                listItemList.add(new ListItem(data.getString(COL_NAME),
+//                        data.getString(COL_ADDRESS), null));
+//            }
+//
+//        }
+//    }
 
 }
