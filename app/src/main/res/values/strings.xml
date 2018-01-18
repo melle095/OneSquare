@@ -9,7 +9,7 @@
     <string name="venue_instagramm">Instagramm: %1$2s</string>
     <string name="venue_thumbnail_size">width500</string>
     <string name="venue_detail_size">width800</string>
-
+    <string name="venue_widget_rating">Rating: %1$2d of 10</string>
 
     <!--*********************Descriptions******************************-->
     <string name="discription_ratingbar">Venue rating</string>
@@ -33,4 +33,5 @@
     <string name="remove_location_updates">Remove location updates</string>
     <string name="location_updated">Location Updated: %1$s</string>
     <string name="empty_string">No data</string>
+    <string name="widget_title">OneSquare</string>
 </resources>

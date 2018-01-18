@@ -1,16 +1,22 @@
 package com.a_leonov.onesquare.service;
 
 import android.app.IntentService;
+import android.appwidget.AppWidgetManager;
+import android.content.ComponentName;
 import android.content.ContentValues;
+import android.content.Context;
 import android.content.Intent;
+import android.location.Location;
 import android.net.Uri;
 import android.support.annotation.Nullable;
 import android.util.Log;
 
 import com.a_leonov.onesquare.BuildConfig;
 import com.a_leonov.onesquare.PointD;
+import com.a_leonov.onesquare.R;
 import com.a_leonov.onesquare.Utils;
 import com.a_leonov.onesquare.data.FoursquareContract;
+import com.a_leonov.onesquare.widget.WidgetProvider;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -27,6 +33,8 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Vector;
 
+import static com.a_leonov.onesquare.Utils.BUNDLE_LAT;
+import static com.a_leonov.onesquare.Utils.BUNDLE_LON;
 import static com.a_leonov.onesquare.Utils.putJsonValue;
 
 
@@ -78,8 +86,21 @@ public class OneService extends IntentService {
     double current_lon;
 
 
+
+
     public OneService() {
         super("onesquare");
+    }
+
+    public static void startOneService(Context context, Location location) {
+        if (location != null) {
+            Intent venueIntent = new Intent(context, OneService.class);
+            venueIntent.putExtra(OneService.CATEGORY, FoursquareContract.CATEGORY_FOOD);
+            venueIntent.putExtra(BUNDLE_LAT, location.getLatitude());
+            venueIntent.putExtra(BUNDLE_LON, location.getLongitude());
+
+            context.startService(venueIntent);
+        }
     }
 
 
@@ -99,6 +120,7 @@ public class OneService extends IntentService {
         if (Utils.hasInternetConnection(this)) {
             try {
                 getVenueDataFromJson(parseJSONVenue(null));
+                updateWidgets();
             } catch (JSONException e) {
                 e.printStackTrace();
             }
@@ -307,5 +329,14 @@ public class OneService extends IntentService {
             }
         }
         return null;
+    }
+
+    private void updateWidgets(){
+        AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(this);
+        int[] appWidgetIds = appWidgetManager.getAppWidgetIds(new ComponentName(this, WidgetProvider.class));
+        if (appWidgetIds.length > 0) {
+            appWidgetManager.notifyAppWidgetViewDataChanged(appWidgetIds, R.id.widget_list);
+            WidgetProvider.updateVenueWidgets(this, appWidgetManager, appWidgetIds);
+        }
     }
 }

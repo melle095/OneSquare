@@ -110,10 +110,10 @@ public class DetailActivity extends AppCompatActivity implements SwipeRefreshLay
     private ArrayList<String> photosList;
     private FeedbackAdapter feedbackAdapter;
 
-    public static final String EXTENDED_DATA_STATUS =
-            "com.a_leonov.onesquare.STATUS";
-    public static final String BROADCAST_ACTION =
-            "com.a_leonov.onesquare.BROADCAST";
+//    public static final String EXTENDED_DATA_STATUS =
+//            "com.a_leonov.onesquare.STATUS";
+//    public static final String BROADCAST_ACTION =
+//            "com.a_leonov.onesquare.BROADCAST";
 
     private final int DETAIL_LOADER = 3;
     private final int DETAIL_PHOTO_LOADER = 4;

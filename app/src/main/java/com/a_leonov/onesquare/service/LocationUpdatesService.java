@@ -1,12 +1,12 @@
 /**
  * Copyright 2017 Google Inc. All Rights Reserved.
- *
+ * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
+ * <p>
  * http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -62,7 +62,7 @@ public class LocationUpdatesService extends Service {
 
     private final IBinder mBinder = new LocalBinder();
     private static final long UPDATE_INTERVAL_IN_MILLISECONDS = 10000;
-   private static final long FASTEST_UPDATE_INTERVAL_IN_MILLISECONDS =
+    private static final long FASTEST_UPDATE_INTERVAL_IN_MILLISECONDS =
             UPDATE_INTERVAL_IN_MILLISECONDS / 2;
 
     private static final int NOTIFICATION_ID = 12345678;
@@ -158,7 +158,7 @@ public class LocationUpdatesService extends Service {
         if (!mChangingConfiguration) {
             Log.i(TAG, "Starting foreground service");
 
-//            // TODO(developer). If targeting O, use the following code.
+            // TODO(developer). If targeting O, use the following code.
 //            if (Build.VERSION.SDK_INT == Build.VERSION_CODES.O) {
 //                mNotificationManager.startServiceInForeground(new Intent(this,
 //                        LocationUpdatesService.class), NOTIFICATION_ID, getNotification());
@@ -234,7 +234,7 @@ public class LocationUpdatesService extends Service {
         // Notify anyone listening for broadcasts about the new location.
         Intent intent = new Intent(ACTION_BROADCAST);
         intent.putExtra(EXTRA_LOCATION, location);
-        LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(intent);
+        sendBroadcast(intent);
 
     }
 

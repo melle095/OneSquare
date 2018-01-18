@@ -29,25 +29,31 @@ import com.a_leonov.onesquare.Utils;
 import com.a_leonov.onesquare.data.FoursquareContract;
 import com.a_leonov.onesquare.service.LocationUpdatesService;
 import com.a_leonov.onesquare.service.OneService;
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.AdView;
+import com.google.android.gms.ads.MobileAds;
+
+import static com.a_leonov.onesquare.Utils.BUNDLE_LAT;
+import static com.a_leonov.onesquare.Utils.BUNDLE_LON;
+import static com.a_leonov.onesquare.Utils.FRAGMENT_LIST_TAG;
+import static com.a_leonov.onesquare.Utils.REQUEST_PERMISSIONS_REQUEST_CODE;
 
 
 public class MainActivity extends AppCompatActivity implements VenueListFragment.OnListUpdateListener, ServiceConnection {
-
+    private static final String TAG = MainActivity.class.getSimpleName();
     private String selectedCategory;
     private String BUNDLE_CATEGORY = "category";
-    private String BUNDLE_LAT = "lat";
-    private String BUNDLE_LON = "lon";
-    private static final String FRAGMENT_LIST_TAG = "frag_list";
 
     VenueListFragment listFragment;
     private Toolbar mToolbar;
 
     private Location mCurrentlocation;
-    private static final String TAG = MainActivity.class.getSimpleName();
-    private static final int REQUEST_PERMISSIONS_REQUEST_CODE = 34;
+
+
     private MyReceiver myReceiver;
     private LocationUpdatesService mService = null;
     private boolean mBound = false;
+    private AdView mAdView;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -68,13 +74,16 @@ public class MainActivity extends AppCompatActivity implements VenueListFragment
 
         myReceiver = new MyReceiver();
 
-        // Check that the user hasn't revoked permissions by going to Settings.
-//        if (Utils.requestingLocationUpdates(this)) {
+
         if (!checkPermissions()) {
             requestPermissions();
 
         }
-//        }
+
+        MobileAds.initialize(this, "ca-app-pub-3940256099942544~3347511713");
+        mAdView = findViewById(R.id.adView);
+        AdRequest adRequest = new AdRequest.Builder().build();
+        mAdView.loadAd(adRequest);
     }
 
     @Override
