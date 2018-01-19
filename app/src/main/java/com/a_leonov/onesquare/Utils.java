@@ -10,7 +10,6 @@ import android.net.NetworkInfo;
 import android.os.Environment;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
-import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 
@@ -40,6 +39,9 @@ public class Utils {
     public static final String KEY_REQUESTING_LOCATION_UPDATES = "requesting_locaction_updates";
     public static final String BUNDLE_LAT = "lat";
     public static final String BUNDLE_LON = "lon";
+    public static final String BUNDLE_CITY = "city";
+    public static final String BUNDLE_LOCATION = "Location";
+
 
 
 

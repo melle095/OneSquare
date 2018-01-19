@@ -61,7 +61,8 @@ public class VenueAdapter extends CursorRecyclerViewAdapter<VenueAdapter.ViewHol
         viewHolder.venueAddress.setText(mContext.getString(R.string.venue_address, venueAddress));
         viewHolder.venueRating.setRating(venueRating);
         viewHolder.workHours.setText(venueWorkhours);
-        viewHolder.venueDistance.setText(mContext.getString(R.string.venue_distance, Math.round(venueDistance)));
+        Long dist =  Math.round(venueDistance);
+        viewHolder.venueDistance.setText((dist>0)?mContext.getString(R.string.venue_distance, dist):mContext.getString(R.string.empty_distance));
         viewHolder.venue_id = cursor.getString(COL_VEN_ID);
 
         Glide.clear(viewHolder.venueThumbnail);

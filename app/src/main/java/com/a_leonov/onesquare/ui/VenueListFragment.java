@@ -1,8 +1,6 @@
 package com.a_leonov.onesquare.ui;
 
-import android.content.Context;
 import android.database.Cursor;
-import android.database.DatabaseUtils;
 import android.location.Location;
 import android.net.Uri;
 import android.os.Bundle;
@@ -14,15 +12,16 @@ import android.support.v4.content.Loader;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ListView;
+import android.widget.Toast;
 
-import com.a_leonov.onesquare.PointD;
 import com.a_leonov.onesquare.R;
+import com.a_leonov.onesquare.Utils;
 import com.a_leonov.onesquare.data.FoursquareContract;
+import com.a_leonov.onesquare.service.OneService;
 
 
 public class VenueListFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor>, SwipeRefreshLayout.OnRefreshListener {
@@ -50,26 +49,6 @@ public class VenueListFragment extends Fragment implements LoaderManager.LoaderC
             FoursquareContract.VenuesEntry.COLUMN_PHOTO_SUFFIX,
             FoursquareContract.VenuesEntry.COLUMN_VEN_KEY
     };
-
-    OnListUpdateListener onListUpdateListener;
-
-    PointD currentLoc;
-
-    public interface OnListUpdateListener {
-        public void onListUpdate();
-    }
-
-    @Override
-    public void onAttach(Context context) {
-        super.onAttach(context);
-        onListUpdateListener = (OnListUpdateListener) context;
-    }
-
-    @Override
-    public void onDetach() {
-        super.onDetach();
-        onListUpdateListener = null;
-    }
 
     @Nullable
     @Override
@@ -113,14 +92,14 @@ public class VenueListFragment extends Fragment implements LoaderManager.LoaderC
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
 
-        String sortOrder = FoursquareContract.VenuesEntry.COLUMN_DISTANCE + " ASC";
+        String sortOrder = FoursquareContract.VenuesEntry.COLUMN_RATING + " DESC";
 
         Uri contentUri = FoursquareContract.VenuesEntry.CONTENT_URI;
 
         if (currentLocation != null) {
-            String category = FoursquareContract.CATEGORY_FOOD;
+            sortOrder = FoursquareContract.VenuesEntry.COLUMN_DISTANCE + " ASC";
             contentUri = FoursquareContract.VenuesEntry
-                    .buildVenuesGPSUri(category, currentLocation.getLatitude(), currentLocation.getLongitude());
+                    .buildVenuesGPSUri(FoursquareContract.CATEGORY_FOOD, currentLocation.getLatitude(), currentLocation.getLongitude());
         }
 
         return new CursorLoader(getActivity(),
@@ -149,9 +128,6 @@ public class VenueListFragment extends Fragment implements LoaderManager.LoaderC
 
     @Override
     public void onSaveInstanceState(Bundle outState) {
-        // When tablets rotate, the currently selected list item needs to be saved.
-        // When no item is selected, mPosition will be set to Listview.INVALID_POSITION,
-        // so check for that before storing.
         if (mPosition != ListView.INVALID_POSITION) {
             outState.putInt(SELECTED_KEY, mPosition);
         }
@@ -161,6 +137,17 @@ public class VenueListFragment extends Fragment implements LoaderManager.LoaderC
     @Override
     public void onRefresh() {
         loaderManager.restartLoader(VENUE_LOADER, null, this);
-//        onListUpdateListener.onListUpdate();
+        if (Utils.hasInternetConnection(getActivity())) {
+//            onListUpdateListener.onListUpdate();
+            OneService.startOneService(getActivity(), currentLocation);
+        } else {
+            Toast.makeText(getActivity(), getContext().getString(R.string.noInternet),
+                    Toast.LENGTH_SHORT).show();
+        }
     }
+
+    public void updateLocation(Location location) {
+        
+    }
+
 }

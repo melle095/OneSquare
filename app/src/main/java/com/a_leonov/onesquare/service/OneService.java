@@ -6,6 +6,7 @@ import android.content.ComponentName;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.location.Location;
 import android.net.Uri;
 import android.support.annotation.Nullable;
@@ -42,12 +43,12 @@ public class OneService extends IntentService {
 
     private final String LOG_TAG = getClass().getSimpleName();
 
-    public static final String radius = "1000";
-    public static final String CITY_EXTRA = "gce";
-    public static final String lat = "lat";
-    public static final String lon = "lon";
+//    public static final String radius = "1000";
+//    public static final String CITY_EXTRA = "gce";
+//    public static final String lat = "lat";
+//    public static final String lon = "lon";
 
-    public static final String CATEGORY = "cat";
+//    public static final String CATEGORY = "cat";
 
     //**********venue fields*****************************************
     private final String VENUE_ID = "id";
@@ -62,9 +63,9 @@ public class OneService extends IntentService {
     private final String VERIFIED = "verified";
     private final String URL = "url";
     private final String STATUS = "status";
-    private final String ISOPEN = "isOpen";
-    private final String ISLOCALHOLIDAY = "isLocalHoliday";
-    private final String POPULAR = "popular";
+//    private final String ISOPEN = "isOpen";
+//    private final String ISLOCALHOLIDAY = "isLocalHoliday";
+//    private final String POPULAR = "popular";
     private final String RATING = "rating";
     private final String SHORTURL = "shortUrl";
     private final String CANONICALURL = "canonicalUrl";
@@ -80,12 +81,12 @@ public class OneService extends IntentService {
     private final String PREFIX = "prefix";
     private final String SUFFIX = "suffix";
     //*********************************************************
-
-    String category;
+    String currentCity;
+//    String category;
+    private Context context;
     double current_lat;
     double current_lon;
-
-
+    private String defaultCity;
 
 
     public OneService() {
@@ -93,14 +94,12 @@ public class OneService extends IntentService {
     }
 
     public static void startOneService(Context context, Location location) {
+        Intent venueIntent = new Intent(context, OneService.class);
         if (location != null) {
-            Intent venueIntent = new Intent(context, OneService.class);
-            venueIntent.putExtra(OneService.CATEGORY, FoursquareContract.CATEGORY_FOOD);
             venueIntent.putExtra(BUNDLE_LAT, location.getLatitude());
             venueIntent.putExtra(BUNDLE_LON, location.getLongitude());
-
-            context.startService(venueIntent);
         }
+        context.startService(venueIntent);
     }
 
 
@@ -112,10 +111,12 @@ public class OneService extends IntentService {
     @Override
     protected void onHandleIntent(@Nullable Intent intent) {
 
-        category = intent.getStringExtra(CATEGORY);
+        SharedPreferences sharedPref = getSharedPreferences(getString(R.string.preference_file_key) ,Context.MODE_PRIVATE);
+        String defaultValue = getResources().getString(R.string.saved_defaultCity);
+        currentCity = sharedPref.getString(getString(R.string.saved_city), defaultValue);
 
-        current_lat = intent.getDoubleExtra(lat, 0);
-        current_lon = intent.getDoubleExtra(lon, 0);
+        current_lat = intent.getDoubleExtra(BUNDLE_LAT, 0);
+        current_lon = intent.getDoubleExtra(BUNDLE_LON, 0);
 
         if (Utils.hasInternetConnection(this)) {
             try {
@@ -131,9 +132,7 @@ public class OneService extends IntentService {
     private String timeMilisToString(long milis) {
         SimpleDateFormat sd = new SimpleDateFormat("yyyyMMdd");
         Calendar calendar = Calendar.getInstance();
-
         calendar.setTimeInMillis(milis);
-
         return sd.format(calendar.getTime());
     }
 
@@ -162,13 +161,9 @@ public class OneService extends IntentService {
                     putJsonValue(venueValues, item, FoursquareContract.VenuesEntry.COLUMN_NAME, NAME, 1);
                     putJsonValue(venueValues, item, FoursquareContract.VenuesEntry.COLUMN_VERIFIED, VERIFIED, 1);
                     putJsonValue(venueValues, item, FoursquareContract.VenuesEntry.COLUMN_URL, URL, 1);
-//                    putJsonValue(venueValues, item, FoursquareContract.VenuesEntry.COLUMN_ISOPEN, ISOPEN, 1);
-//                    putJsonValue(venueValues, item, FoursquareContract.VenuesEntry.COLUMN_ISLOCALHOLIDAY, ISLOCALHOLIDAY, 1);
-//                    putJsonValue(venueValues, item, FoursquareContract.VenuesEntry.COLUMN_POPULAR, POPULAR, 1);
                     putJsonValue(venueValues, item, FoursquareContract.VenuesEntry.COLUMN_RATING, RATING, 1);
                     putJsonValue(venueValues, item, FoursquareContract.VenuesEntry.COLUMN_SHORTURL, SHORTURL, 1);
                     putJsonValue(venueValues, item, FoursquareContract.VenuesEntry.COLUMN_CANONICALURL, CANONICALURL, 1);
-
 
                     try {
                         JSONObject hours = (JSONObject) item.getJSONObject("hours");
@@ -189,13 +184,15 @@ public class OneService extends IntentService {
                     putJsonValue(venueValues, location, FoursquareContract.VenuesEntry.COLUMN_COORD_LONG, COORD_LONG, 3);
                     putJsonValue(venueValues, location, FoursquareContract.VenuesEntry.COLUMN_STATE, STATE, 1);
 
-                    double target_lat = location.getDouble(COORD_LAT);
-                    double target_lon = location.getDouble(COORD_LONG);
+                    if ((current_lat > 0)&&(current_lon > 0)) {
+                        double target_lat = location.getDouble(COORD_LAT);
+                        double target_lon = location.getDouble(COORD_LONG);
 
-                    PointD targetPoint = new PointD(target_lat, target_lon);
-                    PointD currentPoint = new PointD(current_lat, current_lon);
+                        PointD targetPoint = new PointD(target_lat, target_lon);
+                        PointD currentPoint = new PointD(current_lat, current_lon);
 
-                    venueValues.put(FoursquareContract.VenuesEntry.COLUMN_DISTANCE, Utils.getDistanceBetweenTwoPoints(targetPoint, currentPoint));
+                        venueValues.put(FoursquareContract.VenuesEntry.COLUMN_DISTANCE, Utils.getDistanceBetweenTwoPoints(targetPoint, currentPoint));
+                    }
 
                     JSONObject contact = item.getJSONObject("contact");
 
@@ -215,8 +212,6 @@ public class OneService extends IntentService {
 
                     putJsonValue(venueValues, photo, FoursquareContract.VenuesEntry.COLUMN_PHOTO_PREFIX, PREFIX, 1);
                     putJsonValue(venueValues, photo, FoursquareContract.VenuesEntry.COLUMN_PHOTO_SUFFIX, SUFFIX, 1);
-
-//                    venueValues.put(FoursquareContract.VenuesEntry.COLUMN_CATERGORY, category);
 
                     cVVector.add(venueValues);
                 }
@@ -252,16 +247,14 @@ public class OneService extends IntentService {
             final String CLIENT_ID = "client_id";
             final String CLIENT_SECRET = "client_secret";
             final String CURRENT_DATE = "v";
-            final String CATEGORY_ID = "categoryId";
+//            final String CATEGORY_ID = "categoryId";
             final String LIMIT = "limit";
             final String RADIUS = "radius";
 
-            Uri builtUri = null;
-            if (venue_id == null) {
-                builtUri = Uri.parse(API_URL).buildUpon()
+            Uri builtUri = Uri.parse(API_URL).buildUpon()
                         .appendPath(VENUES)
                         .appendPath(SEARCH)
-                        .encodedQuery("&" + geo_loc + "=" + current_lat + "," + current_lon)
+                        .encodedQuery((current_lat>0)&&(current_lon>0)?"&" + geo_loc + "=" + current_lat + "," + current_lon:"&near="+currentCity)
                         .appendQueryParameter("section", "food")
                         .appendQueryParameter("venuePhotos", "1")
                         .appendQueryParameter(LIMIT, "50")
@@ -270,17 +263,7 @@ public class OneService extends IntentService {
                         .appendQueryParameter(CLIENT_SECRET, BuildConfig.CLIENT_SECRET)
                         .appendQueryParameter(CURRENT_DATE, timeMilisToString(System.currentTimeMillis()))
                         .build();
-            } else {
-                builtUri = Uri.parse(API_URL).buildUpon()
-                        .appendPath(VENUES)
-                        .appendPath(venue_id)
-                        .appendPath(PHOTOS)
-                        .appendQueryParameter(CLIENT_ID, BuildConfig.CLIENT_ID)
-                        .appendQueryParameter(CLIENT_SECRET, BuildConfig.CLIENT_SECRET)
-                        .appendQueryParameter(CURRENT_DATE, timeMilisToString(System.currentTimeMillis()))
-                        .build();
 
-            }
             URL url = new URL(builtUri.toString());
 
             Log.d(LOG_TAG, builtUri.toString());
@@ -331,7 +314,7 @@ public class OneService extends IntentService {
         return null;
     }
 
-    private void updateWidgets(){
+    private void updateWidgets() {
         AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(this);
         int[] appWidgetIds = appWidgetManager.getAppWidgetIds(new ComponentName(this, WidgetProvider.class));
         if (appWidgetIds.length > 0) {

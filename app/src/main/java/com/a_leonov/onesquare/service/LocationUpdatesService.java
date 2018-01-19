@@ -17,27 +17,20 @@
 package com.a_leonov.onesquare.service;
 
 import android.app.ActivityManager;
-import android.app.Notification;
 import android.app.NotificationManager;
-import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.location.Location;
 import android.os.Binder;
-import android.os.Build;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.IBinder;
 import android.os.Looper;
 import android.support.annotation.NonNull;
-import android.support.v4.app.NotificationCompat;
-import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
-import com.a_leonov.onesquare.Utils;
-import com.a_leonov.onesquare.ui.MainActivity;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
@@ -106,14 +99,14 @@ public class LocationUpdatesService extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         Log.i(TAG, "Service started");
-        boolean startedFromNotification = intent.getBooleanExtra(EXTRA_STARTED_FROM_NOTIFICATION,
-                false);
-
-        // We got here because the user decided to remove location updates from the notification.
-        if (startedFromNotification) {
-            removeLocationUpdates();
-            stopSelf();
-        }
+//        boolean startedFromNotification = intent.getBooleanExtra(EXTRA_STARTED_FROM_NOTIFICATION,
+//                false);
+//
+//        // We got here because the user decided to remove location updates from the notification.
+//        if (startedFromNotification) {
+//            removeLocationUpdates();
+//            stopSelf();
+//        }
 
 
         // Tells the system to not try to recreate the service after it has been killed.

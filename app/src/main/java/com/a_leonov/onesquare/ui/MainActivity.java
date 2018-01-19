@@ -26,34 +26,35 @@ import android.widget.Toast;
 import com.a_leonov.onesquare.BuildConfig;
 import com.a_leonov.onesquare.R;
 import com.a_leonov.onesquare.Utils;
-import com.a_leonov.onesquare.data.FoursquareContract;
 import com.a_leonov.onesquare.service.LocationUpdatesService;
 import com.a_leonov.onesquare.service.OneService;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdView;
 import com.google.android.gms.ads.MobileAds;
 
-import static com.a_leonov.onesquare.Utils.BUNDLE_LAT;
-import static com.a_leonov.onesquare.Utils.BUNDLE_LON;
 import static com.a_leonov.onesquare.Utils.FRAGMENT_LIST_TAG;
 import static com.a_leonov.onesquare.Utils.REQUEST_PERMISSIONS_REQUEST_CODE;
 
 
-public class MainActivity extends AppCompatActivity implements VenueListFragment.OnListUpdateListener, ServiceConnection {
+public class MainActivity extends AppCompatActivity implements ServiceConnection {
     private static final String TAG = MainActivity.class.getSimpleName();
     private String selectedCategory;
     private String BUNDLE_CATEGORY = "category";
+    private boolean locationAvailable = false;
 
     VenueListFragment listFragment;
     private Toolbar mToolbar;
 
     private Location mCurrentlocation;
 
-
+    private VenueListFragment fragmentList;
     private MyReceiver myReceiver;
     private LocationUpdatesService mService = null;
     private boolean mBound = false;
     private AdView mAdView;
+    FragmentLocationListener fragmentLocationListener;
+
+
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -72,13 +73,13 @@ public class MainActivity extends AppCompatActivity implements VenueListFragment
                 .add(R.id.frameLayout, listFragment, FRAGMENT_LIST_TAG)
                 .commit();
 
-        myReceiver = new MyReceiver();
-
-
         if (!checkPermissions()) {
             requestPermissions();
-
         }
+
+        myReceiver = new MyReceiver();
+
+        OneService.startOneService(this, null);
 
         MobileAds.initialize(this, "ca-app-pub-3940256099942544~3347511713");
         mAdView = findViewById(R.id.adView);
@@ -89,7 +90,6 @@ public class MainActivity extends AppCompatActivity implements VenueListFragment
     @Override
     protected void onStart() {
         super.onStart();
-
         bindService(new Intent(this, LocationUpdatesService.class), this,
                 Context.BIND_AUTO_CREATE);
     }
@@ -97,21 +97,20 @@ public class MainActivity extends AppCompatActivity implements VenueListFragment
     @Override
     protected void onResume() {
         super.onResume();
-        LocalBroadcastManager.getInstance(this).registerReceiver(myReceiver,
-                new IntentFilter(LocationUpdatesService.ACTION_BROADCAST));
-
         if (!checkPermissions()) {
             requestPermissions();
-        } else {
-//            mService.requestLocationUpdates();
         }
 
+        fragmentList = (VenueListFragment) getSupportFragmentManager().findFragmentByTag(FRAGMENT_LIST_TAG);
+
+        LocalBroadcastManager.getInstance(this).registerReceiver(myReceiver,
+                new IntentFilter(LocationUpdatesService.ACTION_BROADCAST));
     }
 
     @Override
     protected void onPause() {
         LocalBroadcastManager.getInstance(this).unregisterReceiver(myReceiver);
-//        mService.removeLocationUpdates();
+        mService.removeLocationUpdates();
         super.onPause();
     }
 
@@ -137,7 +136,6 @@ public class MainActivity extends AppCompatActivity implements VenueListFragment
 
 
         if (shouldProvideRationale) {
-            Log.i(TAG, "Displaying permission rationale to provide additional context.");
             Snackbar.make(
                     findViewById(android.R.id.content),
                     R.string.permission_rationale,
@@ -153,10 +151,6 @@ public class MainActivity extends AppCompatActivity implements VenueListFragment
                     })
                     .show();
         } else {
-            Log.i(TAG, "Requesting permission");
-            // Request permission. It's possible this can be auto answered if device policy
-            // sets the permission in a given state or the user denied the permission
-            // previously and checked "Never ask again".
             ActivityCompat.requestPermissions(MainActivity.this,
                     new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
                     REQUEST_PERMISSIONS_REQUEST_CODE);
@@ -172,11 +166,14 @@ public class MainActivity extends AppCompatActivity implements VenueListFragment
                 // receive empty arrays.
                 Log.i(TAG, "User interaction was cancelled.");
             } else if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+
+                locationAvailable = true;
+
                 // Permission was granted.
                 mService.requestLocationUpdates();
             } else {
                 // Permission denied.
-//                setButtonsState(false);
+                locationAvailable = false;
                 Snackbar.make(
                         findViewById(android.R.id.content),
                         R.string.permission_denied_explanation,
@@ -201,11 +198,6 @@ public class MainActivity extends AppCompatActivity implements VenueListFragment
     }
 
     @Override
-    public void onListUpdate() {
-        updateLocationUI();
-    }
-
-    @Override
     public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
         LocationUpdatesService.LocalBinder binder = (LocationUpdatesService.LocalBinder) iBinder;
         mService = binder.getService();
@@ -223,23 +215,18 @@ public class MainActivity extends AppCompatActivity implements VenueListFragment
         public void onReceive(Context context, Intent intent) {
             mCurrentlocation = intent.getParcelableExtra(LocationUpdatesService.EXTRA_LOCATION);
             if (mCurrentlocation != null) {
-
-                updateLocationUI();
+                OneService.startOneService(MainActivity.this, mCurrentlocation);
                 Toast.makeText(MainActivity.this, Utils.getLocationText(mCurrentlocation),
                         Toast.LENGTH_SHORT).show();
+
+                if (fragmentList!=null) {
+
+                }
             }
         }
     }
 
-
-    private void updateLocationUI() {
-        if (mCurrentlocation != null) {
-            Intent venueIntent = new Intent(this, OneService.class);
-            venueIntent.putExtra(OneService.CATEGORY, FoursquareContract.CATEGORY_FOOD);
-            venueIntent.putExtra(BUNDLE_LAT, mCurrentlocation.getLatitude());
-            venueIntent.putExtra(BUNDLE_LON, mCurrentlocation.getLongitude());
-
-            startService(venueIntent);
-        }
+    public interface FragmentLocationListener {
+        void onLocationUpdate();
     }
 }

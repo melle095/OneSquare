@@ -33,5 +33,10 @@
     <string name="remove_location_updates">Remove location updates</string>
     <string name="location_updated">Location Updated: %1$s</string>
     <string name="empty_string">No data</string>
+    <string name="empty_distance">Distance unknown</string>
     <string name="widget_title">OneSquare</string>
+    <string name="noInternet">No internet connection</string>
+    <string name="saved_defaultCity">Moscow,RU</string>
+    <string name="saved_city">preference_city</string>
+    <string name="preference_file_key">com.a_leonov.onesquare.PREFERENCE_FILE_KEY</string>
 </resources>
