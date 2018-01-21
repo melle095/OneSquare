@@ -1,8 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">OneSquare</string>
-    <string name="venue_distance" translatable="false">Расстояние: %1$2d метров</string>
-    <string name="venue_address" translatable="false">Адрес: %1$2s</string>
+    <string name="venue_distance" translatable="true">Расстояние: %1$2d метров</string>
+    <string name="venue_address" translatable="true">Адрес: %1$2s</string>
     <string name="venue_phone">Тел.: %1$2s</string>
     <string name="send_to">Отправить..</string>
+    <string name="userPhoto_desc">Пользователь</string>
+    <string name="instagram_desc">Инстаграмм</string>
+    <string name="twitter_desc">Твитер</string>
+    <string name="facebook_desc">Файсбук</string>
+    <string name="noInternet">Нет интернет соединения</string>
+    <string name="empty_distance">Расстояние неизвестно</string>
+    <string name="empty_string">Нет данных</string>
+    <string name="location_updated">Координаты обновлены</string>
+    <string name="request_location_updates">Запрос обновления координат</string>
+    <string name="remove_location_updates">Удаление данных координат</string>
+    <string name="location_unknown">Данных о местоположении нет</string>
+    <string name="description_workhours">Рабочие часы</string>
+    <string name="description_venuedist">Расстояние</string>
+    <string name="action_share">Поделиться</string>
+    <string name="description_venueImage">Фото заведения</string>
+    <string name="discription_ratingbar">Рейтинг</string>
+    <string name="venue_widget_rating">Рейтинг</string>
 </resources>

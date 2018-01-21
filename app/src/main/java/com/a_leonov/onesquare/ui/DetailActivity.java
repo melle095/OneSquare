@@ -21,6 +21,7 @@ import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -114,7 +115,7 @@ public class DetailActivity extends AppCompatActivity implements SwipeRefreshLay
 //            "com.a_leonov.onesquare.STATUS";
 //    public static final String BROADCAST_ACTION =
 //            "com.a_leonov.onesquare.BROADCAST";
-
+    private Toolbar mDetailToolbar;
     private final int DETAIL_LOADER = 3;
     private final int DETAIL_PHOTO_LOADER = 4;
     private final int DETAIL_FEED_LOADER = 5;
@@ -125,6 +126,11 @@ public class DetailActivity extends AppCompatActivity implements SwipeRefreshLay
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_article_detail);
+
+        mDetailToolbar = findViewById(R.id.detail_toolbar);
+
+        setSupportActionBar(mDetailToolbar);
+        getSupportActionBar().setDisplayShowTitleEnabled(false);
 
         toolbarLayout = findViewById(R.id.toolbar_layout);
         viewPager = findViewById(R.id.viewPager);

@@ -209,6 +209,7 @@ public class LocationUpdatesService extends Service {
                         public void onComplete(@NonNull Task<Location> task) {
                             if (task.isSuccessful() && task.getResult() != null) {
                                 mLocation = task.getResult();
+                                onNewLocation(mLocation);
                             } else {
                                 Log.w(TAG, "Failed to get location.");
                             }

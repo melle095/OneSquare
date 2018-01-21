@@ -16,7 +16,8 @@
             android:layout_marginBottom="@dimen/material_layout_keylines_screen_edge_margin"
             android:layout_marginLeft="@dimen/material_component_text_fields_padding_above_and_below_label"
             android:layout_marginRight="@dimen/material_component_text_fields_padding_above_and_below_label"
-            android:layout_marginTop="@dimen/material_layout_keylines_screen_edge_margin" />
+            android:layout_marginTop="@dimen/material_layout_keylines_screen_edge_margin"
+            android:contentDescription="@string/userPhoto_desc"/>
 
         <TextView
             android:id="@+id/item_text_username"

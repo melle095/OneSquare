@@ -16,6 +16,7 @@ import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.app.Fragment;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -54,6 +55,13 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
     private AdView mAdView;
     FragmentLocationListener fragmentLocationListener;
 
+    @Override
+    public void onAttachFragment(Fragment fragment) {
+        if (fragmentLocationListener instanceof Fragment) {
+            fragmentLocationListener = (FragmentLocationListener) fragment;
+        }
+        super.onAttachFragment(fragment);
+    }
 
 
     @Override
@@ -67,11 +75,13 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
         setSupportActionBar(mToolbar);
         getSupportActionBar().setDisplayShowTitleEnabled(false);
 
-        listFragment = new VenueListFragment();
-
-        getSupportFragmentManager().beginTransaction()
-                .add(R.id.frameLayout, listFragment, FRAGMENT_LIST_TAG)
-                .commit();
+        listFragment = (VenueListFragment) getSupportFragmentManager().findFragmentByTag(FRAGMENT_LIST_TAG);
+        if (listFragment == null) {
+            listFragment = new VenueListFragment();
+            getSupportFragmentManager().beginTransaction()
+                    .add(R.id.frameLayout, listFragment, FRAGMENT_LIST_TAG)
+                    .commit();
+        }
 
         if (!checkPermissions()) {
             requestPermissions();
@@ -90,8 +100,11 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
     @Override
     protected void onStart() {
         super.onStart();
-        bindService(new Intent(this, LocationUpdatesService.class), this,
-                Context.BIND_AUTO_CREATE);
+        if (!checkPermissions()) {
+            requestPermissions();
+        } else
+            bindService(new Intent(this, LocationUpdatesService.class), this,
+                    Context.BIND_AUTO_CREATE);
     }
 
     @Override
@@ -101,16 +114,14 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
             requestPermissions();
         }
 
-        fragmentList = (VenueListFragment) getSupportFragmentManager().findFragmentByTag(FRAGMENT_LIST_TAG);
-
         LocalBroadcastManager.getInstance(this).registerReceiver(myReceiver,
                 new IntentFilter(LocationUpdatesService.ACTION_BROADCAST));
     }
 
     @Override
     protected void onPause() {
+        fragmentLocationListener = null;
         LocalBroadcastManager.getInstance(this).unregisterReceiver(myReceiver);
-        mService.removeLocationUpdates();
         super.onPause();
     }
 
@@ -167,13 +178,8 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
                 Log.i(TAG, "User interaction was cancelled.");
             } else if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
 
-                locationAvailable = true;
-
-                // Permission was granted.
-                mService.requestLocationUpdates();
             } else {
-                // Permission denied.
-                locationAvailable = false;
+
                 Snackbar.make(
                         findViewById(android.R.id.content),
                         R.string.permission_denied_explanation,
@@ -215,18 +221,17 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
         public void onReceive(Context context, Intent intent) {
             mCurrentlocation = intent.getParcelableExtra(LocationUpdatesService.EXTRA_LOCATION);
             if (mCurrentlocation != null) {
-                OneService.startOneService(MainActivity.this, mCurrentlocation);
+                if (fragmentLocationListener != null)
+                    fragmentLocationListener.onLocationUpdate(mCurrentlocation);
+
                 Toast.makeText(MainActivity.this, Utils.getLocationText(mCurrentlocation),
                         Toast.LENGTH_SHORT).show();
 
-                if (fragmentList!=null) {
-
-                }
             }
         }
     }
 
     public interface FragmentLocationListener {
-        void onLocationUpdate();
+        void onLocationUpdate(Location location);
     }
 }

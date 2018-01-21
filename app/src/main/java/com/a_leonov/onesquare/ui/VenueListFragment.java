@@ -1,9 +1,13 @@
 package com.a_leonov.onesquare.ui;
 
+import android.content.Context;
 import android.database.Cursor;
 import android.location.Location;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Parcelable;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
@@ -12,6 +16,7 @@ import android.support.v4.content.Loader;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.AttributeSet;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -24,16 +29,20 @@ import com.a_leonov.onesquare.data.FoursquareContract;
 import com.a_leonov.onesquare.service.OneService;
 
 
-public class VenueListFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor>, SwipeRefreshLayout.OnRefreshListener {
+public class VenueListFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor>, SwipeRefreshLayout.OnRefreshListener, MainActivity.FragmentLocationListener {
 
     private RecyclerView mRecyclerView;
-    private static final String SELECTED_KEY = "selected_position";
+    private static final String SAVED_SUPER_STATE = "super-state";
+    private static final String SAVED_LAYOUT_MANAGER = "layout-manager-state";
     private static final int VENUE_LOADER = 0;
     private VenueAdapter mVenueAdapter;
     private Location currentLocation = null;
     private int mPosition;
     SwipeRefreshLayout mSwipeRefreshLayout;
     LoaderManager loaderManager;
+    MyLayoutManager linearLayoutManager;
+    Parcelable mLayoutManagerSavedState;
+    boolean needScroll = false;
 
     private static final String[] VENUE_COLUMNS = {
             FoursquareContract.VenuesEntry.TABLE_NAME + "." + FoursquareContract.VenuesEntry._ID,
@@ -50,6 +59,14 @@ public class VenueListFragment extends Fragment implements LoaderManager.LoaderC
             FoursquareContract.VenuesEntry.COLUMN_VEN_KEY
     };
 
+    @Override
+    public void onSaveInstanceState(@NonNull Bundle outState) {
+
+        Bundle linearState = (Bundle) linearLayoutManager.onSaveInstanceState();
+
+        super.onSaveInstanceState(linearState);
+    }
+
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -58,21 +75,14 @@ public class VenueListFragment extends Fragment implements LoaderManager.LoaderC
 
         mVenueAdapter = new VenueAdapter(getActivity(), null);
 
-        mRecyclerView = (RecyclerView) rootView.findViewById(R.id.recycler_view);
+        mRecyclerView = rootView.findViewById(R.id.recycler_view);
         mSwipeRefreshLayout = (SwipeRefreshLayout) rootView.findViewById(R.id.swipe_refresh_layout);
 
         mSwipeRefreshLayout.setOnRefreshListener(this);
 
-        LinearLayoutManager linearLayoutManager =
-                new LinearLayoutManager(null, LinearLayoutManager.VERTICAL, false);
+        linearLayoutManager = new MyLayoutManager(getActivity(), LinearLayoutManager.VERTICAL, false);
+
         mRecyclerView.setLayoutManager(linearLayoutManager);
-
-        if (savedInstanceState != null && savedInstanceState.containsKey(SELECTED_KEY)) {
-            // The listview probably hasn't even been populated yet.  Actually perform the
-            // swapout in onLoadFinished.
-            mPosition = savedInstanceState.getInt(SELECTED_KEY);
-        }
-
         mVenueAdapter.setHasStableIds(true);
         mRecyclerView.setAdapter(mVenueAdapter);
 
@@ -86,6 +96,11 @@ public class VenueListFragment extends Fragment implements LoaderManager.LoaderC
             loaderManager.initLoader(VENUE_LOADER, null, this);
         else
             loaderManager.restartLoader(VENUE_LOADER, null, this);
+
+        if (savedInstanceState != null) {
+            linearLayoutManager.onRestoreInstanceState(savedInstanceState);
+        }
+
         super.onActivityCreated(savedInstanceState);
     }
 
@@ -93,9 +108,7 @@ public class VenueListFragment extends Fragment implements LoaderManager.LoaderC
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
 
         String sortOrder = FoursquareContract.VenuesEntry.COLUMN_RATING + " DESC";
-
         Uri contentUri = FoursquareContract.VenuesEntry.CONTENT_URI;
-
         if (currentLocation != null) {
             sortOrder = FoursquareContract.VenuesEntry.COLUMN_DISTANCE + " ASC";
             contentUri = FoursquareContract.VenuesEntry
@@ -113,11 +126,6 @@ public class VenueListFragment extends Fragment implements LoaderManager.LoaderC
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
         mVenueAdapter.swapCursor(data);
-        if (mPosition != ListView.INVALID_POSITION) {
-            // If we don't need to restart the loader, and there's a desired position to restore
-            // to, do so now.
-            mRecyclerView.smoothScrollToPosition(mPosition);
-        }
         mSwipeRefreshLayout.setRefreshing(false);
     }
 
@@ -127,18 +135,8 @@ public class VenueListFragment extends Fragment implements LoaderManager.LoaderC
     }
 
     @Override
-    public void onSaveInstanceState(Bundle outState) {
-        if (mPosition != ListView.INVALID_POSITION) {
-            outState.putInt(SELECTED_KEY, mPosition);
-        }
-        super.onSaveInstanceState(outState);
-    }
-
-    @Override
     public void onRefresh() {
-        loaderManager.restartLoader(VENUE_LOADER, null, this);
         if (Utils.hasInternetConnection(getActivity())) {
-//            onListUpdateListener.onListUpdate();
             OneService.startOneService(getActivity(), currentLocation);
         } else {
             Toast.makeText(getActivity(), getContext().getString(R.string.noInternet),
@@ -146,8 +144,59 @@ public class VenueListFragment extends Fragment implements LoaderManager.LoaderC
         }
     }
 
-    public void updateLocation(Location location) {
-        
+    @Override
+    public void onLocationUpdate(Location location) {
+        currentLocation = location;
+        OneService.startOneService(getActivity(), currentLocation);
     }
 
+    private class MyLayoutManager extends LinearLayoutManager{
+        private boolean isRestored;
+
+        public MyLayoutManager(Context context) {
+            super(context);
+        }
+
+        public MyLayoutManager(Context context, int orientation, boolean reverseLayout) {
+            super(context, orientation, reverseLayout);
+        }
+
+        public MyLayoutManager(Context context, AttributeSet attrs, int defStyleAttr, int defStyleRes) {
+            super(context, attrs, defStyleAttr, defStyleRes);
+        }
+
+        @Override
+        public void onLayoutCompleted(RecyclerView.State state) {
+            super.onLayoutCompleted(state);
+            if(isRestored && mPosition >-1) {
+                Handler handler=new Handler();
+                handler.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        MyLayoutManager.this.scrollToPosition(mPosition);
+                    }
+                },400);
+
+            }
+            isRestored=false;
+        }
+
+        @Override
+        public Parcelable onSaveInstanceState() {
+            Parcelable savedInstanceState = super.onSaveInstanceState();
+            mPosition = this.findLastVisibleItemPosition();
+            Bundle bundle=new Bundle();
+            bundle.putParcelable("saved_state",savedInstanceState);
+            bundle.putInt("position", mPosition);
+            return bundle;
+        }
+
+        @Override
+        public void onRestoreInstanceState(Parcelable state) {
+            Parcelable savedState = ((Bundle)state).getParcelable("saved_state");
+            mPosition = ((Bundle)state).getInt("position",-1);
+            isRestored=true;
+            super.onRestoreInstanceState(savedState);
+        }
+    }
 }
